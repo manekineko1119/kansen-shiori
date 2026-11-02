@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" fill="#0E5A3A"/><g transform="translate(51.2 51.2) scale(0.8)">
+  <g transform="rotate(-4 256 256)">
+    <rect x="132" y="92" width="256" height="336" rx="10" fill="#0A4029" opacity=".35" transform="translate(10 10)"/>
+    <rect x="132" y="92" width="256" height="336" rx="10" fill="#FFFFFF"/>
+    <rect x="132" y="92" width="30" height="336" rx="6" fill="#D9E8DF"/>
+    <rect x="141" y="150" width="12" height="34" rx="3" fill="#8E9A93"/>
+    <rect x="141" y="336" width="12" height="34" rx="3" fill="#8E9A93"/>
+    <rect x="178" y="110" width="194" height="300" rx="4" fill="none" stroke="#0E5A3A" stroke-width="4"/>
+    <rect x="186" y="118" width="178" height="284" rx="2" fill="none" stroke="#0E5A3A" stroke-width="1.5"/>
+    <text x="275" y="168" text-anchor="middle" style="font-family:'Noto Sans CJK JP';font-weight:900;font-size:34px" fill="#16211C">観戦の</text>
+    <text x="275" y="210" text-anchor="middle" style="font-family:'Noto Sans CJK JP';font-weight:900;font-size:34px" fill="#16211C">しおり</text>
+    
+    <g transform="translate(275 328) scale(0.87)" stroke="#16211C" stroke-width="3.4" stroke-linejoin="round" stroke-linecap="round">
+      <!-- 北アルプスの稜線 -->
+      <path d="M-86 -14 L-62 -50 L-50 -38 L-30 -68 L-12 -44 L4 -58 L22 -36 L44 -62 L64 -34 L86 -14 Z" fill="#D9E8DF"/>
+      <path d="M-30 -68 L-38 -56 L-32 -58 L-27 -53 L-22 -60 Z M44 -62 L37 -51 L43 -53 L48 -48 L52 -55 Z M4 -58 L-1 -50 L4 -51 L9 -49 Z" fill="#FFFFFF" stroke-width="2"/>
+      <!-- 奥のゴール裏スタンド（屋根なし） -->
+      <path d="M-56 -18 L56 -18 L52 -10 L-52 -10 Z" fill="#FFFFFF"/>
+      <!-- ピッチ（縞） -->
+      <path d="M-50 -10 L50 -10 L74 40 L-74 40 Z" fill="#2F7A57"/>
+      <path d="M-46 -2 L46 -2 L50 6 L-50 6 Z M-57 14 L57 14 L62 24 L-62 24 Z" fill="#3E8C66" stroke="none"/>
+      <path d="M-50 -10 L50 -10 L74 40 L-74 40 Z" fill="none"/>
+      <line x1="-61" y1="12" x2="61" y2="12" stroke="#FFFFFF" stroke-width="2"/>
+      <ellipse cx="0" cy="12" rx="13" ry="5" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+      <path d="M-10 -10 L-10 -15 L10 -15 L10 -10" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+      <!-- 左右のスタンド -->
+      <path d="M-50 -10 L-60 -16 L-92 42 L-74 40 Z" fill="#FFFFFF"/>
+      <path d="M50 -10 L60 -16 L92 42 L74 40 Z" fill="#FFFFFF"/>
+      <!-- 弧を描く屋根（メイン・バック） -->
+      <path d="M-56 -30 C -86 -16, -102 12, -102 48 L-80 44 C -80 18, -70 -4, -52 -16 Z" fill="#FFFFFF"/>
+      <path d="M56 -30 C 86 -16, 102 12, 102 48 L80 44 C 80 18, 70 -4, 52 -16 Z" fill="#FFFFFF"/>
+      <path d="M-58 -24 C -84 -10, -96 14, -96 44" fill="none" stroke="#F2B01E" stroke-width="3"/><path d="M-70 -14 L-62 -8 M-82 0 L-72 4 M-90 16 L-79 18 M-93 32 L-81 32" stroke-width="2"/>
+      <path d="M58 -24 C 84 -10, 96 14, 96 44" fill="none" stroke="#F2B01E" stroke-width="3"/><path d="M70 -14 L62 -8 M82 0 L72 4 M90 16 L79 18 M93 32 L81 32" stroke-width="2"/>
+      <!-- 手前のゴール裏スタンド -->
+      <path d="M-78 40 L78 40 L84 52 L-84 52 Z" fill="#FFFFFF"/>
+    </g>
+  </g></g></svg>

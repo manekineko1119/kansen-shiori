@@ -1,0 +1,31 @@
+# 秘密情報（鍵・パスワードはコミットしない）
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Supabase CLI（ローカル実行時の一時ファイル・秘密情報）
+supabase/.branches/
+supabase/.temp/
+supabase/.env
+supabase/functions/.env
+
+# Node.js
+node_modules/
+npm-debug.log*
+
+# エディタ
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ログ・一時ファイル
+*.log
+*.tmp
+coverage/
