@@ -1,0 +1,11 @@
+{
+  "name": "kansen-shiori",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "test": "node --test \"tests/**/*.test.js\""
+  }
+}
