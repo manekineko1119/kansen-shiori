@@ -30,10 +30,9 @@ function resultPatch(item, fixture) {
 }
 
 // 戻り値：updates（書き換える列だけの patch）、matchPagesToRead、unmatched、duplicates（同じ試合に当たった2つ目以降の item）、unknownStates
-// skipFixtureIds：試合ページを読まない試合の id（配列か Set）。結果の更新は許す
-export function planSync({ items, fixtures, clubs, quota, skipFixtureIds = [] }) {
+// scorers_failed_at が入っている試合（得点者の取り込みに失敗した試合）は試合ページを読まない。結果の更新は許す
+export function planSync({ items, fixtures, clubs, quota }) {
   const plan = { updates: [], matchPagesToRead: [], unmatched: [], duplicates: [], unknownStates: [] };
-  const skip = new Set(skipFixtureIds);
   const seen = new Set();
   if (quota.list <= 0) return plan; // 一覧ページを読めない日は何もしない
   const byId = new Map(fixtures.map((f) => [f.id, f]));
@@ -53,7 +52,7 @@ export function planSync({ items, fixtures, clubs, quota, skipFixtureIds = [] })
         const scores = scoresOf(item);
         if (!scores) {
           plan.unknownStates.push({ fixtureId: id, state: item.state, reason: 'score missing' });
-        } else if (scores[0] + scores[1] >= 1 && !fixture.scorers_fetched_at && !skip.has(id)) {
+        } else if (scores[0] + scores[1] >= 1 && !fixture.scorers_fetched_at && !fixture.scorers_failed_at) {
           candidates.push({ fixture, url: item.matchUrl + 'live/' });
         }
       } else if (item.state !== 'ticket') {

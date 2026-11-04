@@ -106,12 +106,13 @@ test('残りの回数は results の行だけ数える', () => {
   assert.deepEqual(remainingQuota([{ job: 'results', list_read: 3, pages_read: 12 }]), { list: 0, matchPages: 0 });
 });
 
-test('skipFixtureIds の試合は試合ページを読まない（結果の更新は許す）。配列でも Set でもよい', () => {
-  for (const skip of [['f1'], new Set(['f1'])]) {
-    const p = planSync({ items: [item], fixtures: [base], clubs, quota, skipFixtureIds: skip });
-    assert.deepEqual(p.matchPagesToRead, []);
-    assert.equal(p.updates[0].patch.status, 'finished');
-  }
+test('scorers_failed_at が入っている試合は試合ページを読まない（結果の更新は許す）。null なら読む', () => {
+  const failed = { ...base, scorers_failed_at: '2026-11-03T00:00:00Z' };
+  const p = planSync({ items: [item], fixtures: [failed], clubs, quota });
+  assert.deepEqual(p.matchPagesToRead, []);
+  assert.equal(p.updates[0].patch.status, 'finished');
+  const ok = planSync({ items: [item], fixtures: [{ ...base, scorers_failed_at: null }], clubs, quota });
+  assert.deepEqual(ok.matchPagesToRead, [{ fixtureId: 'f1', url: item.matchUrl + 'live/' }]);
 });
 
 test('同じ試合に当たる item が2つなら最初の1つだけ使い、あとは duplicates に入る', () => {
