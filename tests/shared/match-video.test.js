@@ -101,3 +101,7 @@ test('planVideoUpserts：同じ試合・種類が複数なら公開が新しい1
   const r = planVideoUpserts(v, { ...ctx, sources: [src], existing: [] });
   assert.deepEqual(r.map((x) => x.url), ['u2']);
 });
+
+test('classifyVideo：ハイライトと INSIDE の両方のキーワードを含むタイトルは highlight（現状の挙動）', () => {
+  assert.equal(classifyVideo('明治安田 【INSIDE】 #13', src), 'highlight');
+});

@@ -14,23 +14,35 @@ export function remainingQuota(runsToday) {
   };
 }
 
-function resultPatch(item, fixture) {
+// 両チームのスコアが整数のときだけ [ホーム, アウェイ]、そうでなければ null
+function scoresOf(item) {
   const home = item.home?.score;
   const away = item.away?.score;
-  if (!Number.isInteger(home) || !Number.isInteger(away)) return {};
+  return Number.isInteger(home) && Number.isInteger(away) ? [home, away] : null;
+}
+
+function resultPatch(item, fixture) {
+  const scores = scoresOf(item);
+  if (!scores) return {};
+  const [home, away] = scores;
   const want = { status: 'finished', home_score: home, away_score: away, result_source: 'api' };
   return Object.fromEntries(Object.entries(want).filter(([k, v]) => fixture[k] !== v));
 }
 
-// 戻り値：updates（書き換える列だけの patch）、matchPagesToRead、unmatched、unknownStates
-export function planSync({ items, fixtures, clubs, quota }) {
-  const plan = { updates: [], matchPagesToRead: [], unmatched: [], unknownStates: [] };
+// 戻り値：updates（書き換える列だけの patch）、matchPagesToRead、unmatched、duplicates（同じ試合に当たった2つ目以降の item）、unknownStates
+// skipFixtureIds：試合ページを読まない試合の id（配列か Set）。結果の更新は許す
+export function planSync({ items, fixtures, clubs, quota, skipFixtureIds = [] }) {
+  const plan = { updates: [], matchPagesToRead: [], unmatched: [], duplicates: [], unknownStates: [] };
+  const skip = new Set(skipFixtureIds);
+  const seen = new Set();
   if (quota.list <= 0) return plan; // 一覧ページを読めない日は何もしない
   const byId = new Map(fixtures.map((f) => [f.id, f]));
   const candidates = [];
   for (const item of items) {
     const id = matchFixture(item, fixtures, clubs);
     if (id === null) { plan.unmatched.push(item); continue; }
+    if (seen.has(id)) { plan.duplicates.push(item); continue; }
+    seen.add(id);
     const fixture = byId.get(id);
     const patch = {};
     if (!fixture.jleague_match_url) patch.jleague_match_url = item.matchUrl;
@@ -38,8 +50,12 @@ export function planSync({ items, fixtures, clubs, quota }) {
     if (!manual) {
       if (item.state === 'game-over') {
         Object.assign(patch, resultPatch(item, fixture));
-        const total = (item.home?.score ?? 0) + (item.away?.score ?? 0);
-        if (total >= 1 && !fixture.scorers_fetched_at) candidates.push({ fixture, url: item.matchUrl + 'live/' });
+        const scores = scoresOf(item);
+        if (!scores) {
+          plan.unknownStates.push({ fixtureId: id, state: item.state, reason: 'score missing' });
+        } else if (scores[0] + scores[1] >= 1 && !fixture.scorers_fetched_at && !skip.has(id)) {
+          candidates.push({ fixture, url: item.matchUrl + 'live/' });
+        }
       } else if (item.state !== 'ticket') {
         plan.unknownStates.push({ fixtureId: id, state: item.state });
       }

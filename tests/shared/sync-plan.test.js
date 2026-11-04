@@ -105,3 +105,36 @@ test('残りの回数は results の行だけ数える', () => {
   assert.deepEqual(remainingQuota([]), { list: 2, matchPages: 10 });
   assert.deepEqual(remainingQuota([{ job: 'results', list_read: 3, pages_read: 12 }]), { list: 0, matchPages: 0 });
 });
+
+test('skipFixtureIds の試合は試合ページを読まない（結果の更新は許す）。配列でも Set でもよい', () => {
+  for (const skip of [['f1'], new Set(['f1'])]) {
+    const p = planSync({ items: [item], fixtures: [base], clubs, quota, skipFixtureIds: skip });
+    assert.deepEqual(p.matchPagesToRead, []);
+    assert.equal(p.updates[0].patch.status, 'finished');
+  }
+});
+
+test('同じ試合に当たる item が2つなら最初の1つだけ使い、あとは duplicates に入る', () => {
+  const second = { ...item, matchUrl: 'https://www.jleague.jp/match/j3/2026/999999/', home: { ...item.home, score: 5 } };
+  const p = planSync({ items: [item, second], fixtures: [base], clubs, quota });
+  assert.equal(p.updates.length, 1);
+  assert.equal(p.updates[0].patch.jleague_match_url, item.matchUrl);
+  assert.equal(p.updates[0].patch.home_score, 0);
+  assert.deepEqual(p.matchPagesToRead.map((r) => r.fixtureId), ['f1']);
+  assert.deepEqual(p.duplicates, [second]);
+  assert.deepEqual(p.unmatched, []);
+});
+
+test('試合終了でもスコアが整数でなければ試合ページを読まず、unknownStates に score missing を残す', () => {
+  const noScore = { ...item, home: { ...item.home, score: null } };
+  const p = planSync({ items: [noScore], fixtures: [base], clubs, quota });
+  assert.deepEqual(p.matchPagesToRead, []);
+  assert.deepEqual(p.unknownStates, [{ fixtureId: 'f1', state: 'game-over', reason: 'score missing' }]);
+  assert.deepEqual(p.updates, [{ id: 'f1', patch: { jleague_match_url: item.matchUrl } }]);
+});
+
+test('quota.matchPages が 0 なら試合ページは読まない', () => {
+  const p = planSync({ items: [item], fixtures: [base], clubs, quota: { list: 1, matchPages: 0 } });
+  assert.deepEqual(p.matchPagesToRead, []);
+  assert.equal(p.updates.length, 1);
+});
