@@ -47,16 +47,26 @@ function parseKickoff(raw) {
   return { value: `${pad2(Number(m[1]))}:${m[2]}` };
 }
 
-// クラブ名の索引（name・short_name・aliases の正規化名 → クラブID）
+// クラブ名の索引（name・short_name・aliases の正規化名 → クラブIDの集合）
 function buildClubIndex(clubs) {
   const index = new Map();
   for (const club of clubs) {
     for (const name of [club.name, club.short_name, ...(club.aliases ?? [])]) {
       const key = normalizeName(name);
-      if (key !== '' && !index.has(key)) index.set(key, club.id);
+      if (key === '') continue;
+      if (!index.has(key)) index.set(key, new Set());
+      index.get(key).add(club.id);
     }
   }
   return index;
+}
+
+// クラブ名 → { id } か { error }（未登録・複数のクラブに当てはまる場合はエラー）
+function findClub(raw, clubIndex) {
+  const ids = clubIndex.get(normalizeName(raw));
+  if (!ids) return { error: `未登録のクラブです: ${raw}` };
+  if (ids.size > 1) return { error: `クラブ名が複数のクラブに当てはまります: ${raw}` };
+  return { id: [...ids][0] };
 }
 
 function parseLine(cells, ctx) {
@@ -68,10 +78,12 @@ function parseLine(cells, ctx) {
   const kickoff = parseKickoff(kickoffRaw);
   if (kickoff.error) return kickoff;
 
-  const homeId = ctx.clubIndex.get(normalizeName(homeRaw));
-  if (!homeId) return { error: `未登録のクラブです: ${homeRaw}` };
-  const awayId = ctx.clubIndex.get(normalizeName(awayRaw));
-  if (!awayId) return { error: `未登録のクラブです: ${awayRaw}` };
+  const home = findClub(homeRaw, ctx.clubIndex);
+  if (home.error) return home;
+  const away = findClub(awayRaw, ctx.clubIndex);
+  if (away.error) return away;
+  const homeId = home.id;
+  const awayId = away.id;
   if (homeId === awayId) return { error: 'ホームとアウェイが同じクラブです' };
 
   let url = null;

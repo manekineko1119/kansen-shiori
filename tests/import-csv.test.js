@@ -108,3 +108,16 @@ test('見出し行は飛ばすが行番号は数える。CRLF・空の入力も�
   assert.deepEqual(r.errors.map((e) => e.line), [2]);
   assert.deepEqual(parseFixturesCsv('', ctx), { ok: [], errors: [] });
 });
+
+test('複数のクラブに当てはまる名前は行エラー。同じクラブ内の重複は問題なし', () => {
+  const dup = [
+    ...clubs,
+    { id: 'matsumoto2', name: '松本ユナイテッド', short_name: '松本', aliases: [] },
+  ];
+  const r = parseFixturesCsv('11/21,14:00,J3,15,松本,岐阜\n11/22,14:00,J3,16,松本山雅FC,岐阜', { season, clubs: dup, stadiums: [] });
+  assert.deepEqual(r.errors.map((e) => e.line), [1]);
+  assert.match(r.errors[0].reason, /複数のクラブ.*松本/);
+  assert.deepEqual(r.ok.map((x) => x.id), ['2026-27_J3_16_matsumoto_gifu']);
+  const same = [{ id: 'gifu', name: 'FC岐阜', short_name: 'FC岐阜', aliases: ['ＦＣ岐阜'] }, clubs[0]];
+  assert.equal(parseFixturesCsv('11/21,14:00,J3,15,松本,FC岐阜', { season, clubs: same, stadiums: [] }).ok.length, 1);
+});
