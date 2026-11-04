@@ -3,6 +3,8 @@
 // 節がない試合は、節の部分に日付 `YYYYMMDD` を入れる。
 // 一度決めたIDの形は変えない（観戦記録の紐づけに使う）。
 
+import { toHalfWidth } from '../../supabase/functions/_shared/text.js';
+
 const SEPARATOR = '_';
 
 function assertPart(name, value) {
@@ -14,13 +16,21 @@ function assertPart(name, value) {
   }
 }
 
+// 大会：全角を半角にし、前後の空白を取って大文字にする（'ｊ3' → 'J3'）。文字列以外はそのまま返し、後の検査で例外にする
+function normalizeCompetition(competition) {
+  return typeof competition === 'string' ? toHalfWidth(competition).trim().toUpperCase() : competition;
+}
+
 // 節を文字列にする。null・undefined・空白だけは「節なし」（空文字を返す）。
 // 文字列と数字は受け付ける。それ以外の型は例外。
+// 全角は半角にし、数字だけ（'08'）と「第N節」は数字の文字列にそろえる（'8'）。
 function normalizeRound(round) {
   if (round == null) return '';
-  if (typeof round === 'string') return round.trim();
   if (typeof round === 'number' && Number.isFinite(round)) return String(round);
-  throw new Error(`試合IDの節の型が正しくありません: ${typeof round}`);
+  if (typeof round !== 'string') throw new Error(`試合IDの節の型が正しくありません: ${typeof round}`);
+  const s = toHalfWidth(round).trim();
+  const m = /^\d+$/.exec(s) ?? /^第(\d+)節$/.exec(s);
+  return m ? String(Number(m[1] ?? m[0])) : s;
 }
 
 // 'YYYY-MM-DD' → 'YYYYMMDD'（形が違えば例外）
@@ -32,14 +42,15 @@ function compactDate(matchDate) {
 }
 
 export function buildFixtureId({ seasonId, competition, round, matchDate, homeClubId, awayClubId }) {
+  const normalizedCompetition = normalizeCompetition(competition);
   const trimmedRound = normalizeRound(round);
   const roundOrDate = trimmedRound === '' ? compactDate(matchDate) : trimmedRound;
   assertPart('シーズン', seasonId);
-  assertPart('大会', competition);
+  assertPart('大会', normalizedCompetition);
   assertPart('節', roundOrDate);
   assertPart('ホームID', homeClubId);
   assertPart('アウェイID', awayClubId);
-  return [seasonId, competition, roundOrDate, homeClubId, awayClubId].join(SEPARATOR);
+  return [seasonId, normalizedCompetition, roundOrDate, homeClubId, awayClubId].join(SEPARATOR);
 }
 
 // 試合IDを部分に分ける。5つの部分に分けられない・空の部分があれば null

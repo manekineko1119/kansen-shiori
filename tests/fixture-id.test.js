@@ -105,3 +105,15 @@ test('build と parse は往復して元に戻る', () => {
     seasonId: '2026-27', competition: 'J3', roundOrDate: '26', homeClubId: 'matsumoto', awayClubId: 'nara',
   });
 });
+
+test('buildFixtureId: 大会・節の表記ゆれは同じIDになる', () => {
+  const id = (competition, round) => buildFixtureId({ seasonId: '2026-27', competition, round, matchDate: '2027-03-13', homeClubId: 'matsumoto', awayClubId: 'nara' });
+  assert.equal(id('j3', '26'), '2026-27_J3_26_matsumoto_nara');
+  assert.equal(id(' ＪＦＬ ', '26'), '2026-27_JFL_26_matsumoto_nara');
+  assert.equal(id('J3', '第26節'), '2026-27_J3_26_matsumoto_nara');
+  assert.equal(id('J3', '第２６節'), '2026-27_J3_26_matsumoto_nara');
+  assert.equal(id('J3', '２６'), '2026-27_J3_26_matsumoto_nara');
+  assert.equal(id('J3', 26), '2026-27_J3_26_matsumoto_nara');
+  assert.equal(id('J3', '08'), '2026-27_J3_8_matsumoto_nara');
+  assert.equal(id('J3', 'PO1'), '2026-27_J3_PO1_matsumoto_nara');
+});
