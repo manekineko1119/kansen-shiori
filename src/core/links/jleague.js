@@ -39,5 +39,5 @@ export function jleagueTicketUrl(matchUrl) {
  * @returns {string}
  */
 export function jleagueMatchLink({ matchUrl, clubUrl }) {
-  return matchUrl ?? clubUrl ?? JLEAGUE_TOP;
+  return matchUrl || clubUrl || JLEAGUE_TOP;
 }

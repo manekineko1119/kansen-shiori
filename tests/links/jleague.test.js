@@ -47,3 +47,8 @@ test('試合ページが空ならクラブのページ', () => {
 test('試合ページもクラブのページも空ならJリーグ公式のトップ', () => {
   assert.equal(jleagueMatchLink({ matchUrl: null, clubUrl: null }), 'https://www.jleague.jp/');
 });
+
+test('jleagueMatchLink: 空文字は無いものとして次の候補へ', () => {
+  assert.equal(jleagueMatchLink({ matchUrl: '', clubUrl: 'https://www.jleague.jp/club/gifu/' }), 'https://www.jleague.jp/club/gifu/');
+  assert.equal(jleagueMatchLink({ matchUrl: '', clubUrl: '' }), JLEAGUE_TOP);
+});

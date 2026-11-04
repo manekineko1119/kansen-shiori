@@ -10,7 +10,7 @@
 export function yahooTransitUrl({ from, to, date, arriveTime }) {
   const [y, m, d] = date.split('-').map(Number);
   const params = new URLSearchParams({ from, to, y: String(y), m: String(m), d: String(d) });
-  if (arriveTime === null) {
+  if (arriveTime == null) {
     params.set('hh', '9');
     params.set('m1', '0');
     params.set('m2', '0');

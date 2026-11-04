@@ -11,3 +11,7 @@ test('年をまたぐ日付', () => {
 test('目的地が未登録（null）ならトップ', () => {
   assert.equal(skyscannerUrl({ from: 'NGO', to: null, outbound: '2026-11-21', inbound: '2026-11-23' }), 'https://www.skyscanner.jp/');
 });
+
+test('目的地が undefined でもトップ', () => {
+  assert.equal(skyscannerUrl({ from: 'NGO', outbound: '2026-11-21', inbound: '2026-11-23' }), 'https://www.skyscanner.jp/');
+});

@@ -9,6 +9,6 @@ function yymmdd(date) {
 
 /** from・to は空港コードか都市コード。to が null（最寄り空港が未登録）ならトップ（12章 No.20）。 */
 export function skyscannerUrl({ from, to, outbound, inbound }) {
-  if (to === null) return TOP;
+  if (to == null) return TOP;
   return `${TOP}transport/flights/${from.toLowerCase()}/${to.toLowerCase()}/${yymmdd(outbound)}/${yymmdd(inbound)}/`;
 }

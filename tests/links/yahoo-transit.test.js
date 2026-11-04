@@ -31,3 +31,10 @@ test('キックオフ未定（arriveTime が null）：その日の9:00出発の
     `${BASE}&y=2027&m=3&d=5&hh=9&m1=0&m2=0`,
   );
 });
+
+test('arriveTime が undefined でも未定として扱う', () => {
+  assert.equal(
+    yahooTransitUrl({ from: '松本', to: '岐阜', date: '2027-03-05' }),
+    yahooTransitUrl({ from: '松本', to: '岐阜', date: '2027-03-05', arriveTime: null }),
+  );
+});
