@@ -31,6 +31,8 @@ export function parseResultQuery(qs) {
   for (const [key, param] of Object.entries(CUSTOM_KEYS)) {
     custom[key] = p.get(param) || null;
   }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(custom.date ?? '')) custom.date = null;
+  if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(custom.kickoff ?? '')) custom.kickoff = null;
   const hasCustom = Object.values(custom).some((v) => v !== null);
 
   if (!fixtureId && !hasCustom) return null;

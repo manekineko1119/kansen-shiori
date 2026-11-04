@@ -72,3 +72,8 @@ test('recentForm: 並びが古い順でなくても日付順に数える', () =>
   const shuffled = [list[4], list[0], list[3], list[1]];
   assert.deepEqual(recentForm(shuffled, 'matsumoto', '2026-11-15'), ['win', 'lose', 'draw', 'win']);
 });
+
+test('recentForm: n が 0 以下なら空', () => {
+  assert.deepEqual(recentForm(list, 'matsumoto', '2026-11-15', 0), []);
+  assert.deepEqual(recentForm(list, 'matsumoto', '2026-11-15', -2), []);
+});

@@ -39,6 +39,7 @@ export function formatScore(f, supportClubId) {
 
 // today より前に終わった試合（スコア登録済み）を古い順に、最後の n 件
 export function recentForm(fixtures, supportClubId, today, n = 5) {
+  if (n <= 0) return [];
   return fixtures
     .filter((f) => f.match_date < today)
     .sort((a, b) => (a.match_date < b.match_date ? -1 : a.match_date > b.match_date ? 1 : 0))

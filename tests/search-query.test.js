@@ -61,3 +61,12 @@ test('履歴は元の配列を書き換えない', () => {
   pushHistory(h, 'c');
   assert.deepEqual(h, ['a', 'b']);
 });
+
+test('parseResultQuery: 日付とキックオフの形が正しくなければ null', () => {
+  const r = parseResultQuery('o=gifu&d=2026-13-99x&k=25:99');
+  assert.equal(r.custom.date, null);
+  assert.equal(r.custom.kickoff, null);
+  const ok = parseResultQuery('o=gifu&d=2026-11-21&k=14:00');
+  assert.equal(ok.custom.date, '2026-11-21');
+  assert.equal(ok.custom.kickoff, '14:00');
+});
