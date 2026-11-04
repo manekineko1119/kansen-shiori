@@ -1,6 +1,7 @@
 // 日程の貼り付けの取り込み（設計書 5.5、FR-42）。
 // カンマ区切り・タブ区切りの文字列を、fixtures の行と、行ごとのエラーに分ける。
 import { buildFixtureId } from './fixture-id.js';
+import { isValidDate } from './time.js';
 import { normalizeJleagueMatchUrl } from './links/jleague.js';
 import { toHalfWidth, normalizeName } from '../../supabase/functions/_shared/text.js';
 
@@ -8,9 +9,8 @@ const pad2 = (n) => String(n).padStart(2, '0');
 
 // 実在する日付なら 'YYYY-MM-DD'、そうでなければ null
 function toIsoDate(y, m, d) {
-  const t = new Date(Date.UTC(y, m - 1, d));
-  if (t.getUTCFullYear() !== y || t.getUTCMonth() !== m - 1 || t.getUTCDate() !== d) return null;
-  return `${String(y).padStart(4, '0')}-${pad2(m)}-${pad2(d)}`;
+  const iso = `${String(y).padStart(4, '0')}-${pad2(m)}-${pad2(d)}`;
+  return isValidDate(iso) ? iso : null;
 }
 
 // 日付の文字列 → 'YYYY-MM-DD'。シーズンの範囲に入らなければ理由つきで失敗
@@ -88,7 +88,7 @@ function parseLine(cells, ctx) {
 
   let url = null;
   if (urlRaw !== '') {
-    url = normalizeJleagueMatchUrl(urlRaw);
+    url = normalizeJleagueMatchUrl(toHalfWidth(urlRaw).trim());
     if (url === null) return { error: `Jリーグ公式の試合ページのURLではありません: ${urlRaw}` };
   }
 
@@ -127,13 +127,23 @@ export function parseFixturesCsv(text, { season, clubs, stadiums = [] }) {
   const ctx = { season, stadiums, clubIndex: buildClubIndex(clubs) };
   const ok = [];
   const errors = [];
+  const firstLineOf = new Map(); // 試合ID → 最初に出た行番号
+  let seenNonEmpty = false;
   String(text ?? '').split(/\r\n|\r|\n/).forEach((line, i) => {
     if (line.trim() === '') return;
-    if (i === 0 && toHalfWidth(line).trim().startsWith('日付')) return;
+    const isFirstNonEmpty = !seenNonEmpty;
+    seenNonEmpty = true;
+    if (isFirstNonEmpty && toHalfWidth(line).trim().startsWith('日付')) return;
     const cells = line.split(line.includes('\t') ? '\t' : ',').map((c) => c.trim());
     const r = parseLine(cells, ctx);
-    if (r.error) errors.push({ line: i + 1, reason: r.error });
-    else ok.push(r.value);
+    if (r.error) {
+      errors.push({ line: i + 1, reason: r.error });
+    } else if (firstLineOf.has(r.value.id)) {
+      errors.push({ line: i + 1, reason: `同じ試合が ${firstLineOf.get(r.value.id)} 行目にもあります` });
+    } else {
+      firstLineOf.set(r.value.id, i + 1);
+      ok.push(r.value);
+    }
   });
   return { ok, errors };
 }

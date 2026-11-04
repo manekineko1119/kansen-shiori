@@ -121,3 +121,29 @@ test('複数のクラブに当てはまる名前は行エラー。同じクラ�
   const same = [{ id: 'gifu', name: 'FC岐阜', short_name: 'FC岐阜', aliases: ['ＦＣ岐阜'] }, clubs[0]];
   assert.equal(parseFixturesCsv('11/21,14:00,J3,15,松本,FC岐阜', { season, clubs: same, stadiums: [] }).ok.length, 1);
 });
+
+test('同じ試合が2回あると、2行目以降はエラー（最初の行番号を示す）', () => {
+  const r = parseFixturesCsv('11/21,14:00,J3,15,岐阜,松本\n11/21,14:00,j3,第15節,岐阜,松本\n11/21,14:00,J3,15,ＦＣ岐阜,松本山雅', ctx);
+  assert.equal(r.ok.length, 1);
+  assert.deepEqual(r.errors, [
+    { line: 2, reason: '同じ試合が 1 行目にもあります' },
+    { line: 3, reason: '同じ試合が 1 行目にもあります' },
+  ]);
+});
+
+test('見出し行は、先頭の空行のあとでも読み飛ばす', () => {
+  const r = parseFixturesCsv('\n\n日付,キックオフ,大会,節,ホーム,アウェイ\n11/21,14:00,J3,15,岐阜,松本', ctx);
+  assert.equal(r.ok.length, 1);
+  assert.deepEqual(r.errors, []);
+});
+
+test('見出しらしい行でも、最初の行でなければ読み飛ばさない', () => {
+  const r = parseFixturesCsv('11/21,14:00,J3,15,岐阜,松本\n日付,キックオフ,大会,節,ホーム,アウェイ', ctx);
+  assert.deepEqual(r.errors.map((e) => e.line), [2]);
+});
+
+test('全角のURLも半角にして正規化する', () => {
+  const r = parseFixturesCsv('11/21,14:00,J3,15,岐阜,松本,,ｈｔｔｐｓ：／／ｗｗｗ．ｊｌｅａｇｕｅ．ｊｐ／ｓｐ／ｍａｔｃｈ／ｊ３／２０２６／１１２１０１／', ctx);
+  assert.deepEqual(r.errors, []);
+  assert.equal(r.ok[0].jleague_match_url, 'https://www.jleague.jp/match/j3/2026/112101/');
+});
