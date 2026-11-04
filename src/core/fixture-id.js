@@ -14,14 +14,25 @@ function assertPart(name, value) {
   }
 }
 
-// 'YYYY-MM-DD' → 'YYYYMMDD'
+// 節を文字列にする。null・undefined・空白だけは「節なし」（空文字を返す）。
+// 文字列と数字は受け付ける。それ以外の型は例外。
+function normalizeRound(round) {
+  if (round == null) return '';
+  if (typeof round === 'string') return round.trim();
+  if (typeof round === 'number' && Number.isFinite(round)) return String(round);
+  throw new Error(`試合IDの節の型が正しくありません: ${typeof round}`);
+}
+
+// 'YYYY-MM-DD' → 'YYYYMMDD'（形が違えば例外）
 function compactDate(matchDate) {
-  assertPart('試合日', matchDate);
+  if (typeof matchDate !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(matchDate)) {
+    throw new Error(`試合日は YYYY-MM-DD の形で指定してください: ${matchDate}`);
+  }
   return matchDate.replace(/-/g, '');
 }
 
 export function buildFixtureId({ seasonId, competition, round, matchDate, homeClubId, awayClubId }) {
-  const trimmedRound = typeof round === 'string' ? round.trim() : '';
+  const trimmedRound = normalizeRound(round);
   const roundOrDate = trimmedRound === '' ? compactDate(matchDate) : trimmedRound;
   assertPart('シーズン', seasonId);
   assertPart('大会', competition);

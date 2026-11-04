@@ -42,6 +42,42 @@ test('buildFixtureId: 空の部分があれば例外になる', () => {
   assert.throws(() => buildFixtureId({ seasonId: '2026-27', competition: 'J3', round: '26', matchDate: '2027-01-20', homeClubId: 'matsumoto', awayClubId: '' }));
 });
 
+test('buildFixtureId: 数字の節（26）は文字列の節として使う（日付にしない）', () => {
+  assert.equal(
+    buildFixtureId({ seasonId: '2026-27', competition: 'J3', round: 26, matchDate: '2027-03-13', homeClubId: 'matsumoto', awayClubId: 'nara' }),
+    '2026-27_J3_26_matsumoto_nara',
+  );
+});
+
+test('buildFixtureId: 節が null・undefined・空白だけのときは日付を使う', () => {
+  assert.equal(
+    buildFixtureId({ seasonId: '2026-27', competition: 'J3', round: undefined, matchDate: '2027-03-13', homeClubId: 'matsumoto', awayClubId: 'nara' }),
+    '2026-27_J3_20270313_matsumoto_nara',
+  );
+  assert.equal(
+    buildFixtureId({ seasonId: '2026-27', competition: 'J3', round: '\t ', matchDate: '2027-03-13', homeClubId: 'matsumoto', awayClubId: 'nara' }),
+    '2026-27_J3_20270313_matsumoto_nara',
+  );
+});
+
+test('buildFixtureId: 節が文字列・数字・null以外の型なら例外になる', () => {
+  assert.throws(() => buildFixtureId({ seasonId: '2026-27', competition: 'J3', round: { no: 26 }, matchDate: '2027-03-13', homeClubId: 'matsumoto', awayClubId: 'nara' }));
+  assert.throws(() => buildFixtureId({ seasonId: '2026-27', competition: 'J3', round: true, matchDate: '2027-03-13', homeClubId: 'matsumoto', awayClubId: 'nara' }));
+});
+
+test('buildFixtureId: 日付で代える場合、試合日は YYYY-MM-DD でなければ例外になる', () => {
+  assert.throws(() => buildFixtureId({ seasonId: '2026-27', competition: 'FRIENDLY', round: null, matchDate: '2027/01/20', homeClubId: 'matsumoto', awayClubId: 'gifu' }));
+  assert.throws(() => buildFixtureId({ seasonId: '2026-27', competition: 'FRIENDLY', round: '', matchDate: '20270120', homeClubId: 'matsumoto', awayClubId: 'gifu' }));
+  assert.throws(() => buildFixtureId({ seasonId: '2026-27', competition: 'FRIENDLY', round: ' ', matchDate: '2027-1-20', homeClubId: 'matsumoto', awayClubId: 'gifu' }));
+});
+
+test('buildFixtureId: 節があるなら試合日の形は見ない', () => {
+  assert.equal(
+    buildFixtureId({ seasonId: '2026-27', competition: 'J3', round: '26', matchDate: '2027/03/13', homeClubId: 'matsumoto', awayClubId: 'nara' }),
+    '2026-27_J3_26_matsumoto_nara',
+  );
+});
+
 test('parseFixtureId: 5つの部分に分ける', () => {
   assert.deepEqual(parseFixtureId('2026-27_J3_26_matsumoto_nara'), {
     seasonId: '2026-27', competition: 'J3', roundOrDate: '26', homeClubId: 'matsumoto', awayClubId: 'nara',
