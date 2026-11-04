@@ -110,7 +110,8 @@ function parseLine(cells, ctx) {
       id,
       season_id: ctx.season.id,
       competition,
-      round,
+      // 節のない試合は DB の round 列を空文字ではなく null にする（ID には日付が入る）
+      round: round === '' ? null : round,
       match_date: date.value,
       kickoff: kickoff.value,
       home_club_id: homeId,

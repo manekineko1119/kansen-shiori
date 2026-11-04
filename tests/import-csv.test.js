@@ -72,10 +72,16 @@ test('キックオフ：未定・-・空は null、9:00 は 09:00、不正は行
   assert.deepEqual(k('夜').errors.map((e) => e.line), [1]);
 });
 
-test('節が空なら ID に日付 YYYYMMDD が入る', () => {
+test('節が空なら ID に日付 YYYYMMDD が入り、round は null（DB の round 列に空文字を入れない）', () => {
   const r = parseFixturesCsv('2026-12-02,19:00,天皇杯,,松本,岐阜', ctx);
   assert.equal(r.ok[0].id, '2026-27_天皇杯_20261202_matsumoto_gifu');
-  assert.equal(r.ok[0].round, '');
+  assert.equal(r.ok[0].round, null);
+});
+
+test('節が空白だけでも round は null', () => {
+  const r = parseFixturesCsv('2026-12-02,19:00,天皇杯,　,松本,岐阜', ctx);
+  assert.equal(r.ok[0].id, '2026-27_天皇杯_20261202_matsumoto_gifu');
+  assert.equal(r.ok[0].round, null);
 });
 
 test('buildFixtureId が例外を投げる行（大会に _）はその行のエラーになる', () => {
