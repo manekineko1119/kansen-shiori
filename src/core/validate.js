@@ -1,3 +1,5 @@
+import { isValidDate } from './time.js';
+
 // 入力の検証（設計書 5.4）。どれも { ok, errors } を返す。errors のキーは項目の場所（例：'airports.0.iata'）、値は画面に出す日本語の理由。
 
 const isBlank = (v) => v === null || v === undefined || (typeof v === 'string' && v.trim() === '');
@@ -65,11 +67,9 @@ export function validateSettings(s) {
   return result(errors);
 }
 
-const isDate = (v) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v);
-
 export function validateFixture(f, clubIds) {
   const errors = {};
-  if (!isDate(f.match_date)) errors.match_date = '日付を YYYY-MM-DD の形で入力してください';
+  if (!isValidDate(f.match_date)) errors.match_date = '日付を YYYY-MM-DD の形で入力してください';
   if (!isBlank(f.kickoff) && !/^([01]\d|2[0-3]):[0-5]\d$/.test(f.kickoff)) errors.kickoff = 'キックオフは HH:MM の形で入力してください';
   if (!clubIds.has(f.home_club_id)) errors.home_club_id = 'ホームは登録済みのクラブを選んでください';
   if (!clubIds.has(f.away_club_id)) errors.away_club_id = 'アウェイは登録済みのクラブを選んでください';
@@ -83,7 +83,7 @@ export function validateTrip(t) {
     if (isBlank(t.custom_venue)) errors.custom_venue = '試合を選ぶか、会場を入力してください';
     if (isBlank(t.custom_date)) errors.custom_date = '試合を選ぶか、日付を入力してください';
   }
-  const len = typeof t.title === 'string' ? t.title.length : 0;
+  const len = typeof t.title === 'string' ? t.title.trim().length : 0;
   if (len < 1 || len > 50) errors.title = 'タイトルは1〜50文字にしてください';
   return result(errors);
 }

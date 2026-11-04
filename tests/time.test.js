@@ -48,3 +48,12 @@ test('diffMinutes: b − a を分で返す', () => {
   assert.equal(diffMinutes({ date: '2026-11-21', time: '23:30' }, { date: '2026-11-22', time: '00:10' }), 40);
   assert.equal(diffMinutes({ date: '2026-11-22', time: '00:10' }, { date: '2026-11-21', time: '23:30' }), -40);
 });
+
+test('isValidDate: 実在する YYYY-MM-DD だけ', async () => {
+  const { isValidDate } = await import('../src/core/time.js');
+  assert.equal(isValidDate('2028-02-29'), true);
+  assert.equal(isValidDate('2027-02-29'), false);
+  assert.equal(isValidDate('2027-02-30'), false);
+  assert.equal(isValidDate('2027-2-3'), false);
+  assert.equal(isValidDate(null), false);
+});

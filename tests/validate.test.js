@@ -89,3 +89,15 @@ test('メール：小文字にそろえる', () => {
   assert.deepEqual(validateEmail(' Tester@Example.com '), { ok: true, errors: {}, value: 'tester@example.com' });
   assert.ok(validateEmail('abc').errors.email);
 });
+
+test('日程：存在しない日付はエラー', () => {
+  const clubs = new Set(['gifu', 'matsumoto']);
+  const base = { match_date: '2027-02-28', kickoff: null, home_club_id: 'gifu', away_club_id: 'matsumoto' };
+  assert.equal(validateFixture(base, clubs).ok, true);
+  assert.ok(validateFixture({ ...base, match_date: '2027-02-30' }, clubs).errors.match_date);
+});
+
+test('遠征予定：空白だけのタイトルはエラー、前後の空白は数えない', () => {
+  assert.ok(validateTrip({ fixture_id: 'x', title: '   ' }).errors.title);
+  assert.equal(validateTrip({ fixture_id: 'x', title: ` ${'あ'.repeat(50)} ` }).ok, true);
+});
