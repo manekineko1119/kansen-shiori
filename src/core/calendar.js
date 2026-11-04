@@ -32,6 +32,7 @@ export function calendarItems({ fixtures, trips, records, supportClubId, fixture
   };
 
   for (const f of fixtures) {
+    if (f.home_club_id !== supportClubId && f.away_club_id !== supportClubId) continue;
     const homeAway = f.home_club_id === supportClubId ? 'H' : 'A';
     if (f.status === 'finished') {
       add(f.match_date, { type: 'result', fixtureId: f.id, homeAway, outcome: matchOutcome(f, supportClubId) });

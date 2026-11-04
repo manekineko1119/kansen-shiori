@@ -32,3 +32,11 @@ test('tripStayDates: 宿泊の区分ごとの帯の日', () => {
   assert.deepEqual(tripStayDates({ fixture_id: 'f1', lodging: 'none' }, fxById), ['2026-11-21']);
   assert.deepEqual(tripStayDates({ fixture_id: 'f2', lodging: 'both' }, fxById), ['2026-11-30', '2026-12-01', '2026-12-02']);
 });
+
+test('試合がスナップショットにない遠征予定：日付は null・過去扱いで、これからの一覧と帯には出ない', () => {
+  const trip = { id: 'x', fixture_id: 'old-season-fixture', lodging: 'both' };
+  assert.equal(tripDate(trip, fxById), null);
+  assert.equal(isTripPast(trip, fxById, '2026-11-01'), true);
+  assert.deepEqual(tripStayDates(trip, fxById), []);
+  assert.deepEqual(upcomingTrips([trip], fxById, '2026-11-01'), []);
+});

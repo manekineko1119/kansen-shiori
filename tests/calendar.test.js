@@ -59,3 +59,14 @@ test('calendarItems: これからの遠征予定は宿泊の日にも出し、�
   assert.deepEqual(items.get('2026-11-29').map((i) => i.type), ['fixture', 'trip']);
   assert.deepEqual(items.get('2026-11-30'), [{ type: 'trip', tripId: 't3' }]);
 });
+
+test('calendarItems: 応援クラブが出ない試合は出さない', () => {
+  const other = { id: 'f9', match_date: '2026-11-29', home_club_id: 'gifu', away_club_id: 'nara', status: 'scheduled' };
+  const items = calendarItems({ ...base, fixtures: [...cfx, other], trips: [], records: [] });
+  assert.deepEqual(items.get('2026-11-29'), [{ type: 'fixture', fixtureId: 'f2', homeAway: 'H' }]);
+});
+
+test('calendarItems: スナップショットにない試合の遠征予定で落ちない', () => {
+  const items = calendarItems({ ...base, trips: [{ id: 'tx', fixture_id: 'gone', lodging: 'both' }] });
+  assert.equal(items.has('2026-11-28'), false);
+});
