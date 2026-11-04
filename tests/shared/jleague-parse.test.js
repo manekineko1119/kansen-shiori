@@ -133,3 +133,30 @@ test('clubSlugFromUrl：クラブの識別子を取り出す', () => {
   assert.equal(clubSlugFromUrl('https://www.jleague.jp/'), null);
   assert.equal(clubSlugFromUrl(null), null);
 });
+
+const pushHtml = (line) => `<script>self.__next_f.push([1,${JSON.stringify(`${line}\n`)}])</script>`;
+const listWith = (hrefs) => pushHtml(`1:${JSON.stringify({ scheduleList: [{ schedules: [{
+  matchDate: '$D2026-10-25T00:00:00.000Z',
+  matches: hrefs.map((h) => ({ state: 'ticket', detailHref: h, homeTeam: { name: '松本' }, awayTeam: { name: '山口' } })),
+}] }] })}`);
+
+test('一覧：試合ページの形でない detailHref は飛ばして、数を skipped に返す', () => {
+  const r = parseScheduleList(listWith(['@evil.example/x', '/news/123', 'https://www.jleague.jp/match/j3/2026/102517/', '/match/j3/2026/102517']));
+  assert.deepEqual(r.items.map((i) => i.matchUrl), ['https://www.jleague.jp/match/j3/2026/102517/']);
+  assert.equal(r.skipped, 3);
+});
+
+test('一覧：すべて正しい detailHref なら skipped は付かない', () => {
+  const r = parseScheduleList(load('jleague-list.html'));
+  assert.equal(r.items.length, 2);
+  assert.equal('skipped' in r, false);
+});
+
+test('試合ページ：先に得点リストのない見出し風のノードがあっても、両チームに playerScoreList があるノードを読む', () => {
+  const header = { homeTeam: { name: '松本', score: 1 }, awayTeam: { name: '山口', score: 0 } };
+  const real = { homeTeam: { score: 1, playerScoreList: [{ name: '架空 花子', scoreTime: '10分' }] }, awayTeam: { score: 0, playerScoreList: [] } };
+  const page = parseMatchPage(pushHtml(`2:${JSON.stringify([header, real])}`));
+  assert.equal(page.reason, undefined);
+  assert.deepEqual(page.home.scorers.map((s) => s.player), ['架空 花子']);
+  assert.equal(page.away.score, 0);
+});

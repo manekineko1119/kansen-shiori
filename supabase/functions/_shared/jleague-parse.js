@@ -61,17 +61,23 @@ function team(t) {
   return { fullName: str(t?.fullName), name: str(t?.name), score: num(t?.score) };
 }
 
+// 試合ページの相対パス（外部のURLや別ページを matchUrl にしない）
+const MATCH_HREF = /^\/match\/[a-z0-9]+\/\d{4}\/\d{6}\/?$/;
+
+// 戻り値：{ items, skipped?, reason? }。skipped は detailHref が試合ページの形でなく飛ばした数で、1以上のときだけ付ける
 export function parseScheduleList(html) {
   for (const data of jsonLinesWith(html, 'scheduleList')) {
     const node = findNode(data, (o) => Array.isArray(o.scheduleList));
     if (!node) continue;
     const items = [];
+    let skipped = 0;
     for (const group of node.scheduleList) {
       for (const sch of group?.schedules ?? []) {
         const date = dateFromMatchDate(sch?.matchDate);
         for (const m of sch?.matches ?? []) {
           const href = str(m?.detailHref);
           if (!date || !href || !m?.homeTeam || !m?.awayTeam) continue;
+          if (!MATCH_HREF.test(href)) { skipped += 1; continue; }
           const stadium = undecided(m.stadiumFullName);
           items.push({
             matchUrl: `${ORIGIN}${href.replace(/\/+$/, '')}/`,
@@ -85,7 +91,7 @@ export function parseScheduleList(html) {
         }
       }
     }
-    return { items };
+    return skipped > 0 ? { items, skipped } : { items };
   }
   return { items: [], reason: '一覧ページに試合のデータが見つかりません' };
 }
@@ -103,7 +109,7 @@ function readSide(t) {
 
 export function parseMatchPage(html) {
   for (const data of jsonLinesWith(html, 'playerScoreList')) {
-    const node = findNode(data, (o) => o.homeTeam && o.awayTeam);
+    const node = findNode(data, (o) => Array.isArray(o.homeTeam?.playerScoreList) && Array.isArray(o.awayTeam?.playerScoreList));
     if (!node) continue;
     const home = readSide(node.homeTeam);
     const away = readSide(node.awayTeam);
