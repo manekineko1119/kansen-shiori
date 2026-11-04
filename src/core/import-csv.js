@@ -1,6 +1,6 @@
 // 日程の貼り付けの取り込み（設計書 5.5、FR-42）。
 // カンマ区切り・タブ区切りの文字列を、fixtures の行と、行ごとのエラーに分ける。
-import { buildFixtureId } from './fixture-id.js';
+import { buildFixtureId, normalizeCompetition, normalizeRound } from './fixture-id.js';
 import { isValidDate } from './time.js';
 import { normalizeJleagueMatchUrl } from './links/jleague.js';
 import { toHalfWidth, normalizeName } from '../../supabase/functions/_shared/text.js';
@@ -94,8 +94,8 @@ function parseLine(cells, ctx) {
 
   const venue = venueRaw.trim();
   const stadium = venue === '' ? undefined : ctx.stadiums.find((s) => normalizeName(s.name) === normalizeName(venue));
-  const competition = toHalfWidth(competitionRaw).trim();
-  const round = toHalfWidth(roundRaw).trim();
+  const competition = normalizeCompetition(competitionRaw);
+  const round = normalizeRound(roundRaw);
 
   let id;
   try {

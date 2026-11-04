@@ -70,3 +70,8 @@ test('parseResultQuery: 日付とキックオフの形が正しくなければ n
   assert.equal(ok.custom.date, '2026-11-21');
   assert.equal(ok.custom.kickoff, '14:00');
 });
+
+test('parseResultQuery: 存在しない日付は null', () => {
+  assert.equal(parseResultQuery('o=gifu&d=2026-13-99').custom.date, null);
+  assert.equal(parseResultQuery('o=gifu&d=2026-02-30').custom.date, null);
+});

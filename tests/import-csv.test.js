@@ -147,3 +147,10 @@ test('全角のURLも半角にして正規化する', () => {
   assert.deepEqual(r.errors, []);
   assert.equal(r.ok[0].jleague_match_url, 'https://www.jleague.jp/match/j3/2026/112101/');
 });
+
+test('大会と節は ID の部分と同じ正規化済みの値が行に入る', () => {
+  const r = parseFixturesCsv('2026-11-21,14:00,j3,第15節,岐阜,松本', ctx);
+  assert.equal(r.ok[0].competition, 'J3');
+  assert.equal(r.ok[0].round, '15');
+  assert.equal(r.ok[0].id, '2026-27_J3_15_gifu_matsumoto');
+});

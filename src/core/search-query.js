@@ -2,6 +2,7 @@
 // 例：f=<試合ID>&m=train,bus&l=post
 
 import { LODGING } from './lodging.js';
+import { isValidDate } from './time.js';
 
 // 交通手段の識別子（設計書 4章 trips.modes）
 const MODES = ['train', 'car', 'bus', 'plane'];
@@ -31,7 +32,7 @@ export function parseResultQuery(qs) {
   for (const [key, param] of Object.entries(CUSTOM_KEYS)) {
     custom[key] = p.get(param) || null;
   }
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(custom.date ?? '')) custom.date = null;
+  if (!isValidDate(custom.date ?? '')) custom.date = null;
   if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(custom.kickoff ?? '')) custom.kickoff = null;
   const hasCustom = Object.values(custom).some((v) => v !== null);
 
