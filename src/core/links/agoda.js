@@ -8,14 +8,16 @@ export function agodaUrl({ area, checkIn, nights }) {
   return `${TOP}search?${area.type}=${area.id}&checkIn=${checkIn}&los=${nights}&rooms=1&adults=1&children=0`;
 }
 
-/** 管理者が貼ったAgodaのURLからエリアを読む。読めなければ null。 */
+/** 管理者が貼ったAgodaのURLからエリアを読む。Agoda 以外のホストや http は読まない。読めなければ null。 */
 export function parseAgodaArea(url) {
-  let params;
+  let parsed;
   try {
-    params = new URL(url).searchParams;
+    parsed = new URL(url);
   } catch {
     return null;
   }
+  if (parsed.protocol !== 'https:' || (parsed.host !== 'www.agoda.com' && parsed.host !== 'agoda.com')) return null;
+  const params = parsed.searchParams;
   for (const type of ['region', 'city']) {
     const value = params.get(type);
     if (value !== null && /^\d+$/.test(value)) return { type, id: Number(value) };

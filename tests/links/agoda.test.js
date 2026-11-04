@@ -18,3 +18,16 @@ test('URLからエリアを読む', () => {
   assert.equal(parseAgodaArea('https://www.agoda.com/ja-jp/'), null);
   assert.equal(parseAgodaArea('not a url'), null);
 });
+test('Agoda以外のホストのURLは、地域の番号があってもエリアとして読まない', () => {
+  assert.equal(parseAgodaArea('https://example.com/search?region=831'), null);
+  assert.equal(parseAgodaArea('https://example.com/search?city=5'), null);
+});
+test('http:// のAgodaのURLは読まない', () => {
+  assert.equal(parseAgodaArea('http://www.agoda.com/ja-jp/search?region=831'), null);
+});
+test('ホスト名の一部だけ合うURLは読まない', () => {
+  assert.equal(parseAgodaArea('https://www.agoda.com.evil.com/search?region=831'), null);
+});
+test('agoda.com（www なし）のURLは読める', () => {
+  assert.deepEqual(parseAgodaArea('https://agoda.com/ja-jp/search?region=831'), { type: 'region', id: 831 });
+});
