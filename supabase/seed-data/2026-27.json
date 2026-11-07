@@ -44,6 +44,172 @@
         "name": "松本"
       },
       "verified_at": "2026-11-07"
+    },
+    {
+      "id": "rohto-field-nara",
+      "name": "ロートフィールド奈良",
+      "prefecture": "奈良県",
+      "address": "奈良県奈良市法蓮佐保山四丁目5番1号",
+      "lat": 34.6985083,
+      "lng": 135.829194,
+      "stations": [
+        {
+          "name": "近鉄奈良",
+          "kind": "nearest",
+          "walk_min": 20,
+          "note": "徒歩約20分（1.6km）。路線バスなら13番のりばから「市営球場」下車、徒歩3分",
+          "toyoko": []
+        },
+        {
+          "name": "奈良",
+          "kind": "bus",
+          "walk_min": null,
+          "note": "JR奈良駅西口15番のりばから奈良交通バスで「市営球場」下車、徒歩3分",
+          "toyoko": []
+        }
+      ],
+      "airports": [],
+      "access_url": "https://naraclub.jp/stadium/rohtonara",
+      "shuttle_note": "シャトルバスの案内はない（2026-11-07 時点）",
+      "parking_note": "ロート鴻池パーク中央駐車場（約250台）は早く満車になる。ドリームランド跡地駐車場（有料・徒歩約5分）は事前の申し込み",
+      "agoda_area": null,
+      "verified_at": "2026-11-07"
+    },
+    {
+      "id": "gifu-memorial",
+      "name": "ヒマラヤスタジアム岐阜",
+      "prefecture": "岐阜県",
+      "address": "岐阜県岐阜市長良福光大野2675-28",
+      "lat": 35.4413,
+      "lng": 136.7661,
+      "stations": [
+        {
+          "name": "岐阜",
+          "kind": "bus",
+          "walk_min": null,
+          "note": "JR岐阜駅のバスターミナル10番（三田洞線）で「岐阜メモリアルセンター前」、11番（市内ループ線）で「岐阜メモリアルセンター北」下車。約20分・250円。試合日は増便",
+          "toyoko": []
+        },
+        {
+          "name": "名鉄岐阜",
+          "kind": "bus",
+          "walk_min": null,
+          "note": "名鉄岐阜バスターミナル4番（市内ループ線左回り）で「岐阜メモリアルセンター北」下車",
+          "toyoko": []
+        }
+      ],
+      "airports": [],
+      "access_url": "https://www.fc-gifu.com/watching/stadium_access/",
+      "shuttle_note": "無料のシャトルバスはない。試合日は JR岐阜駅発の路線バス（有料）が増える",
+      "parking_note": "周辺の駐車場は混みやすい。akippa で事前予約ができる。臨時駐車場は試合によってだけ開く",
+      "agoda_area": null,
+      "verified_at": "2026-11-07"
+    },
+    {
+      "id": "shiranami-stadium",
+      "name": "白波スタジアム",
+      "prefecture": "鹿児島県",
+      "address": "鹿児島県鹿児島市与次郎2-2-2",
+      "lat": 31.5648306,
+      "lng": 130.5601861,
+      "stations": [
+        {
+          "name": "鹿児島中央",
+          "kind": "bus",
+          "walk_min": null,
+          "note": "市営バス16番（鴨池港行）・27番（与次郎一丁目行）で約20〜30分、「KKB前」か「市民文化ホール前」下車すぐ",
+          "toyoko": []
+        },
+        {
+          "name": "騎射場",
+          "kind": "nearest",
+          "walk_min": 17,
+          "note": "市電1系統の電停。郡元電停も近い",
+          "toyoko": []
+        }
+      ],
+      "airports": [
+        {
+          "iata": "KOJ",
+          "name": "鹿児島空港",
+          "station": null,
+          "access_min": 70,
+          "note": "リムジンバスで鹿児島中央駅まで約40分、そこから市営バス"
+        }
+      ],
+      "access_url": "https://www.jleague.jp/club/kagoshima/stadium/",
+      "shuttle_note": "2026-27 の無料シャトルバスは未確認",
+      "parking_note": null,
+      "agoda_area": null,
+      "verified_at": "2026-11-07"
+    },
+    {
+      "id": "hanazono-rugby",
+      "name": "東大阪市花園ラグビー場",
+      "prefecture": "大阪府",
+      "address": "大阪府東大阪市松原南1丁目1-1",
+      "lat": 34.668917,
+      "lng": 135.62625,
+      "stations": [
+        {
+          "name": "東花園",
+          "kind": "nearest",
+          "walk_min": 8,
+          "note": "近鉄奈良線",
+          "toyoko": []
+        },
+        {
+          "name": "吉田",
+          "kind": "nearest",
+          "walk_min": 15,
+          "note": "近鉄けいはんな線・大阪メトロ中央線",
+          "toyoko": []
+        }
+      ],
+      "airports": [],
+      "access_url": "https://hanazono-rugby-hos.com/access/",
+      "shuttle_note": "シャトルバスの案内はない（2026-11-07 時点）",
+      "parking_note": "周辺は住宅地で駐車場が少なく、公共交通を使うよう案内されている。有料の花園中央公園駐車場がある",
+      "agoda_area": null,
+      "verified_at": "2026-11-07"
+    },
+    {
+      "id": "ningineer-stadium",
+      "name": "ニンジニアスタジアム",
+      "prefecture": "愛媛県",
+      "address": "愛媛県松山市上野町乙46",
+      "lat": 33.7682,
+      "lng": 132.7976,
+      "stations": [
+        {
+          "name": "松山市",
+          "kind": "bus",
+          "walk_min": null,
+          "note": "伊予鉄バス「えひめこどもの城」行きで「ニンスタ前」まで約30〜35分。帰りの最終便が早いので要確認",
+          "toyoko": []
+        },
+        {
+          "name": "松山",
+          "kind": "bus",
+          "walk_min": null,
+          "note": "JR四国バス久万高原線で「総合運動公園口」下車（約35〜40分）、徒歩約900m",
+          "toyoko": []
+        }
+      ],
+      "airports": [
+        {
+          "iata": "MYJ",
+          "name": "松山空港",
+          "station": null,
+          "access_min": 70,
+          "note": "リムジンバスで松山市駅まで約20〜30分、そこから伊予鉄バス"
+        }
+      ],
+      "access_url": "https://ehimefc.com/access/ningineerstadium.html",
+      "shuttle_note": "通常のシャトルバスはない。帰りの臨時バスが出る試合がある（事前予約）",
+      "parking_note": "普通車300円。満車になると臨時駐車場に誘導される。来場者が多いと足りない",
+      "agoda_area": null,
+      "verified_at": "2026-11-07"
     }
   ],
   "clubs": [
@@ -76,6 +242,66 @@
           }
         }
       ]
+    },
+    {
+      "id": "nara",
+      "name": "奈良クラブ",
+      "short_name": "奈良",
+      "aliases": [
+        "NARA CLUB"
+      ],
+      "official_url": "https://naraclub.jp/",
+      "jleague_url": "https://www.jleague.jp/club/nara/",
+      "home_stadium_id": "rohto-field-nara",
+      "video_sources": []
+    },
+    {
+      "id": "gifu",
+      "name": "FC岐阜",
+      "short_name": "岐阜",
+      "aliases": [
+        "FC GIFU"
+      ],
+      "official_url": "https://www.fc-gifu.com/",
+      "jleague_url": "https://www.jleague.jp/club/gifu/",
+      "home_stadium_id": "gifu-memorial",
+      "video_sources": []
+    },
+    {
+      "id": "kagoshima",
+      "name": "鹿児島ユナイテッドFC",
+      "short_name": "鹿児島",
+      "aliases": [
+        "KAGOSHIMA UNITED FC"
+      ],
+      "official_url": "http://www.kufc.co.jp/",
+      "jleague_url": "https://www.jleague.jp/club/kagoshima/",
+      "home_stadium_id": "shiranami-stadium",
+      "video_sources": []
+    },
+    {
+      "id": "fosaka",
+      "name": "FC大阪",
+      "short_name": "FC大阪",
+      "aliases": [
+        "FC OSAKA"
+      ],
+      "official_url": "https://www.fc-osaka.com/",
+      "jleague_url": "https://www.jleague.jp/club/fosaka/",
+      "home_stadium_id": "hanazono-rugby",
+      "video_sources": []
+    },
+    {
+      "id": "ehime",
+      "name": "愛媛FC",
+      "short_name": "愛媛",
+      "aliases": [
+        "EHIME FC"
+      ],
+      "official_url": "https://www.ehimefc.com/",
+      "jleague_url": "https://www.jleague.jp/club/ehime/",
+      "home_stadium_id": "ningineer-stadium",
+      "video_sources": []
     }
   ],
   "seasons": [
@@ -91,6 +317,31 @@
       "season_id": "2026-27",
       "competition": "J3",
       "club_id": "matsumoto"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J3",
+      "club_id": "nara"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J3",
+      "club_id": "gifu"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J3",
+      "club_id": "kagoshima"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J3",
+      "club_id": "fosaka"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J3",
+      "club_id": "ehime"
     }
   ]
 }
