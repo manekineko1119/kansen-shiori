@@ -681,7 +681,18 @@
           "kind": "shuttle",
           "walk_min": null,
           "note": "南口から無料シャトルバス約15分（試合ごとに告知）。北口バスターミナル7番のりばの路線バスなら約20分、「バードスタジアム」下車。ナイトゲームは試合後の路線バスがない",
-          "toyoko": []
+          "toyoko": [
+            {
+              "hotel": "00046",
+              "name": "東横INN鳥取駅南口",
+              "walk_min": 2
+            },
+            {
+              "hotel": "00362",
+              "name": "東横INN鳥取駅北口",
+              "walk_min": 2
+            }
+          ]
         }
       ],
       "airports": [
@@ -696,7 +707,11 @@
       "access_url": "https://www.gainare.co.jp/stadiums/",
       "shuttle_note": "鳥取駅南口から無料シャトルバス（約15分）。運行と時刻は試合ごとの告知で確かめる",
       "parking_note": "隣接のサブグラウンドなどに無料駐車場（合わせて約470台）があるが限りがある。2026-27 から鳥取駅周辺の駐車場割引はない",
-      "agoda_area": null,
+      "agoda_area": {
+        "type": "city",
+        "id": 5937,
+        "name": "鳥取"
+      },
       "verified_at": "2026-11-08"
     },
     {
@@ -712,14 +727,24 @@
           "kind": "shuttle",
           "walk_min": null,
           "note": "南口（東横イン前）から有料シャトルバス約15分（片道350円、現金のみ）",
-          "toyoko": []
+          "toyoko": [
+            {
+              "hotel": "00124",
+              "name": "東横INN前橋駅前",
+              "walk_min": 1
+            }
+          ]
         }
       ],
       "airports": [],
       "access_url": "https://thespa.co.jp/guide/access.php",
       "shuttle_note": "前橋駅南口から有料シャトルバス。往路はキックオフの3時間前から30分前まで30分おき、復路は試合終了の10分後と50分後",
       "parking_note": "観戦者専用の駐車場はない。敷島公園河川敷駐車場（約600台）などが無料で、徒歩約10分",
-      "agoda_area": null,
+      "agoda_area": {
+        "type": "city",
+        "id": 21511,
+        "name": "前橋"
+      },
       "verified_at": "2026-11-08"
     },
     {
@@ -735,7 +760,13 @@
           "kind": "shuttle",
           "walk_min": null,
           "note": "シャトルバス約20分（往復で大人600円、予約不要）。丸亀市コミュニティバス丸亀西線なら約15分、「丸亀スタジアム」下車",
-          "toyoko": []
+          "toyoko": [
+            {
+              "hotel": "00339",
+              "name": "東横INN丸亀駅前",
+              "walk_min": 1
+            }
+          ]
         },
         {
           "name": "金蔵寺",
@@ -749,7 +780,11 @@
       "access_url": "https://www.kamatamare.jp/stadium/access.php",
       "shuttle_note": "丸亀駅からシャトルバス（高松駅発の便もある）。時刻と乗り場は試合ごとの告知で確かめる",
       "parking_note": "試合日はシャトルバス用の別の駐車場を使うことがある。試合ごとの告知で確かめる",
-      "agoda_area": null,
+      "agoda_area": {
+        "type": "city",
+        "id": 107169,
+        "name": "丸亀"
+      },
       "verified_at": "2026-11-08"
     },
     {
@@ -772,7 +807,11 @@
       "access_url": "http://kochi-usc.jp/bus/",
       "shuttle_note": "高知駅北口からシャトルバス。スタジアムへの直行の路線バスはない。運賃と時刻は試合ごとの案内で確かめる",
       "parking_note": "試合日は園内が混む。臨時駐車場が試合ごとに案内される",
-      "agoda_area": null,
+      "agoda_area": {
+        "type": "city",
+        "id": 5235,
+        "name": "高知"
+      },
       "verified_at": "2026-11-08"
     }
   ],
