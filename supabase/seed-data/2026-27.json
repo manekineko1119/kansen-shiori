@@ -13,7 +13,18 @@
           "kind": "shuttle",
           "walk_min": null,
           "note": "松本バスターミナル（松本駅から徒歩3分）から無料シャトルバス約30分。往路はキックオフの4時間前〜45分前に30分おき",
-          "toyoko": []
+          "toyoko": [
+            {
+              "hotel": "00314",
+              "name": "東横INN松本駅東口",
+              "walk_min": 3
+            },
+            {
+              "hotel": "00102",
+              "name": "東横INN松本駅前本町",
+              "walk_min": 6
+            }
+          ]
         },
         {
           "name": "村井",
@@ -27,7 +38,11 @@
       "access_url": "https://www.yamaga-fc.com/stadium/access",
       "shuttle_note": "無料シャトルバスは松本バスターミナル発（往路：キックオフの4時間前〜45分前に30分おき、復路：試合終了後〜1時間後まで）。有料予約制バス（アルピコプラザホテル前発）もある。試合ごとに変わるので、松本山雅FC公式の「アクセス情報」で確かめる",
       "parking_note": "大芝生駐車場（約2,000台）など。試合によって使える駐車場が変わり、満車の情報は松本山雅FC公式Xで出る",
-      "agoda_area": null,
+      "agoda_area": {
+        "type": "city",
+        "id": 23118,
+        "name": "松本"
+      },
       "verified_at": "2026-11-07"
     }
   ],
@@ -36,18 +51,46 @@
       "id": "matsumoto",
       "name": "松本山雅FC",
       "short_name": "松本",
-      "aliases": ["松本山雅"],
+      "aliases": [
+        "松本山雅"
+      ],
       "official_url": "https://www.yamaga-fc.com/",
       "jleague_url": "https://www.jleague.jp/club/matsumoto/",
       "home_stadium_id": "sunpro-alwin",
-      "theme_colors": { "primary": "#0E5A3A", "on_primary": "#FFFFFF", "accent": "#F2B01E", "tint": "#D9E8DF" },
-      "video_sources": [{ "channel": "@yamagachannel", "kinds": { "highlight": ["明治安田"], "inside": ["【INSIDE】"] } }]
+      "theme_colors": {
+        "primary": "#0E5A3A",
+        "on_primary": "#FFFFFF",
+        "accent": "#F2B01E",
+        "tint": "#D9E8DF"
+      },
+      "video_sources": [
+        {
+          "channel": "@yamagachannel",
+          "kinds": {
+            "highlight": [
+              "明治安田"
+            ],
+            "inside": [
+              "【INSIDE】"
+            ]
+          }
+        }
+      ]
     }
   ],
   "seasons": [
-    { "id": "2026-27", "starts_on": "2026-08-08", "ends_on": "2027-05-23", "is_current": true }
+    {
+      "id": "2026-27",
+      "starts_on": "2026-08-08",
+      "ends_on": "2027-05-23",
+      "is_current": true
+    }
   ],
   "season_clubs": [
-    { "season_id": "2026-27", "competition": "J3", "club_id": "matsumoto" }
+    {
+      "season_id": "2026-27",
+      "competition": "J3",
+      "club_id": "matsumoto"
+    }
   ]
 }
