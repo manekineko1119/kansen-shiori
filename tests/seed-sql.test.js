@@ -34,6 +34,13 @@ test('sqlJsonb：JSON にして ::jsonb を付ける。中の引用符も2つに
   assert.equal(sqlJsonb(undefined), 'null');
 });
 
+test('sqlJsonb：中に NaN・Infinity があれば null に変えずにエラーにする（Codex の指摘）', () => {
+  assert.throws(() => sqlJsonb({ lat: NaN }), /NaN|数/);
+  assert.throws(() => sqlJsonb([{ name: '松本', walk_min: Infinity }]), /Infinity|数/);
+  assert.throws(() => sqlJsonb({ a: { b: [1, -Infinity] } }), /Infinity|数/);
+  assert.equal(sqlJsonb({ a: [1, 2.5, null, 'x', true] }), `'{"a":[1,2.5,null,"x",true]}'::jsonb`);
+});
+
 test('sqlTextArray：空なら {}、それ以外は array[...]', () => {
   assert.equal(sqlTextArray([]), `'{}'::text[]`);
   assert.equal(sqlTextArray(undefined), `'{}'::text[]`);

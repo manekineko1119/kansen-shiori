@@ -36,7 +36,14 @@ export function sqlLiteral(v) {
 
 export function sqlJsonb(v) {
   if (v === null || v === undefined) return 'null';
-  return `${sqlLiteral(JSON.stringify(v))}::jsonb`;
+  // JSON.stringify は NaN・Infinity を黙って null に変えるので、元データが変わらないよう先に止める
+  const json = JSON.stringify(v, (key, value) => {
+    if (typeof value === 'number' && !Number.isFinite(value)) {
+      throw new Error(`JSON にできない数です: ${key} = ${value}`);
+    }
+    return value;
+  });
+  return `${sqlLiteral(json)}::jsonb`;
 }
 
 export function sqlTextArray(arr) {
