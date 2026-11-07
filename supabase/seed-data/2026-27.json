@@ -580,7 +580,11 @@
       "access_url": "https://www.tochigisc.jp/stadium/kanseki-stadium.html",
       "shuttle_note": "雀宮駅東口から有料シャトルバス。往路は試合の3時間前から試合開始まで、復路は試合終了の1時間30分後まで",
       "parking_note": "公園内の駐車場は他の施設と共用で台数に限りがある（2時間まで無料）。周辺に予約制の駐車場がある",
-      "agoda_area": null,
+      "agoda_area": {
+        "type": "city",
+        "id": 105942,
+        "name": "宇都宮"
+      },
       "verified_at": "2026-11-08"
     },
     {
@@ -609,7 +613,11 @@
       "access_url": "https://reilac-shiga.co.jp/ticket/stadium/hikone",
       "shuttle_note": "いつも出るシャトルバスはない（特別な試合だけ、彦根駅西口から臨時便が出たことがある）",
       "parking_note": "場内に約150台（無料）で台数に限りがある。近くの店やマンションへの無断駐車は禁止",
-      "agoda_area": null,
+      "agoda_area": {
+        "type": "city",
+        "id": 108269,
+        "name": "彦根"
+      },
       "verified_at": "2026-11-08"
     },
     {
