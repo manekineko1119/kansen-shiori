@@ -72,7 +72,11 @@
       "access_url": "https://naraclub.jp/stadium/rohtonara",
       "shuttle_note": "シャトルバスの案内はない（2026-11-07 時点）",
       "parking_note": "ロート鴻池パーク中央駐車場（約250台）は早く満車になる。ドリームランド跡地駐車場（有料・徒歩約5分）は事前の申し込み",
-      "agoda_area": null,
+      "agoda_area": {
+        "type": "city",
+        "id": 13313,
+        "name": "奈良"
+      },
       "verified_at": "2026-11-07"
     },
     {
@@ -102,7 +106,11 @@
       "access_url": "https://www.fc-gifu.com/watching/stadium_access/",
       "shuttle_note": "無料のシャトルバスはない。試合日は JR岐阜駅発の路線バス（有料）が増える",
       "parking_note": "周辺の駐車場は混みやすい。akippa で事前予約ができる。臨時駐車場は試合によってだけ開く",
-      "agoda_area": null,
+      "agoda_area": {
+        "type": "city",
+        "id": 10163,
+        "name": "岐阜"
+      },
       "verified_at": "2026-11-07"
     },
     {
@@ -140,7 +148,11 @@
       "access_url": "https://www.jleague.jp/club/kagoshima/stadium/",
       "shuttle_note": "2026-27 の無料シャトルバスは未確認",
       "parking_note": null,
-      "agoda_area": null,
+      "agoda_area": {
+        "type": "city",
+        "id": 6263,
+        "name": "鹿児島"
+      },
       "verified_at": "2026-11-07"
     },
     {
@@ -170,7 +182,11 @@
       "access_url": "https://hanazono-rugby-hos.com/access/",
       "shuttle_note": "シャトルバスの案内はない（2026-11-07 時点）",
       "parking_note": "周辺は住宅地で駐車場が少なく、公共交通を使うよう案内されている。有料の花園中央公園駐車場がある",
-      "agoda_area": null,
+      "agoda_area": {
+        "type": "city",
+        "id": 18826,
+        "name": "東大阪"
+      },
       "verified_at": "2026-11-07"
     },
     {
@@ -208,7 +224,11 @@
       "access_url": "https://ehimefc.com/access/ningineerstadium.html",
       "shuttle_note": "通常のシャトルバスはない。帰りの臨時バスが出る試合がある（事前予約）",
       "parking_note": "普通車300円。満車になると臨時駐車場に誘導される。来場者が多いと足りない",
-      "agoda_area": null,
+      "agoda_area": {
+        "type": "city",
+        "id": 9590,
+        "name": "松山"
+      },
       "verified_at": "2026-11-07"
     }
   ],
