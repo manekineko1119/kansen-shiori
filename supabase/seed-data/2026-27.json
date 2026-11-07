@@ -288,7 +288,11 @@
       "access_url": "https://www.scsagamihara.com/stadium/access",
       "shuttle_note": "駅からのシャトルバスはない。混む試合だけ、臨時駐車場とスタジアムの間に無料バスが出る",
       "parking_note": "併設の無料駐車場（相模原麻溝公園）は試合日に混む。混む試合では臨時の無料駐車場が用意される",
-      "agoda_area": null,
+      "agoda_area": {
+        "type": "city",
+        "id": 107319,
+        "name": "相模原"
+      },
       "verified_at": "2026-11-08"
     },
     {
@@ -304,7 +308,13 @@
           "kind": "shuttle",
           "walk_min": null,
           "note": "新幹線口側の乗り場から有料シャトルバス（片道400円）。試合の4時間前から",
-          "toyoko": []
+          "toyoko": [
+            {
+              "hotel": "00093",
+              "name": "東横INN新山口駅新幹線口",
+              "walk_min": 1
+            }
+          ]
         },
         {
           "name": "大歳",
@@ -326,7 +336,11 @@
       "access_url": "https://www.renofa.com/access/",
       "shuttle_note": "新山口駅（新幹線口側）から維新公園まで有料シャトルバス。試合の4時間前から、間隔は試合ごとに違う",
       "parking_note": "維新公園内の有料駐車場は前売り（2,000円）だけで当日券はない。臨時駐車場は試合ごとに変わる",
-      "agoda_area": null,
+      "agoda_area": {
+        "type": "city",
+        "id": 18822,
+        "name": "山口"
+      },
       "verified_at": "2026-11-08"
     },
     {
@@ -364,7 +378,11 @@
       "access_url": "https://roasso-k.com/go_stadium",
       "shuttle_note": "光の森駅北口からのシャトルバスは試合ごとに告知（約1週間前に公式ニュース）。無料の試合も有料・予約制の年もある",
       "parking_note": "メイン駐車場は約1,000台で限りがある。試合日は渋滞し、周辺道路に通行規制がかかる時間がある",
-      "agoda_area": null,
+      "agoda_area": {
+        "type": "city",
+        "id": 1568,
+        "name": "熊本"
+      },
       "verified_at": "2026-11-08"
     },
     {
@@ -380,7 +398,13 @@
           "kind": "shuttle",
           "walk_min": null,
           "note": "金沢駅西広場の団体バス乗降場から無料シャトルバス約15〜20分。路線バスもある",
-          "toyoko": []
+          "toyoko": [
+            {
+              "hotel": "00110",
+              "name": "東横INN金沢駅東口",
+              "walk_min": 6
+            }
+          ]
         },
         {
           "name": "東金沢",
@@ -417,7 +441,11 @@
       "access_url": "https://parceiro.co.jp/stadium/access.html",
       "shuttle_note": "トップチームのホームゲームで、篠ノ井駅西口と会場の間に無料シャトルバス。時刻は試合ごとの案内で確かめる",
       "parking_note": "第1駐車場は駐車券を持つ人だけ。篠ノ井駅西口の無料臨時駐車場（約100台）は使えない日がある",
-      "agoda_area": null,
+      "agoda_area": {
+        "type": "city",
+        "id": 1124,
+        "name": "長野"
+      },
       "verified_at": "2026-11-08"
     }
   ],
