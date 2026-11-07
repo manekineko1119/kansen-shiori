@@ -42,7 +42,11 @@ test('スタジアム：駅と東横イン', () => {
   assert.ok(validateStadium({ ...ok, stations: st(Array(4).fill({ hotel: '00123', walk_min: 3 })) }).errors['stations.0.toyoko']);
   assert.ok(validateStadium({ ...ok, stations: st([{ hotel: '00123', walk_min: 61 }]) }).errors['stations.0.toyoko.0.walk_min']);
   assert.ok(validateStadium({ ...ok, stations: [{ name: '', kind: 'bus' }] }).errors['stations.0.name']);
-  assert.ok(validateStadium({ ...ok, stations: [{ name: '岐阜', kind: 'bus' }] }).errors['stations.0.kind']);
+  assert.ok(validateStadium({ ...ok, stations: [{ name: '岐阜', kind: 'train' }] }).errors['stations.0.kind']);
+  // 種類は最寄り駅・シャトルバスの発着駅・路線バスの発着駅の3つ（設計書 4.1）
+  for (const kind of ['nearest', 'shuttle', 'bus']) {
+    assert.equal(validateStadium({ ...ok, stations: [{ name: '岐阜', kind, toyoko: [] }] }).ok, true, kind);
+  }
   assert.equal(validateStadium({ ...ok, stations: st([{ hotel: '00123', walk_min: 3 }]) }).ok, true);
 });
 

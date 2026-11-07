@@ -18,7 +18,8 @@ function checkRange(errors, key, v, min, max, label, unit) {
 function validateStation(errors, st, i) {
   const p = `stations.${i}`;
   if (isBlank(st?.name)) errors[`${p}.name`] = '駅名を入力してください';
-  if (st?.kind !== 'nearest' && st?.kind !== 'shuttle') errors[`${p}.kind`] = '種類は最寄り駅かシャトルバスの駅にしてください';
+  // 種類：nearest＝最寄り駅、shuttle＝シャトルバスの発着駅、bus＝路線バスの発着駅（設計書 4.1）
+  if (!['nearest', 'shuttle', 'bus'].includes(st?.kind)) errors[`${p}.kind`] = '種類は最寄り駅・シャトルバスの駅・路線バスの駅のどれかにしてください';
   const toyoko = st?.toyoko ?? [];
   if (!Array.isArray(toyoko)) { errors[`${p}.toyoko`] = '東横インの形式が正しくありません'; return; }
   if (toyoko.length > 3) errors[`${p}.toyoko`] = '東横インは1駅につき3店までです';
