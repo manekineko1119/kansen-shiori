@@ -253,6 +253,172 @@
         "name": "松山"
       },
       "verified_at": "2026-11-07"
+    },
+    {
+      "id": "sagamihara-gion",
+      "name": "相模原ギオンスタジアム",
+      "prefecture": "神奈川県",
+      "address": "神奈川県相模原市南区下溝4169",
+      "lat": 35.527904,
+      "lng": 139.386034,
+      "stations": [
+        {
+          "name": "原当麻",
+          "kind": "nearest",
+          "walk_min": 20,
+          "note": "JR相模線。徒歩約20分",
+          "toyoko": []
+        },
+        {
+          "name": "相模大野",
+          "kind": "bus",
+          "walk_min": null,
+          "note": "北口から路線バス（大60系統）で約20分、「女子美術大学」下車、徒歩5〜6分。試合後は相模大野駅北口への臨時直行バスが出る試合がある",
+          "toyoko": []
+        },
+        {
+          "name": "古淵",
+          "kind": "bus",
+          "walk_min": null,
+          "note": "JR横浜線。路線バス（古04系統）で約20分、「女子美術大学」下車、徒歩約5分",
+          "toyoko": []
+        }
+      ],
+      "airports": [],
+      "access_url": "https://www.scsagamihara.com/stadium/access",
+      "shuttle_note": "駅からのシャトルバスはない。混む試合だけ、臨時駐車場とスタジアムの間に無料バスが出る",
+      "parking_note": "併設の無料駐車場（相模原麻溝公園）は試合日に混む。混む試合では臨時の無料駐車場が用意される",
+      "agoda_area": null,
+      "verified_at": "2026-11-08"
+    },
+    {
+      "id": "ishin-mirai-fu",
+      "name": "維新みらいふスタジアム",
+      "prefecture": "山口県",
+      "address": "山口県山口市維新公園4-1-1",
+      "lat": 34.154472,
+      "lng": 131.437417,
+      "stations": [
+        {
+          "name": "新山口",
+          "kind": "shuttle",
+          "walk_min": null,
+          "note": "新幹線口側の乗り場から有料シャトルバス（片道400円）。試合の4時間前から",
+          "toyoko": []
+        },
+        {
+          "name": "大歳",
+          "kind": "nearest",
+          "walk_min": 12,
+          "note": "JR山口線",
+          "toyoko": []
+        }
+      ],
+      "airports": [
+        {
+          "iata": "UBJ",
+          "name": "山口宇部空港",
+          "station": null,
+          "access_min": 60,
+          "note": "連絡バスで新山口駅まで約30〜40分、そこからシャトルバス（合計は目安）"
+        }
+      ],
+      "access_url": "https://www.renofa.com/access/",
+      "shuttle_note": "新山口駅（新幹線口側）から維新公園まで有料シャトルバス。試合の4時間前から、間隔は試合ごとに違う",
+      "parking_note": "維新公園内の有料駐車場は前売り（2,000円）だけで当日券はない。臨時駐車場は試合ごとに変わる",
+      "agoda_area": null,
+      "verified_at": "2026-11-08"
+    },
+    {
+      "id": "egao-stadium",
+      "name": "えがお健康スタジアム",
+      "prefecture": "熊本県",
+      "address": "熊本県熊本市東区平山町2776",
+      "lat": 32.8368944,
+      "lng": 130.8001444,
+      "stations": [
+        {
+          "name": "光の森",
+          "kind": "shuttle",
+          "walk_min": null,
+          "note": "北口からシャトルバス約20分。運行と料金（無料／有料・予約制）は試合ごとに告知される",
+          "toyoko": []
+        },
+        {
+          "name": "熊本",
+          "kind": "bus",
+          "walk_min": null,
+          "note": "市営バスで約40〜50分、「パークドーム熊本前」下車、徒歩約5分",
+          "toyoko": []
+        }
+      ],
+      "airports": [
+        {
+          "iata": "KMJ",
+          "name": "阿蘇くまもと空港",
+          "station": null,
+          "access_min": 15,
+          "note": "タクシーで約10〜15分"
+        }
+      ],
+      "access_url": "https://roasso-k.com/go_stadium",
+      "shuttle_note": "光の森駅北口からのシャトルバスは試合ごとに告知（約1週間前に公式ニュース）。無料の試合も有料・予約制の年もある",
+      "parking_note": "メイン駐車場は約1,000台で限りがある。試合日は渋滞し、周辺道路に通行規制がかかる時間がある",
+      "agoda_area": null,
+      "verified_at": "2026-11-08"
+    },
+    {
+      "id": "gosta",
+      "name": "金沢ゴーゴーカレースタジアム",
+      "prefecture": "石川県",
+      "address": "石川県金沢市磯部町ロ75番地1",
+      "lat": 36.596194,
+      "lng": 136.657361,
+      "stations": [
+        {
+          "name": "金沢",
+          "kind": "shuttle",
+          "walk_min": null,
+          "note": "金沢駅西広場の団体バス乗降場から無料シャトルバス約15〜20分。路線バスもある",
+          "toyoko": []
+        },
+        {
+          "name": "東金沢",
+          "kind": "nearest",
+          "walk_min": 15,
+          "note": "IRいしかわ鉄道。徒歩約15分（約1km）",
+          "toyoko": []
+        }
+      ],
+      "airports": [],
+      "access_url": "https://www.zweigen-kanazawa.jp/game/access/",
+      "shuttle_note": "無料シャトルバスは金沢駅西広場と石川県庁から。往路は試合の3時間前から、復路は試合後約1時間",
+      "parking_note": "南駐車場（有料1,000円・約1,500台）は事前予約制で当日払いはできない。石川県庁のパーク＆ライドもある",
+      "agoda_area": null,
+      "verified_at": "2026-11-08"
+    },
+    {
+      "id": "nagano-u-stadium",
+      "name": "長野Uスタジアム",
+      "prefecture": "長野県",
+      "address": "長野県長野市篠ノ井東福寺320番地",
+      "lat": 36.5803528,
+      "lng": 138.167556,
+      "stations": [
+        {
+          "name": "篠ノ井",
+          "kind": "shuttle",
+          "walk_min": null,
+          "note": "西口から無料シャトルバス約15〜20分（直通）。試合の2時間前から",
+          "toyoko": []
+        }
+      ],
+      "airports": [],
+      "access_url": "https://parceiro.co.jp/stadium/access.html",
+      "shuttle_note": "トップチームのホームゲームで、篠ノ井駅西口と会場の間に無料シャトルバス。時刻は試合ごとの案内で確かめる",
+      "parking_note": "第1駐車場は駐車券を持つ人だけ。篠ノ井駅西口の無料臨時駐車場（約100台）は使えない日がある",
+      "agoda_area": null,
+      "verified_at": "2026-11-08"
     }
   ],
   "clubs": [
@@ -345,6 +511,67 @@
       "jleague_url": "https://www.jleague.jp/club/ehime/",
       "home_stadium_id": "ningineer-stadium",
       "video_sources": []
+    },
+    {
+      "id": "sagamihara",
+      "name": "SC相模原",
+      "short_name": "相模原",
+      "aliases": [
+        "SC SAGAMIHARA",
+        "S.C.SAGAMIHARA"
+      ],
+      "official_url": "https://www.scsagamihara.com/",
+      "jleague_url": "https://www.jleague.jp/club/sagamihara/",
+      "home_stadium_id": "sagamihara-gion",
+      "video_sources": []
+    },
+    {
+      "id": "yamaguchi",
+      "name": "レノファ山口FC",
+      "short_name": "山口",
+      "aliases": [
+        "RENOFA YAMAGUCHI FC"
+      ],
+      "official_url": "https://www.renofa.com/",
+      "jleague_url": "https://www.jleague.jp/club/yamaguchi/",
+      "home_stadium_id": "ishin-mirai-fu",
+      "video_sources": []
+    },
+    {
+      "id": "kumamoto",
+      "name": "ロアッソ熊本",
+      "short_name": "熊本",
+      "aliases": [
+        "ROASSO KUMAMOTO"
+      ],
+      "official_url": "https://roasso-k.com/",
+      "jleague_url": "https://www.jleague.jp/club/kumamoto/",
+      "home_stadium_id": "egao-stadium",
+      "video_sources": []
+    },
+    {
+      "id": "kanazawa",
+      "name": "ツエーゲン金沢",
+      "short_name": "金沢",
+      "aliases": [
+        "ZWEIGEN KANAZAWA"
+      ],
+      "official_url": "https://www.zweigen-kanazawa.jp/",
+      "jleague_url": "https://www.jleague.jp/club/kanazawa/",
+      "home_stadium_id": "gosta",
+      "video_sources": []
+    },
+    {
+      "id": "nagano",
+      "name": "AC長野パルセイロ",
+      "short_name": "長野",
+      "aliases": [
+        "AC NAGANO PARCEIRO"
+      ],
+      "official_url": "https://parceiro.co.jp/",
+      "jleague_url": "https://www.jleague.jp/club/nagano/",
+      "home_stadium_id": "nagano-u-stadium",
+      "video_sources": []
     }
   ],
   "seasons": [
@@ -385,6 +612,31 @@
       "season_id": "2026-27",
       "competition": "J3",
       "club_id": "ehime"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J3",
+      "club_id": "sagamihara"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J3",
+      "club_id": "yamaguchi"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J3",
+      "club_id": "kumamoto"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J3",
+      "club_id": "kanazawa"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J3",
+      "club_id": "nagano"
     }
   ]
 }
