@@ -207,7 +207,7 @@
       "parking_note": "周辺は住宅地で駐車場が少なく、公共交通を使うよう案内されている。有料の花園中央公園駐車場がある",
       "agoda_area": {
         "type": "city",
-        "id": 18826,
+        "id": 108104,
         "name": "東大阪"
       },
       "verified_at": "2026-11-07"
@@ -418,7 +418,11 @@
       "access_url": "https://www.zweigen-kanazawa.jp/game/access/",
       "shuttle_note": "無料シャトルバスは金沢駅西広場と石川県庁から。往路は試合の3時間前から、復路は試合後約1時間",
       "parking_note": "南駐車場（有料1,000円・約1,500台）は事前予約制で当日払いはできない。石川県庁のパーク＆ライドもある",
-      "agoda_area": null,
+      "agoda_area": {
+        "type": "city",
+        "id": 18826,
+        "name": "金沢"
+      },
       "verified_at": "2026-11-08"
     },
     {
