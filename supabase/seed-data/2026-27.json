@@ -465,7 +465,23 @@
           "kind": "nearest",
           "walk_min": 7,
           "note": "JR鹿児島本線・山陽新幹線。北口から海側へ徒歩約7分",
-          "toyoko": []
+          "toyoko": [
+            {
+              "hotel": "00219",
+              "name": "東横INN小倉駅新幹線口",
+              "walk_min": 5
+            },
+            {
+              "hotel": "00360",
+              "name": "東横INN小倉駅北口",
+              "walk_min": 6
+            },
+            {
+              "hotel": "00152",
+              "name": "東横INN小倉駅南口",
+              "walk_min": 3
+            }
+          ]
         }
       ],
       "airports": [
@@ -480,7 +496,11 @@
       "access_url": "https://www.giravanz.jp/stadium/homestadium/",
       "shuttle_note": "シャトルバスの案内はない（小倉駅から歩ける）",
       "parking_note": "スタジアム専用の駐車場はない。周辺の公共・予約制の駐車場を使う",
-      "agoda_area": null,
+      "agoda_area": {
+        "type": "city",
+        "id": 88744,
+        "name": "北九州"
+      },
       "verified_at": "2026-11-08"
     },
     {
@@ -496,14 +516,34 @@
           "kind": "shuttle",
           "walk_min": null,
           "note": "西口23番乗り場から有料シャトルバス（大人700円）約25分。東口7番乗り場から路線バス（佐原行など）約30分、「あづま総合体育館」下車",
-          "toyoko": []
+          "toyoko": [
+            {
+              "hotel": "00030",
+              "name": "東横INN福島駅西口",
+              "walk_min": 3
+            },
+            {
+              "hotel": "00070",
+              "name": "東横INN福島駅東口1号店",
+              "walk_min": 3
+            },
+            {
+              "hotel": "00048",
+              "name": "東横INN福島駅東口2号店",
+              "walk_min": 3
+            }
+          ]
         }
       ],
       "airports": [],
       "access_url": "http://fufc.jp/game-info/stadium/",
       "shuttle_note": "福島駅西口と陸上競技場駐車場の間に有料シャトルバス（大人700円、高校生以下無料、予約不要）。時刻は試合ごとに変わる",
       "parking_note": "あづま総合運動公園の大駐車場（公園全体で約2,600台）。他の大会と重なると満車や渋滞になることがある",
-      "agoda_area": null,
+      "agoda_area": {
+        "type": "city",
+        "id": 16527,
+        "name": "福島"
+      },
       "verified_at": "2026-11-08"
     },
     {
@@ -556,7 +596,13 @@
           "kind": "nearest",
           "walk_min": 15,
           "note": "JR琵琶湖線・近江鉄道。徒歩約15分（約1.5km）。湖国バス彦根循環線で「彦根総合スポーツ公園」まで約5分",
-          "toyoko": []
+          "toyoko": [
+            {
+              "hotel": "00274",
+              "name": "東横INN彦根駅東口",
+              "walk_min": 3
+            }
+          ]
         }
       ],
       "airports": [],
@@ -586,7 +632,13 @@
           "kind": "bus",
           "walk_min": null,
           "note": "ゆいレール。隣の那覇バスターミナルから路線バス（東陽バス30系統・沖縄バス52系統）で約1時間10分、「県総合運動公園北口」下車",
-          "toyoko": []
+          "toyoko": [
+            {
+              "hotel": "00076",
+              "name": "東横INN那覇旭橋駅前",
+              "walk_min": 7
+            }
+          ]
         }
       ],
       "airports": [
@@ -601,7 +653,11 @@
       "access_url": "https://fcryukyu.com/access/",
       "shuttle_note": "無料シャトルバスは試合ごとに決まり、公式サイトで告知。乗り場は駅ではなく、イオンモール沖縄ライカム・イオン具志川店・泡瀬漁港の3か所",
       "parking_note": "園内の駐車場は他の大会やイベントがあると混む。予約制の駐車場（akippa）がある",
-      "agoda_area": null,
+      "agoda_area": {
+        "type": "city",
+        "id": 717899,
+        "name": "沖縄市"
+      },
       "verified_at": "2026-11-08"
     }
   ],
