@@ -72,3 +72,13 @@ test('seed.sql の insert はどれも on conflict do nothing（本番で流し�
   assert.ok(inserts.length > 0);
   for (const l of inserts) assert.match(l, / on conflict do nothing;$/);
 });
+
+test('2026-27 の J3 は20クラブで、どのクラブにもホームスタジアムがある（設計書 12章 No.6）', () => {
+  const j3 = data.season_clubs.filter((sc) => sc.season_id === '2026-27' && sc.competition === 'J3').map((sc) => sc.club_id);
+  assert.equal(j3.length, 20);
+  assert.equal(new Set(j3).size, 20);
+  for (const id of j3) {
+    const club = data.clubs.find((c) => c.id === id);
+    assert.ok(club?.home_stadium_id, `${id} にホームスタジアムがない`);
+  }
+});

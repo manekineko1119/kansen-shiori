@@ -667,6 +667,113 @@
         "name": "沖縄市"
       },
       "verified_at": "2026-11-08"
+    },
+    {
+      "id": "axis-bird-stadium",
+      "name": "Axisバードスタジアム",
+      "prefecture": "鳥取県",
+      "address": "鳥取県鳥取市蔵田423",
+      "lat": 35.45833,
+      "lng": 134.22167,
+      "stations": [
+        {
+          "name": "鳥取",
+          "kind": "shuttle",
+          "walk_min": null,
+          "note": "南口から無料シャトルバス約15分（試合ごとに告知）。北口バスターミナル7番のりばの路線バスなら約20分、「バードスタジアム」下車。ナイトゲームは試合後の路線バスがない",
+          "toyoko": []
+        }
+      ],
+      "airports": [
+        {
+          "iata": "TTJ",
+          "name": "鳥取砂丘コナン空港",
+          "station": null,
+          "access_min": 40,
+          "note": "連絡バスで鳥取駅まで約20分、そこからシャトルバス約15分（合計は目安）"
+        }
+      ],
+      "access_url": "https://www.gainare.co.jp/stadiums/",
+      "shuttle_note": "鳥取駅南口から無料シャトルバス（約15分）。運行と時刻は試合ごとの告知で確かめる",
+      "parking_note": "隣接のサブグラウンドなどに無料駐車場（合わせて約470台）があるが限りがある。2026-27 から鳥取駅周辺の駐車場割引はない",
+      "agoda_area": null,
+      "verified_at": "2026-11-08"
+    },
+    {
+      "id": "shoda-shoyu-stadium",
+      "name": "正田醤油スタジアム群馬",
+      "prefecture": "群馬県",
+      "address": "群馬県前橋市敷島町66",
+      "lat": 36.411613,
+      "lng": 139.053258,
+      "stations": [
+        {
+          "name": "前橋",
+          "kind": "shuttle",
+          "walk_min": null,
+          "note": "南口（東横イン前）から有料シャトルバス約15分（片道350円、現金のみ）",
+          "toyoko": []
+        }
+      ],
+      "airports": [],
+      "access_url": "https://thespa.co.jp/guide/access.php",
+      "shuttle_note": "前橋駅南口から有料シャトルバス。往路はキックオフの3時間前から30分前まで30分おき、復路は試合終了の10分後と50分後",
+      "parking_note": "観戦者専用の駐車場はない。敷島公園河川敷駐車場（約600台）などが無料で、徒歩約10分",
+      "agoda_area": null,
+      "verified_at": "2026-11-08"
+    },
+    {
+      "id": "meglio-stadium",
+      "name": "四国化成MEGLIOスタジアム",
+      "prefecture": "香川県",
+      "address": "香川県丸亀市金倉町830",
+      "lat": 34.2616,
+      "lng": 133.7859,
+      "stations": [
+        {
+          "name": "丸亀",
+          "kind": "shuttle",
+          "walk_min": null,
+          "note": "シャトルバス約20分（往復で大人600円、予約不要）。丸亀市コミュニティバス丸亀西線なら約15分、「丸亀スタジアム」下車",
+          "toyoko": []
+        },
+        {
+          "name": "金蔵寺",
+          "kind": "nearest",
+          "walk_min": 20,
+          "note": "JR土讃線。徒歩約20〜25分",
+          "toyoko": []
+        }
+      ],
+      "airports": [],
+      "access_url": "https://www.kamatamare.jp/stadium/access.php",
+      "shuttle_note": "丸亀駅からシャトルバス（高松駅発の便もある）。時刻と乗り場は試合ごとの告知で確かめる",
+      "parking_note": "試合日はシャトルバス用の別の駐車場を使うことがある。試合ごとの告知で確かめる",
+      "agoda_area": null,
+      "verified_at": "2026-11-08"
+    },
+    {
+      "id": "giken-stadium",
+      "name": "GIKENスタジアム",
+      "prefecture": "高知県",
+      "address": "高知県高知市春野町芳原2485",
+      "lat": 33.5110639,
+      "lng": 133.5026833,
+      "stations": [
+        {
+          "name": "高知",
+          "kind": "shuttle",
+          "walk_min": null,
+          "note": "北口の高知駅バスターミナルからシャトルバス（JTB の企画。事前予約がおすすめ、当日は現金・先着）。復路は南はりまや橋にも停まる",
+          "toyoko": []
+        }
+      ],
+      "airports": [],
+      "access_url": "http://kochi-usc.jp/bus/",
+      "shuttle_note": "高知駅北口からシャトルバス。スタジアムへの直行の路線バスはない。運賃と時刻は試合ごとの案内で確かめる",
+      "parking_note": "試合日は園内が混む。臨時駐車場が試合ごとに案内される",
+      "agoda_area": null,
+      "verified_at": "2026-11-08"
     }
   ],
   "clubs": [
@@ -881,6 +988,55 @@
       "jleague_url": "https://www.jleague.jp/club/ryukyu/",
       "home_stadium_id": "okinawa-athletic-stadium",
       "video_sources": []
+    },
+    {
+      "id": "tottori",
+      "name": "ガイナーレ鳥取",
+      "short_name": "鳥取",
+      "aliases": [
+        "GAINARE TOTTORI"
+      ],
+      "official_url": "https://www.gainare.co.jp/",
+      "jleague_url": "https://www.jleague.jp/club/tottori/",
+      "home_stadium_id": "axis-bird-stadium",
+      "video_sources": []
+    },
+    {
+      "id": "gunma",
+      "name": "ザスパ群馬",
+      "short_name": "群馬",
+      "aliases": [
+        "THESPA GUNMA"
+      ],
+      "official_url": "https://thespa.co.jp/",
+      "jleague_url": "https://www.jleague.jp/club/gunma/",
+      "home_stadium_id": "shoda-shoyu-stadium",
+      "video_sources": []
+    },
+    {
+      "id": "sanuki",
+      "name": "カマタマーレ讃岐",
+      "short_name": "讃岐",
+      "aliases": [
+        "KAMATAMARE SANUKI"
+      ],
+      "official_url": "https://www.kamatamare.jp/",
+      "jleague_url": "https://www.jleague.jp/club/sanuki/",
+      "home_stadium_id": "meglio-stadium",
+      "video_sources": []
+    },
+    {
+      "id": "kochi",
+      "name": "高知ユナイテッドSC",
+      "short_name": "高知",
+      "aliases": [
+        "KOCHI UNITED SC",
+        "KOCHI UNITED"
+      ],
+      "official_url": "http://kochi-usc.jp/",
+      "jleague_url": "https://www.jleague.jp/club/kochi/",
+      "home_stadium_id": "giken-stadium",
+      "video_sources": []
     }
   ],
   "seasons": [
@@ -971,6 +1127,26 @@
       "season_id": "2026-27",
       "competition": "J3",
       "club_id": "ryukyu"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J3",
+      "club_id": "tottori"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J3",
+      "club_id": "gunma"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J3",
+      "club_id": "sanuki"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J3",
+      "club_id": "kochi"
     }
   ]
 }
