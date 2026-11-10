@@ -1,7 +1,7 @@
 -- 定期実行（pg_cron）の設定（設計書 6.2・11.2.1）
 -- 試合結果の取り込みを日本時間 7:00・23:30 に呼ぶ。鍵・URL はマイグレーションに書かず、実行のときに Vault から読む
 begin;
-select plan(8);
+select plan(9);
 
 select results_eq(
   $$select jobname::text, schedule::text from cron.job where jobname like 'sync-results-%' order by jobname$$,
@@ -39,6 +39,12 @@ select ok(
       and (command like '%"club_id":"matsumoto"%' or command like '%"club_id": "matsumoto"%')
      from cron.job where jobname = 'sync-videos'),
   'sync-videos を合言葉のヘッダーとクラブ付きで呼ぶ');
+
+-- 待ち時間（段4 の最後のレビュー）：試合ページを読む回は「一覧＋2秒×件数」かかるので、既定の5秒では足りない
+select ok(
+  (select count(*) = 3 and bool_and(command like '%timeout_milliseconds := 60000%')
+     from cron.job where jobname in ('sync-results-am', 'sync-results-pm', 'sync-videos')),
+  '3つの定期実行とも、待ち時間を60秒にしている');
 
 select * from finish();
 rollback;
