@@ -21,8 +21,20 @@ function makeDb(supabase: ReturnType<typeof createClient>) {
       check(await supabase.from('clubs').select('id, jleague_url').eq('id', id).maybeSingle()),
     competitionOf: async (seasonId: string, clubId: string) =>
       check(await supabase.from('season_clubs').select('competition').eq('season_id', seasonId).eq('club_id', clubId).maybeSingle())?.competition ?? null,
-    runsSince: async (isoStart: string) =>
-      check(await supabase.from('sync_runs').select('job, list_read, pages_read').gte('ran_at', isoStart)),
+    // 回数の予約（D21）。予約できなければ null
+    reserveRun: async (args: { dayStartIso: string; listLimit: number; pagesLimit: number; pagesPerRun: number }) => {
+      const rows = check(await supabase.rpc('sync_reserve_run', {
+        p_job: 'results',
+        p_day_start: args.dayStartIso,
+        p_list_limit: args.listLimit,
+        p_pages_limit: args.pagesLimit,
+        p_pages_per_run: args.pagesPerRun,
+      }));
+      const row = Array.isArray(rows) ? rows[0] : null;
+      return row ? { runId: row.run_id, pagesAllowed: row.pages_allowed } : null;
+    },
+    finishRun: async (runId: number, row: { ok: boolean; message: string | null; list_read: number; pages_read: number }) =>
+      check(await supabase.rpc('sync_finish_run', { p_run_id: runId, p_ok: row.ok, p_message: row.message, p_list_read: row.list_read, p_pages_read: row.pages_read })),
     fixturesOf: async (seasonId: string, clubId: string) =>
       check(await supabase.from('fixtures')
         .select('id, match_date, home_club_id, away_club_id, status, home_score, away_score, result_source, scorers_fetched_at, scorers_failed_at, jleague_match_url')
