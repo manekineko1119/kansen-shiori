@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  classifyVideo, parseHighlightDate, parseInsideRound, matchVideo, planVideoUpserts,
+  classifyVideo, parseHighlightDate, parseInsideRound, matchVideo, planVideoUpserts, toVideos,
 } from '../../supabase/functions/_shared/match-video.js';
 
 const src = { channel: '@yamagachannel', kinds: { highlight: ['明治安田'], inside: ['【INSIDE】'] } };
@@ -104,4 +104,42 @@ test('planVideoUpserts：同じ試合・種類が複数なら公開が新しい1
 
 test('classifyVideo：ハイライトと INSIDE の両方のキーワードを含むタイトルは highlight（現状の挙動）', () => {
   assert.equal(classifyVideo('明治安田 【INSIDE】 #13', src), 'highlight');
+});
+
+// toVideos：4-6 で見た形をまねた架空のデータ
+const plItem = (id) => ({ contentDetails: { videoId: id, videoPublishedAt: '2026-10-25T10:00:00Z' }, snippet: { title: `list-${id}` } });
+const vd = (id, over = {}) => ({
+  id, snippet: { title: `title-${id}`, publishedAt: '2026-10-25T12:00:00Z', liveBroadcastContent: 'none' }, status: { privacyStatus: 'public' }, ...over,
+});
+
+test('toVideos：公開済み・ふつうの動画は isUpcoming: false。channel は引数のハンドル', () => {
+  const [v] = toVideos([plItem('a')], [vd('a')], '@yamagachannel');
+  assert.deepEqual(v, {
+    url: 'https://www.youtube.com/watch?v=a', title: 'title-a', publishedAt: '2026-10-25T12:00:00Z', channel: '@yamagachannel', isUpcoming: false,
+  });
+});
+
+test('toVideos：公開済みのプレミア（開始・終了あり）は isUpcoming: false', () => {
+  const live = { scheduledStartTime: '2026-10-27T10:00:00Z', actualStartTime: '2026-10-27T10:00:00Z', actualEndTime: '2026-10-27T10:30:00Z' };
+  assert.equal(toVideos([plItem('a')], [vd('a', { liveStreamingDetails: live })], '@c')[0].isUpcoming, false);
+});
+
+test('toVideos：予約中（upcoming・actualStartTime なし）は isUpcoming: true', () => {
+  const d = vd('a', { snippet: { title: 't', publishedAt: '2026-11-20T10:00:00Z', liveBroadcastContent: 'upcoming' }, liveStreamingDetails: { scheduledStartTime: '2026-11-20T10:00:00Z' } });
+  assert.equal(toVideos([plItem('a')], [d], '@c')[0].isUpcoming, true);
+});
+
+test('toVideos：live・非公開・終了時刻のない配信情報は isUpcoming: true', () => {
+  const live = vd('a', { snippet: { title: 't', publishedAt: 'x', liveBroadcastContent: 'live' } });
+  const priv = vd('b', { status: { privacyStatus: 'unlisted' } });
+  const noEnd = vd('c', { liveStreamingDetails: { scheduledStartTime: 's', actualStartTime: 's' } });
+  const r = toVideos([plItem('a'), plItem('b'), plItem('c')], [live, priv, noEnd], '@c');
+  assert.deepEqual(r.map((v) => v.isUpcoming), [true, true, true]);
+});
+
+test('toVideos：videos.list に返ってこない動画は isUpcoming: true、タイトルと公開日時は playlistItems から', () => {
+  const [v] = toVideos([plItem('gone')], [], '@c');
+  assert.equal(v.isUpcoming, true);
+  assert.equal(v.title, 'list-gone');
+  assert.equal(v.publishedAt, '2026-10-25T10:00:00Z');
 });

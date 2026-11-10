@@ -421,3 +421,7 @@ enabled = true
 # 試合結果の取り込み。呼び出し元（pg_cron の合言葉・管理者のログイン）は関数の中で確かめる（設計書 6.2、D16）
 [functions.sync-results]
 verify_jwt = false
+
+# 試合動画の登録（YouTube）。呼び出し元の確認は関数の中で行う（設計書 6.3、D16）
+[functions.sync-videos]
+verify_jwt = false

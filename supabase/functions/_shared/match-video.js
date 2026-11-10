@@ -115,3 +115,32 @@ export function planVideoUpserts(videos, { fixtures, clubs, supportClubId, sourc
   }
   return [...rows.values()];
 }
+
+// まだ公開されていない動画か（設計書 6.3 の暫定の見分け方）。
+// ①videos.list に返ってこない ②liveBroadcastContent が none でない ③privacyStatus が public でない ④liveStreamingDetails があるのに actualEndTime がない
+function isNotPublished(detail) {
+  if (!detail) return true;
+  if (detail.snippet?.liveBroadcastContent !== 'none') return true;
+  if (detail.status?.privacyStatus !== 'public') return true;
+  if (detail.liveStreamingDetails && !detail.liveStreamingDetails.actualEndTime) return true;
+  return false;
+}
+
+// playlistItems.list の items と videos.list の items から、planVideoUpserts に渡す動画の配列を作る
+export function toVideos(playlistItems, videoDetails, channelHandle) {
+  const details = new Map((videoDetails ?? []).map((d) => [d.id, d]));
+  const videos = [];
+  for (const item of playlistItems ?? []) {
+    const id = item?.contentDetails?.videoId ?? item?.snippet?.resourceId?.videoId;
+    if (!id) continue;
+    const detail = details.get(id);
+    videos.push({
+      url: `https://www.youtube.com/watch?v=${id}`,
+      title: detail?.snippet?.title ?? item.snippet?.title ?? '',
+      publishedAt: detail?.snippet?.publishedAt ?? item.contentDetails?.videoPublishedAt ?? null,
+      channel: channelHandle,
+      isUpcoming: isNotPublished(detail),
+    });
+  }
+  return videos;
+}
