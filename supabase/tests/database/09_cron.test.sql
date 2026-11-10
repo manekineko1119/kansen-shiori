@@ -1,7 +1,7 @@
 -- 定期実行（pg_cron）の設定（設計書 6.2・11.2.1）
 -- 試合結果の取り込みを日本時間 7:00・23:30 に呼ぶ。鍵・URL はマイグレーションに書かず、実行のときに Vault から読む
 begin;
-select plan(5);
+select plan(8);
 
 select results_eq(
   $$select jobname::text, schedule::text from cron.job where jobname like 'sync-results-%' order by jobname$$,
@@ -23,6 +23,22 @@ select ok(
   (select bool_and(command like '%"club_id": "matsumoto"%' or command like '%"club_id":"matsumoto"%')
      from cron.job where jobname like 'sync-results-%'),
   '取り込むクラブを本文で渡す（D17）');
+
+-- 試合動画の登録（設計書 6.3）：1日1回、日本時間 7:00
+select results_eq(
+  $$select schedule::text from cron.job where jobname = 'sync-videos'$$,
+  $$values ('0 22 * * *')$$,
+  '試合動画の登録は UTC 22:00（日本時間 7:00）');
+select ok(
+  (select command like '%vault.decrypted_secrets%' and command like '%''project_url''%' and command like '%''cron_secret''%'
+      and command not like '%sb_secret_%' and command not like '%eyJ%' and command not like '%supabase.co%'
+     from cron.job where jobname = 'sync-videos'),
+  '試合動画も URL と合言葉を Vault から読み、値を直接書いていない');
+select ok(
+  (select command like '%/functions/v1/sync-videos%' and command like '%x-cron-secret%'
+      and (command like '%"club_id":"matsumoto"%' or command like '%"club_id": "matsumoto"%')
+     from cron.job where jobname = 'sync-videos'),
+  'sync-videos を合言葉のヘッダーとクラブ付きで呼ぶ');
 
 select * from finish();
 rollback;
