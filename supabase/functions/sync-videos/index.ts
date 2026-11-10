@@ -3,6 +3,9 @@ import { createClient } from 'npm:@supabase/supabase-js@2.118.0';
 import { authorizeCaller, pickSecretKey } from '../_shared/edge-auth.js';
 import { runSyncVideos } from './run.js';
 
+// 相手が応答しないとき、20秒で読むのをやめる（設計書 6.2）。転送はたどらず、3xx は 200 以外として失敗にする（読むのは決めたページだけ）
+const FETCH_TIMEOUT_MS = 20000;
+
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
 
@@ -41,7 +44,13 @@ function makeDb(supabase: ReturnType<typeof createClient>) {
 
 // 状態コードだけをエラーに入れる（URL に APIキーが入っているため）
 async function getJson(url: string) {
-  const res = await fetch(url);
+  let res: Response;
+  try {
+    res = await fetch(url, { redirect: 'manual', signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+  } catch {
+    // 元の例外の文には URL（APIキー）が入りうるので使わない
+    throw new Error('YouTube API に接続できません');
+  }
   if (res.status !== 200) throw new Error(`YouTube API の応答が ${res.status}`);
   return await res.json();
 }

@@ -4,6 +4,8 @@ import { authorizeCaller, pickSecretKey } from '../_shared/edge-auth.js';
 import { runSyncResults } from './run.js';
 
 const USER_AGENT = 'kansen-shiori (+https://github.com/manekineko1119/kansen-shiori)';
+// 相手が応答しないとき、20秒で読むのをやめる（設計書 6.2）。転送はたどらず、3xx は 200 以外として失敗にする（読むのは決めたページだけ）
+const FETCH_TIMEOUT_MS = 20000;
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
 
@@ -53,7 +55,7 @@ function makeDb(supabase: ReturnType<typeof createClient>) {
 }
 
 async function fetchText(url: string): Promise<string> {
-  const res = await fetch(url, { headers: { 'User-Agent': USER_AGENT } });
+  const res = await fetch(url, { headers: { 'User-Agent': USER_AGENT }, redirect: 'manual', signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
   if (res.status !== 200) throw new Error(`Jリーグ公式の応答が ${res.status}`);
   return await res.text();
 }
