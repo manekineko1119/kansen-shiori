@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { ACCESS_LIMITS, remainingQuota, planSync } from '../../supabase/functions/_shared/sync-plan.js';
+import { ACCESS_LIMITS, remainingQuota, planSync, scheduleListUrl, formatResultsMessage } from '../../supabase/functions/_shared/sync-plan.js';
 
 const clubs = [
   { id: 'matsumoto', name: '松本山雅FC', short_name: '松本', aliases: [] },
@@ -138,4 +138,20 @@ test('quota.matchPages が 0 なら試合ページは読まない', () => {
   const p = planSync({ items: [item], fixtures: [base], clubs, quota: { list: 1, matchPages: 0 } });
   assert.deepEqual(p.matchPagesToRead, []);
   assert.equal(p.updates.length, 1);
+});
+
+test('一覧ページの URL', () => {
+  assert.equal(scheduleListUrl({ competition: 'J3', clubSlug: 'matsumoto', startDate: '2026-08-08', endDate: '2026-11-10' }),
+    'https://www.jleague.jp/j3/match/search-list/?category=j3&club=matsumoto&startdate=2026-08-08&enddate=2026-11-10&period=custom');
+});
+
+test('sync_runs の message：何もなければ null、あれば行ごと', () => {
+  assert.equal(formatResultsMessage({ unmatched: [], duplicates: [], unknownStates: [], skipped: 0, scorerFailures: [], notApplied: [] }), null);
+  const m = formatResultsMessage({ unmatched: [{ date: '2026-10-25', home: { fullName: '松本山雅ＦＣ' }, away: { fullName: 'レノファ山口ＦＣ' } }], duplicates: [{ date: '2026-10-25', matchUrl: 'https://www.jleague.jp/match/j3/2026/102599/' }], unknownStates: [{ fixtureId: 'f9', state: 'postponed' }], skipped: 2, scorerFailures: [{ fixtureId: 'f1', reason: 'ホームの得点者の数がスコアと合いません' }], notApplied: ['f3'] });
+  assert.match(m, /照合できない試合 1件：2026-10-25 松本山雅ＦＣ vs レノファ山口ＦＣ/);
+  assert.match(m, /同じ試合に当たった2つ目以降 1件：https:\/\/www\.jleague\.jp\/match\/j3\/2026\/102599\//);
+  assert.match(m, /知らない状態：f9（postponed）/);
+  assert.match(m, /試合ページの形でない URL 2件/);
+  assert.match(m, /得点者を取り込めなかった試合：f1（ホームの得点者の数がスコアと合いません）/);
+  assert.match(m, /書き換えなかった試合（手入力など）：f3/);
 });

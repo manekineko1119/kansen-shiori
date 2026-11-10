@@ -68,3 +68,24 @@ export function planSync({ items, fixtures, clubs, quota }) {
     .map((c) => ({ fixtureId: c.fixture.id, url: c.url }));
   return plan;
 }
+
+// Jリーグ公式の日程・結果の一覧ページの URL（competition は 'J3' など。小文字にして使う）
+export function scheduleListUrl({ competition, clubSlug, startDate, endDate }) {
+  const cat = competition.toLowerCase();
+  return `https://www.jleague.jp/${cat}/match/search-list/?category=${cat}&club=${clubSlug}&startdate=${startDate}&enddate=${endDate}&period=custom`;
+}
+
+// sync_runs.message（D19）。日本語の短い行を改行でつなぐ。何もなければ null
+export function formatResultsMessage({ unmatched = [], duplicates = [], unknownStates = [], skipped = 0, scorerFailures = [], notApplied = [], error = null }) {
+  const lines = [];
+  if (error) lines.push(`エラー：${error}`);
+  if (unmatched.length > 0) {
+    lines.push(`照合できない試合 ${unmatched.length}件：${unmatched.map((u) => `${u.date} ${u.home?.fullName ?? u.home?.name} vs ${u.away?.fullName ?? u.away?.name}`).join('、')}`);
+  }
+  if (duplicates.length > 0) lines.push(`同じ試合に当たった2つ目以降 ${duplicates.length}件：${duplicates.map((d) => d.matchUrl).join('、')}`);
+  if (unknownStates.length > 0) lines.push(`知らない状態：${unknownStates.map((u) => `${u.fixtureId}（${u.state}）`).join('、')}`);
+  if (skipped > 0) lines.push(`試合ページの形でない URL ${skipped}件`);
+  if (scorerFailures.length > 0) lines.push(`得点者を取り込めなかった試合：${scorerFailures.map((s) => `${s.fixtureId}（${s.reason}）`).join('、')}`);
+  if (notApplied.length > 0) lines.push(`書き換えなかった試合（手入力など）：${notApplied.join('、')}`);
+  return lines.length > 0 ? lines.join('\n') : null;
+}
