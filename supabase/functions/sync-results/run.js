@@ -57,7 +57,10 @@ async function sync({ db, fetchText, sleep, nowMs, clubId }, state, report) {
   Object.assign(report, { unmatched: plan.unmatched, duplicates: plan.duplicates, unknownStates: plan.unknownStates });
   const notApplied = new Set();
   for (const u of plan.updates) {
-    if (!(await db.applyResult(u.id, u.patch))) notApplied.add(u.id); // 手で直された試合は、試合ページも読まない
+    // 手で直された試合は、試合ページも読まない。false は「manual で拒否」と「変更なし」の両方だが、
+    // planSync は DB と違う列だけを patch にするので、変更なしは読んでから書くまでに別の実行が同じ値を
+    // 書いたときだけ。その回は飛ばしても、次の実行では patch が空になり試合ページを読む（Codex の指摘、2026-11-10）
+    if (!(await db.applyResult(u.id, u.patch))) notApplied.add(u.id);
   }
   const byId = new Map(fixtures.map((f) => [f.id, f]));
   for (const t of plan.matchPagesToRead) {
