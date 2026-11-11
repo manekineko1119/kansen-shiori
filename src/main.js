@@ -13,6 +13,8 @@ import { loadMasters } from './data/masters-loader.js';
 import { userFromAuth } from './auth/apply.js';
 import { getClient } from './data/client.js';
 import { createSettingsHolder } from './data/settings-holder.js';
+import { createPersonalHolder } from './data/personal-holder.js';
+import { createTripStore } from './data/trips.js';
 import { createHistory } from './data/history.js';
 import { browserLocal } from './data/local.js';
 import { setReturnTo } from './data/return-to.js';
@@ -32,6 +34,7 @@ let user = null;
 function setUser(next) {
   if (!sameUserId(user, next)) state.clearAll();
   user = next;
+  personal.sync(); // 利用者・状態が変わったら、前の人の個人データを捨てて読み直す
 }
 let signingOut = false; // ログアウトの最中（SIGNED_OUT を期限切れと取り違えないため）
 let loginError = null; // ログインから戻ったときのエラー（'not_invited' | 'failed'）
@@ -43,19 +46,26 @@ let snapshot = createSnapshot(nullKv);
 
 const settings = createSettingsHolder({ client: getClient, local, getUserId: () => user?.id ?? null, onChange: () => redraw() });
 const settingsStore = () => settings.store();
+// 遠征予定・観戦記録（ログイン中だけ。オフラインは端末の写しだけ）。共通データが読めたら読み始める
+const personal = createPersonalHolder({
+  client: getClient, getSnapshot: () => snapshot, getUser: () => user, getMasters: () => masters, now: Date.now, onChange: () => redraw(),
+});
 const OFFLINE_NOTICE = 'オフラインのため、最後にログインしていたときの内容を表示しています。編集はできません';
 
 // 画面の枠と本文を作って差し替える（スクロールは触らない）
 function draw(route) {
   currentRoute = route;
   settings.sync(); // 利用者が変わっていたら設定を読み直す
+  personal.sync();
   const ctx = buildCtx({
-    route, state, user, masters, settings: settings.current, nowMs: Date.now(),
+    route, state, user, masters, settings: settings.current, personal: personal.current, nowMs: Date.now(),
     data: {
       settings: settingsStore(),
       // 保存・読み込みのあとの採用。読み始めた利用者のままのときだけ（途中で利用者が変わった設定を採らない）
       adoptSettings: (s, forUserId) => { if (forUserId === (user?.id ?? null)) settings.adopt(s); },
       history: createHistory(local),
+      trips: createTripStore({ client: getClient() }),
+      reloadPersonal: () => personal.reload(), // 保存・削除の成功のあとに呼ぶ（D33）
     },
     navigate: (hash) => { location.hash = hash; },
     redraw,
@@ -178,8 +188,9 @@ async function start() {
   });
 
   startRouter({ render: renderApp, getUser: () => user });
-  loadMasters({ client: getClient(), snapshot, nowMs: Date.now(), onChange: (m) => { masters = m; redraw(); } }).catch(() => {
+  loadMasters({ client: getClient(), snapshot, nowMs: Date.now(), onChange: (m) => { masters = m; personal.sync(); redraw(); } }).catch(() => {
     masters = { status: 'unavailable', message: '初回は通信できる場所で開いてください' };
+    personal.sync();
     redraw();
   });
 

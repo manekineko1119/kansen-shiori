@@ -3,7 +3,7 @@ import { bindForm } from '../mount.js';
 
 export const TITLES = {
   search: 'スタジアム検索', result: '検索結果', fixtures: '日程', calendar: 'カレンダー',
-  trips: '遠征予定', trip: '遠征予定の詳細', records: '観戦記録', record: '観戦記録の詳細',
+  trips: '遠征予定', trip: '遠征予定の詳細', 'trip-new': '遠征予定の作成', records: '観戦記録', record: '観戦記録の詳細',
   settings: '設定', login: 'ログイン', welcome: 'ようこそ', admin: '管理',
 };
 

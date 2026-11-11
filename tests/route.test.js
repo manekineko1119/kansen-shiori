@@ -9,6 +9,7 @@ test('ROUTES は設計書 3章の表のとおり', () => {
     ['fixtures', '/fixtures', 'public'],
     ['calendar', '/calendar', 'public'],
     ['trips', '/trips', 'user'],
+    ['trip-new', '/trips/new', 'user'],
     ['trip', '/trips/:id', 'user'],
     ['records', '/records', 'user'],
     ['record', '/records/:fixtureId', 'public'],
@@ -49,4 +50,11 @@ test('routeAccess：ログインと管理者の判定', () => {
   assert.equal(routeAccess('admin', null), 'login');
   assert.equal(routeAccess('admin', { isAdmin: false }), 'forbidden');
   assert.equal(routeAccess('admin', { isAdmin: true }), 'ok');
+});
+
+test('parseRoute：/trips/new は trip より前に合う', () => {
+  const r = parseRoute('#/trips/new?f=x');
+  assert.equal(r.name, 'trip-new');
+  assert.equal(r.query, 'f=x');
+  assert.equal(parseRoute('#/trips/abc').name, 'trip');
 });

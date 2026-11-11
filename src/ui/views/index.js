@@ -7,6 +7,7 @@ import { renderSettings } from './settings.js';
 import { renderSearch } from './search.js';
 import { renderResult } from './result.js';
 import { renderFixtures } from './fixtures.js';
+import { renderTrips, renderTrip, renderTripNew } from './trips.js';
 import { el, section } from '../components/parts.js';
 
 const placeholder = (ctx) => renderPlaceholder(ctx.route, ctx.state, ctx.key, ctx.masters.status === 'loading' ? null : ctx.masters);
@@ -17,8 +18,9 @@ export const VIEWS = {
   result: renderResult,
   fixtures: renderFixtures,
   calendar: placeholder,
-  trips: placeholder,
-  trip: placeholder,
+  trips: renderTrips,
+  trip: renderTrip,
+  'trip-new': renderTripNew,
   records: placeholder,
   record: placeholder,
   settings: renderSettings,

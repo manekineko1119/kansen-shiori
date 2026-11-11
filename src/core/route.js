@@ -6,6 +6,7 @@ export const ROUTES = [
   { name: 'fixtures', path: '/fixtures', access: 'public' },
   { name: 'calendar', path: '/calendar', access: 'public' },
   { name: 'trips', path: '/trips', access: 'user' },
+  { name: 'trip-new', path: '/trips/new', access: 'user' },
   { name: 'trip', path: '/trips/:id', access: 'user' },
   { name: 'records', path: '/records', access: 'user' },
   { name: 'record', path: '/records/:fixtureId', access: 'public' },

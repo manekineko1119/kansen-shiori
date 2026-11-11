@@ -21,7 +21,7 @@ export const NAV_ITEMS = [
 // 画面の名前から、メニューのどれを選択中にするか（なければ null）
 export function navKeyOf(routeName) {
   return {
-    search: 'search', result: 'search', calendar: 'calendar', trips: 'trips', trip: 'trips',
+    search: 'search', result: 'search', calendar: 'calendar', trips: 'trips', trip: 'trips', 'trip-new': 'trips',
     records: 'records', record: 'records', settings: 'settings',
   }[routeName] ?? null;
 }
