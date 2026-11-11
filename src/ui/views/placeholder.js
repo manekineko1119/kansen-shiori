@@ -11,7 +11,7 @@ export const TITLES = {
 export function mastersText(masters) {
   if (!masters) return '共通データ：読み込み中';
   if (masters.status === 'unavailable') return masters.message;
-  const label = masters.status === 'offline' ? masters.label : '最新';
+  const label = { offline: masters.label, cached: '更新中' }[masters.status] ?? '最新';
   return `クラブ ${masters.data.clubs.length}件（${label}）`;
 }
 

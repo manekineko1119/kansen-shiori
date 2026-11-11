@@ -56,17 +56,27 @@ for (const query of Object.values(MEDIA)) {
 startRouter({ render: renderApp, getUser });
 
 // 共通データ：スナップショットで先に出し、裏で最新を取って差し替える（NFR-04）。段6 で本物の画面につなぐ
+const redraw = () => { if (currentRoute) rerender(state, routeKey(currentRoute), () => draw(currentRoute)); };
+// 何も覚えない Kv（IndexedDB が開けないとき。Safari のプライベートなど）
+const nullKv = { get: async () => undefined, set: async () => {}, delete: async () => {} };
+
 async function loadMasters() {
-  const snapshot = createSnapshot(await openKv());
-  const old = await readMastersSnapshot(snapshot);
-  if (old) {
-    masters = { status: 'offline', data: old.data, label: offlineLabel(old.savedAt) };
-    if (currentRoute) rerender(state, routeKey(currentRoute), () => draw(currentRoute));
+  let kv = nullKv;
+  try { kv = await openKv(); } catch { /* 保存なしで続ける */ }
+  const snapshot = createSnapshot(kv);
+  try {
+    const old = await readMastersSnapshot(snapshot);
+    if (old) {
+      masters = { status: 'cached', data: old.data }; // 取得前。オフラインとは出さない
+      redraw();
+    }
+  } catch {
+    masters = null; // 描画で落ちたら、保存したものは使わず最新を取りにいく
   }
   masters = await refreshMasters({ client: getClient(), snapshot, nowMs: Date.now() });
-  if (currentRoute) rerender(state, routeKey(currentRoute), () => draw(currentRoute));
+  redraw();
 }
 loadMasters().catch(() => {
   masters = { status: 'unavailable', message: '初回は通信できる場所で開いてください' };
-  if (currentRoute) draw(currentRoute);
+  redraw();
 });

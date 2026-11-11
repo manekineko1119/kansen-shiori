@@ -8,7 +8,7 @@ export function createSnapshot(kv) {
     async load(key) {
       try {
         const v = await kv.get(key);
-        if (v && typeof v === 'object' && Number.isFinite(v.savedAt) && 'data' in v) return { savedAt: v.savedAt, data: v.data };
+        if (v && typeof v === 'object' && Number.isFinite(v.savedAt) && v.data !== null && typeof v.data === 'object') return { savedAt: v.savedAt, data: v.data };
         return null;
       } catch {
         return null;

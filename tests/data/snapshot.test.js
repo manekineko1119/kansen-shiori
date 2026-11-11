@@ -33,6 +33,15 @@ test('形の違う値は null', async () => {
   assert.equal(await s.load('none'), null);
 });
 
+test('data が null や値でないものは null', async () => {
+  const kv = fakeKv();
+  await kv.set('a', { savedAt: 1, data: null });
+  await kv.set('b', { savedAt: 1, data: 'x' });
+  const s = createSnapshot(kv);
+  assert.equal(await s.load('a'), null);
+  assert.equal(await s.load('b'), null);
+});
+
 test('kv が読めずに投げても null', async () => {
   const s = createSnapshot({ get: async () => { throw new Error('x'); } });
   assert.equal(await s.load('a'), null);

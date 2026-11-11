@@ -51,6 +51,22 @@ test('失敗・スナップショットなし → unavailable', async () => {
   );
 });
 
+test('保存が投げても fresh と新しいデータを返す', async () => {
+  const kv = fakeKv();
+  kv.set = async () => { throw new Error('QuotaExceededError'); };
+  const r = await refreshMasters({ client: fakeClient(tables()), snapshot: createSnapshot(kv), nowMs: T });
+  assert.equal(r.status, 'fresh');
+  assert.deepEqual(r.data.fixtures.map((f) => f.id), ['a']);
+});
+
+test('壊れた masters のスナップショット（clubs が配列でない）は null', async () => {
+  const kv = fakeKv();
+  await kv.set('masters', { savedAt: 1, data: { season: null, clubs: 'x', stadiums: [], seasonClubs: [], fixtures: [] } });
+  assert.equal(await readMastersSnapshot(createSnapshot(kv)), null);
+  await kv.set('masters', { savedAt: 1, data: { season: null, clubs: [], stadiums: [], seasonClubs: [], fixtures: [] } });
+  assert.notEqual(await readMastersSnapshot(createSnapshot(kv)), null);
+});
+
 test('今のシーズンがなくても落ちない', async () => {
   const t = tables();
   t.seasons = [{ id: '2025', is_current: false }];

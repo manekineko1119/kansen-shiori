@@ -8,8 +8,12 @@ export function normalizeFixtureRow(row) {
   return { ...row, kickoff: row.kickoff == null ? null : String(row.kickoff).slice(0, 5) };
 }
 
-export function readMastersSnapshot(snapshot) {
-  return snapshot.load(SNAPSHOT_KEYS.masters);
+// 形が合わない（壊れた）スナップショットは null（設計書 4.5）
+export async function readMastersSnapshot(snapshot) {
+  const v = await snapshot.load(SNAPSHOT_KEYS.masters);
+  const d = v?.data;
+  const ok = d && ['clubs', 'stadiums', 'seasonClubs', 'fixtures'].every((k) => Array.isArray(d[k]));
+  return ok ? v : null;
 }
 
 function check({ data, error }) {
@@ -36,7 +40,11 @@ async function fetchMasters(client) {
 export async function refreshMasters({ client, snapshot, nowMs }) {
   try {
     const data = await fetchMasters(client);
-    await snapshot.save(SNAPSHOT_KEYS.masters, data, nowMs);
+    try {
+      await snapshot.save(SNAPSHOT_KEYS.masters, data, nowMs);
+    } catch (e) {
+      console.warn('共通データを端末に保存できませんでした', e); // 保存の失敗では最新を捨てない
+    }
     return { status: 'fresh', data };
   } catch {
     const old = await readMastersSnapshot(snapshot);
