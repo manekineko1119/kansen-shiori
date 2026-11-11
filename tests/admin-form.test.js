@@ -173,8 +173,10 @@ test('クラブ：ハンドルを変えると、1件目の channel_id・uploads_
   assert.deepEqual(club.video_sources[1], origSources[1]);
 });
 
-test('クラブ：ハンドルを空にすると取得元なし（今までの扱い）。元がなければ1件作る', () => {
+test('クラブ：ハンドルを空にすると1件目だけ消える（2件目以降は残る。元が1件なら取得元なし）。元がなければ1件作る', () => {
   const original = { id: 'a', name: 'A', short_name: 'a', video_sources: origSources };
-  assert.deepEqual(clubFromForm({ ...clubToValues(original), video_channel: '' }, original).video_sources, []);
+  assert.deepEqual(clubFromForm({ ...clubToValues(original), video_channel: '' }, original).video_sources, [origSources[1]]);
+  const single = { ...original, video_sources: [origSources[0]] };
+  assert.deepEqual(clubFromForm({ ...clubToValues(single), video_channel: '' }, single).video_sources, []);
   assert.deepEqual(clubFromForm({ id: 'a', name: 'A', short_name: 'a', video_channel: '@c', video_kw_highlight: 'h' }, { video_sources: [] }).video_sources, [{ channel: '@c', kinds: { highlight: ['h'] } }]);
 });

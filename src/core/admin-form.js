@@ -187,7 +187,7 @@ const lines = (v) => String(v ?? '').split(/\r?\n/).map((s) => s.trim()).filter(
 // 1件目のほかの項目（channel_id など）・ほかの種類・2件目以降は残す。ハンドルを変えたときだけ channel_id・uploads_playlist_id を捨てる
 function videoSourcesFromForm(values, original = []) {
   let channel = toHalfWidth(values.video_channel).trim();
-  if (channel === '') return [];
+  if (channel === '') return original.slice(1); // 1件目だけ消す（2件目以降は残す）
   if (!channel.startsWith('@')) channel = `@${channel}`;
   const [first = {}, ...rest] = original;
   const { channel_id: channelId, uploads_playlist_id: uploadsId, ...others } = first;
