@@ -3,6 +3,7 @@
 import { renderPlaceholder } from './placeholder.js';
 import { renderLogin } from './login.js';
 import { renderWelcome } from './welcome.js';
+import { renderSettings } from './settings.js';
 import { el, section } from '../components/parts.js';
 
 const placeholder = (ctx) => renderPlaceholder(ctx.route, ctx.state, ctx.key, ctx.masters.status === 'loading' ? null : ctx.masters);
@@ -17,7 +18,7 @@ export const VIEWS = {
   trip: placeholder,
   records: placeholder,
   record: placeholder,
-  settings: placeholder,
+  settings: renderSettings,
   admin: placeholder,
   login: (ctx) => renderLogin({ error: ctx.auth.loginError, user: ctx.user, onSignIn: ctx.auth.signIn, onSignOut: ctx.auth.signOut }),
   welcome: (ctx) => {

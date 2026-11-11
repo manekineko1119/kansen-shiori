@@ -179,7 +179,13 @@ h2:first-child { margin-top: 0; }
 .note { background: var(--note-bg); border-radius: var(--r-s); padding: 10px 12px; margin-top: 12px; }
 .check { display: flex; align-items: center; gap: 8px; min-height: 48px; }
 
-/* 見出しの横の小さなリンク（ログイン・ログアウト・管理） */
+/* 設定：入力欄を横に2つ並べる。出発空港の1行 */
+.row2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.airrow { min-width: 0; margin: 12px 0 0; padding: 4px 12px 12px; border: 1px solid var(--rule); border-radius: var(--r-s); }
+.airrow legend { padding: 0 6px; font-size: 13px; font-weight: 700; color: var(--ink-2); }
+.btn-small { min-height: 40px; padding: 0 14px; font-size: 13px; }
+
+/* 見出しの横の小さなリンク（ログイン・管理） */
 .toplinks { display: flex; align-items: center; gap: 4px; margin-left: auto; }
 .toplink {
   display: inline-flex; align-items: center; min-height: 48px; padding: 0 10px;
@@ -231,6 +237,7 @@ a:focus-visible, button:focus-visible, .input:focus-visible {
 /* ---------- M：メイン画面（600〜1023px）：2列。メニューは画面下のまま ---------- */
 @media (min-width: 600px) {
   .two-col { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: start; gap: 20px; }
+  .two-col.even { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .split { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: start; gap: 20px; }
   .split[data-detail="1"] > .split-list { display: block; }
   .short { display: none; }

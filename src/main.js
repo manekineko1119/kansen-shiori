@@ -44,7 +44,12 @@ function draw(route) {
   settings.sync(); // 利用者が変わっていたら設定を読み直す
   const ctx = buildCtx({
     route, state, user, masters, settings: settings.current, nowMs: Date.now(),
-    data: { settings: settingsStore(), history: createHistory(local) },
+    data: {
+      settings: settingsStore(),
+      // 保存・読み込みのあとの採用。読み始めた利用者のままのときだけ（途中で利用者が変わった設定を採らない）
+      adoptSettings: (s, forUserId) => { if (forUserId === (user?.id ?? null)) settings.adopt(s); },
+      history: createHistory(local),
+    },
     navigate: (hash) => { location.hash = hash; },
     redraw,
     onExpired: () => { setReturnTo(location.hash); location.hash = '#/login'; },
@@ -53,7 +58,7 @@ function draw(route) {
   });
   root.replaceChildren(renderFrame({
     route, user, notices: [user?.offline ? OFFLINE_NOTICE : null, notice],
-    body: renderView(ctx), onSignOut: doSignOut,
+    body: renderView(ctx),
     // 今の画面を戻り先に覚える（ログインのあと、この画面に戻る）
     onLogin: () => { if (parseRoute(location.hash).name !== 'login') setReturnTo(location.hash || '#/search'); },
   }));
