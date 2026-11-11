@@ -12,7 +12,7 @@ import { createSnapshot } from './data/snapshot.js';
 import { loadMasters } from './data/masters-loader.js';
 import { userFromAuth } from './auth/apply.js';
 import { getClient } from './data/client.js';
-import { createSettingsStore, DEFAULT_SETTINGS } from './data/settings.js';
+import { createSettingsHolder } from './data/settings-holder.js';
 import { createHistory } from './data/history.js';
 import { browserLocal } from './data/local.js';
 import { setReturnTo } from './data/return-to.js';
@@ -29,26 +29,21 @@ let user = null;
 let signingOut = false; // ログアウトの最中（SIGNED_OUT を期限切れと取り違えないため）
 let loginError = null; // ログインから戻ったときのエラー（'not_invited' | 'failed'）
 let welcomeSettings = null; // #/welcome の初期値（5-7 の load の settings）
-let currentSettings = DEFAULT_SETTINGS; // 画面に渡す設定（読めるまでは既定値）
 let notice = null; // 画面の上に1回だけ出すお知らせ（ログアウトで端末の写しを消せなかったときなど）
 // 何も覚えない Kv（IndexedDB が開けないとき。Safari のプライベートなど）
 const nullKv = { get: async () => undefined, set: async () => {}, delete: async () => {} };
 let snapshot = createSnapshot(nullKv);
 
-// 設定の入れ物は利用者ごとに1つ。読み込みに失敗したことを覚えて、その直後の保存を止めるため（5-7）
-let store = null;
-function settingsStore() {
-  const id = user?.id ?? null;
-  if (!store || store.userId !== id) store = { userId: id, ...createSettingsStore({ client: getClient(), local, userId: id }) };
-  return store;
-}
+const settings = createSettingsHolder({ client: getClient, local, getUserId: () => user?.id ?? null, onChange: () => redraw() });
+const settingsStore = () => settings.store();
 const OFFLINE_NOTICE = 'オフラインのため、最後にログインしていたときの内容を表示しています。編集はできません';
 
 // 画面の枠と本文を作って差し替える（スクロールは触らない）
 function draw(route) {
   currentRoute = route;
+  settings.sync(); // 利用者が変わっていたら設定を読み直す
   const ctx = buildCtx({
-    route, state, user, masters, settings: currentSettings, nowMs: Date.now(),
+    route, state, user, masters, settings: settings.current, nowMs: Date.now(),
     data: { settings: settingsStore(), history: createHistory(local) },
     navigate: (hash) => { location.hash = hash; },
     redraw,
@@ -68,7 +63,7 @@ function draw(route) {
 async function saveWelcome(values) {
   const res = await settingsStore().save(values);
   if (res.ok) {
-    currentSettings = res.settings;
+    settings.adopt(res.settings);
     welcomeSettings = null;
     location.hash = '#/search';
   }
@@ -103,10 +98,10 @@ async function doSignOut() {
 
 // ログインした直後：user_settings がなければ初回の設定へ（7.3）。読めなかったときは端末の設定で続ける（5-7）
 async function afterSignIn(returnTo) {
-  const { settings, exists } = await settingsStore().load();
-  currentSettings = settings;
+  const { settings: loaded, exists } = await settingsStore().load();
+  settings.adopt(loaded);
   if (exists === false) {
-    welcomeSettings = settings;
+    welcomeSettings = loaded;
     return '#/welcome';
   }
   return returnTo;
@@ -115,7 +110,7 @@ async function afterSignIn(returnTo) {
 // welcome の初期値：設定を読み直す。画面に渡す設定も同じ値にする
 async function loadWelcome() {
   welcomeSettings = (await settingsStore().load()).settings;
-  currentSettings = welcomeSettings;
+  settings.adopt(welcomeSettings);
 }
 
 // 今の画面をもう一度ルーターに通す（ログインの状態が変わったとき）
@@ -179,7 +174,6 @@ async function start() {
     }
     if (!user && last && currentRoute && routeAccess(currentRoute.name, null) === 'login') setReturnTo(location.hash);
     recheckRoute();
-    settingsStore().load().then((r) => { currentSettings = r.settings; redraw(); }); // 画面に渡す設定
   } else if (user && !welcomeSettings && parseRoute(location.hash).name === 'welcome') {
     await loadWelcome();
     redraw();

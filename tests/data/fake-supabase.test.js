@@ -43,3 +43,18 @@ test('偽物：storage の upload・remove・createSignedUrl', async () => {
   assert.equal((await c.storage.from('broken-bucket').upload('p', 'f')).error.message, 'x');
   assert.deepEqual(c.calls.map((x) => x.op), ['upload', 'signedUrl', 'remove', 'upload']);
 });
+
+test('偽物：insert・upsert・update のあとの select／single／maybeSingle', async () => {
+  const tables = { trips: [] };
+  const c = fakeClient(tables);
+  const a = await c.from('trips').insert({ title: 'a' }).select().single();
+  assert.equal(a.data.id, 'id-1');
+  assert.deepEqual(tables.trips[0], { title: 'a', id: 'id-1' });
+  const b = await c.from('trips').insert([{ id: 'x', title: 'b' }]).select();
+  assert.deepEqual(b.data, [{ id: 'x', title: 'b' }]);
+  const u = await c.from('trips').update({ title: 'c' }).eq('id', 'x').select().single();
+  assert.equal(u.data.title, 'c');
+  assert.equal((await c.from('trips').update({ title: 'z' }).eq('id', 'none').select().maybeSingle()).data, null);
+  const up = await c.from('trips').upsert({ id: 'y', title: 'd' }).select().maybeSingle();
+  assert.equal(up.data.id, 'y');
+});

@@ -3,7 +3,6 @@ import { validateSettings } from '../core/validate.js';
 import { toFormError, FORM_MESSAGES } from './errors.js';
 
 const KEY = 'kansen.settings';
-const CHECK_MESSAGE = '保存できませんでした。入力を確かめてもう一度保存してください';
 const OFFLINE_MESSAGE = '保存できませんでした。通信できる場所でもう一度保存してください';
 const LOAD_FAILED_MESSAGE = '設定を読み込めませんでした。通信できる場所で開き直してください';
 
@@ -58,12 +57,10 @@ function readLocal(local) {
   }
 }
 
-// 保存の失敗の理由。code 付き（42501・期限切れ以外）は、これまでどおり入力の確認を促す
-function formErrors(e) {
+// 保存の失敗（D34）。期限切れは expired: true も付ける（画面が ctx.onExpired() を呼ぶ）
+function failure(e) {
   const r = toFormError(e);
-  if (r === 'expired') return { _form: FORM_MESSAGES.expired };
-  if (e?.code && e.code !== '42501') return { _form: CHECK_MESSAGE };
-  return r;
+  return r === 'expired' ? { ok: false, errors: { _form: FORM_MESSAGES.expired }, expired: true } : { ok: false, errors: r };
 }
 
 export function createSettingsStore({ client, local, userId }) {
@@ -108,9 +105,9 @@ export function createSettingsStore({ client, local, userId }) {
     }
     try {
       const { error } = await client.from('user_settings').upsert(settings, { onConflict: 'user_id' });
-      if (error) return { ok: false, errors: formErrors(error) };
+      if (error) return failure(error);
     } catch (e) {
-      return { ok: false, errors: formErrors(e) };
+      return failure(e);
     }
     return { ok: true, settings };
   }

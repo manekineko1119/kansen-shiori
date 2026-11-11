@@ -106,7 +106,7 @@ test('ログイン：範囲外の値は項目ごとの理由を返して送ら�
 
 test('ログイン：code 付きのエラー（42501 以外）は入力の確認を促す', async () => {
   const st = createSettingsStore({ client: fakeClient({ user_settings: [] }, { failOn: { user_settings: { code: '23514', message: 'check' } } }), local: fakeLocal(), userId: 'u1' });
-  assert.deepEqual((await st.save(DEFAULT_SETTINGS)).errors, { _form: '保存できませんでした。入力を確かめてもう一度保存してください' });
+  assert.deepEqual((await st.save(DEFAULT_SETTINGS)).errors, { _form: '入力の値を保存できませんでした' });
 });
 
 test('ログイン：load の失敗は例外にせず exists null と error を返す', async () => {
@@ -162,7 +162,7 @@ test('端末の設定：形の違う出発空港の要素は捨てる', async ()
   assert.deepEqual((await createSettingsStore({ client: null, local: odd, userId: null }).load()).settings.origin_airports.map((a) => a.code), ['NGO']);
 });
 
-test('ログイン：期限切れの保存は _form で知らせる', async () => {
+test('ログイン：期限切れの保存は expired: true と _form で知らせる', async () => {
   const st = createSettingsStore({ client: fakeClient({ user_settings: [] }, { failOn: { user_settings: { code: 'PGRST301', message: 'JWT expired' } } }), local: fakeLocal(), userId: 'u1' });
-  assert.deepEqual((await st.save(DEFAULT_SETTINGS)).errors, { _form: 'ログインの有効期限が切れました。もう一度ログインしてください' });
+  assert.deepEqual(await st.save(DEFAULT_SETTINGS), { ok: false, errors: { _form: 'ログインの有効期限が切れました。もう一度ログインしてください' }, expired: true });
 });

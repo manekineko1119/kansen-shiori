@@ -8,6 +8,7 @@
 export function fakeClient(tables, { failOn = {}, throwOn = [], rpcs = {}, functions = {} } = {}) {
   const calls = [];
   const objects = {}; // { バケット: { パス: file } }
+  let nextId = 0; // insert で id がない行に付ける 'id-1'、'id-2'…
 
   // 表以外の呼び出しの共通の結果
   const outcome = (name, make) => {
@@ -37,8 +38,9 @@ export function fakeClient(tables, { failOn = {}, throwOn = [], rpcs = {}, funct
         if (failOn[table]) return { data: null, error: failOn[table] };
         if (call.op === 'upsert' || call.op === 'insert') {
           const rows = tables[table] ?? (tables[table] = []);
+          if (call.op === 'insert') call.rows = call.rows.map((r) => (r.id == null ? { ...r, id: `id-${++nextId}` } : r));
           for (const r of call.rows) rows.push(r);
-          return { data: call.rows, error: null };
+          return { data: single ? (call.rows[0] ?? null) : call.rows, error: null };
         }
         const matches = (r) => call.eq.every(([col, val]) => r[col] === val) && call.in.every(([col, vals]) => vals.includes(r[col]));
         if (call.op === 'update') {

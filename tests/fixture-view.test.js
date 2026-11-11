@@ -19,6 +19,8 @@ test('会場：指定 → ホームのクラブの本拠地 → 会場未定', (
   assert.equal(venueOf(f, { clubsById, stadiumsById }).name, '岐阜メモリアルセンター長良川競技場');
   assert.equal(venueOf({ ...f, venue_stadium_id: 'alwin' }, { clubsById, stadiumsById }).stadium.id, 'alwin');
   assert.deepEqual(venueOf({ ...f, venue_name_override: '長野Uスタジアム' }, { clubsById, stadiumsById }).name, '長野Uスタジアム');
+  assert.equal(venueOf({ ...f, venue_name_override: '長野Uスタジアム' }, { clubsById, stadiumsById }).stadium, null);   // 未登録の会場名だけなら、ホームの本拠地にしない
+  assert.deepEqual(venueOf({ ...f, venue_stadium_id: 'alwin', venue_name_override: 'アルウィン（臨時）' }, { clubsById, stadiumsById }), { stadium: stadiumsById.alwin, name: 'アルウィン（臨時）' });
   assert.deepEqual(venueOf({ ...f, home_club_id: 'unknown' }, { clubsById, stadiumsById }), { stadium: null, name: '会場未定' });
 });
 

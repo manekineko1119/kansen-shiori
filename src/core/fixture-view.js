@@ -15,12 +15,14 @@ export function opponentOf(f, supportClubId, clubsById) {
   return clubsById?.[id] ?? unknownClub(id);
 }
 
-// 会場：venue_stadium_id → ホームのクラブの本拠地の順。名前は venue_name_override を優先
+// 会場：venue_stadium_id のスタジアム → なければ venue_name_override（未登録の会場名。stadium は null）→ ホームのクラブの本拠地 → 会場未定
 export function venueOf(f, { clubsById, stadiumsById }) {
-  const id = f.venue_stadium_id ?? clubsById?.[f.home_club_id]?.home_stadium_id ?? null;
-  const stadium = (id && stadiumsById?.[id]) || null;
-  const name = f.venue_name_override || stadium?.name || '会場未定';
-  return { stadium, name };
+  const pick = (id) => (id && stadiumsById?.[id]) || null;
+  const own = pick(f.venue_stadium_id);
+  if (own) return { stadium: own, name: f.venue_name_override || own.name };
+  if (f.venue_name_override) return { stadium: null, name: f.venue_name_override };
+  const home = pick(clubsById?.[f.home_club_id]?.home_stadium_id);
+  return home ? { stadium: home, name: home.name } : { stadium: null, name: '会場未定' };
 }
 
 const COMPETITIONS = {
