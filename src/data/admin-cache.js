@@ -37,7 +37,7 @@ export function createAdminCache({ store, onChange }) {
     reset,
 
     run: () => run,
-    // 実行中なら null（呼ばない）。結果が返ったら取り込みの状況を読み直す
+    // 実行中なら null（呼ばない）。結果が返ったら取り込みの状況を読み直す。戻り値は store の結果のまま（'expired' を含む）
     async runNow(clubId) {
       if (run.running) return null;
       run = { running: true, outcome: null };
@@ -46,7 +46,8 @@ export function createAdminCache({ store, onChange }) {
       try {
         res = await store().runSyncNow(clubId);
       } finally {
-        run = { running: false, outcome: res ?? null };
+        // 期限切れ（'expired'）は覚えない。画面に出す結果ではなく、呼んだ側が ctx.onExpired() に渡す
+        run = { running: false, outcome: res && res !== 'expired' ? res : null };
         reset('sync');
         onChange();
       }

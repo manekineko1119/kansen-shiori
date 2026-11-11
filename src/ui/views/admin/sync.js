@@ -21,7 +21,7 @@ function lastBlock(last) {
 
 // 「今すぐ取り込む」の結果（押したあと、次に押すまで出す）
 function outcomeNote(outcome) {
-  if (!outcome) return null;
+  if (!outcome || typeof outcome !== 'object') return null; // 期限切れなどは覚えない（念のため、描画で落とさない）
   if (!outcome.ok) return el('p', { class: 'err', role: 'alert' }, outcome.errors._form);
   const r = outcome.result;
   const head = r.skippedReason ? SKIPPED[r.skippedReason] ?? '読みませんでした' : r.ok ? '取り込みました' : '取り込みに失敗しました';

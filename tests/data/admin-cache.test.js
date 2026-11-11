@@ -90,3 +90,10 @@ test('reset の前に読み始めた古い結果は捨てる', async () => {
   await tick();
   assert.deepEqual(cache.testers(), { ok: true, testers: ['new'] });
 });
+
+test('今すぐ取り込む：期限切れは結果として覚えない（押せる状態に戻し、呼んだ側が onExpired に渡す）', async () => {
+  const store = fakeStore({ runSyncNow: async () => 'expired' });
+  const cache = createAdminCache({ store: () => store, onChange: () => {} });
+  assert.equal(await cache.runNow('matsumoto'), 'expired');
+  assert.deepEqual(cache.run(), { running: false, outcome: null });
+});
