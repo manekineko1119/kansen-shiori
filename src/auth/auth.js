@@ -2,7 +2,7 @@
 import { getClient } from '../data/client.js';
 import { setReturnTo, takeReturnTo } from '../data/return-to.js';
 import { SNAPSHOT_KEYS } from '../data/snapshot.js';
-import { authErrorFromUrl, cleanAuthUrl, safeReturnTo, toAppUser } from '../core/auth-url.js';
+import { authErrorFromUrl, cleanAuthUrl, safeReturnTo, toAppUser, authStateFrom } from '../core/auth-url.js';
 
 // Google でログインする。戻り先（'#/…'）を覚えてから、# を含まないアプリの URL に戻す（PKCE）。
 // returnTo が null なら、ルーターが覚えた戻り先をそのまま使う
@@ -24,8 +24,31 @@ export async function signOut({ snapshot, userId }) {
   if (userId) {
     try { await snapshot.remove(SNAPSHOT_KEYS.personal(userId)); } catch { cleaned = false; }
   }
-  await getClient().auth.signOut();
-  return { cleaned };
+  // 期限切れのままオフラインだと、supabase-js は端末のセッションを消さずに error を返す
+  let signedOut = true;
+  try {
+    const { error } = await getClient().auth.signOut();
+    if (error) signedOut = false;
+  } catch {
+    signedOut = false;
+  }
+  return { cleaned, signedOut };
+}
+
+// ログインの状態を確かめる：{ status: 'signed_in' | 'signed_out' | 'unknown', user }。
+// 期限切れのままオフラインだと getSession は約30秒くり返すので、timeoutMs で打ち切って 'unknown' にする
+export async function resolveAuth({ timeoutMs = 3000 } = {}) {
+  let timer;
+  const timeout = new Promise((res) => { timer = setTimeout(() => res({ timedOut: true }), timeoutMs); });
+  try {
+    const r = await Promise.race([
+      getClient().auth.getSession().then((x) => ({ session: x?.data?.session ?? null, error: x?.error ?? null }), (e) => ({ session: null, error: e })),
+      timeout,
+    ]);
+    return authStateFrom(r);
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 export async function getAppUser() {

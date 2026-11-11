@@ -136,3 +136,23 @@ test('保存：型違いの入力は既定値に置き換えず、検証で止�
   assert.ok(r.errors.default_modes);
   assert.equal(client.calls.length, 0);
 });
+
+// 段5 のまとめのレビュー I-2：読めなかった直後に保存すると、アカウントの設定を端末の値で上書きしてしまう
+test('ログイン：読み込みに失敗したあとは保存せず、読み直せたら保存できる', async () => {
+  const throwOn = ['user_settings'];
+  const client = fakeClient({ user_settings: [{ user_id: 'u1', ...DEFAULT_SETTINGS, origin_station: '塩尻' }] }, { throwOn });
+  const st = createSettingsStore({ client, local: fakeLocal(), userId: 'u1' });
+  assert.equal((await st.load()).exists, null);
+  const r = await st.save({ ...DEFAULT_SETTINGS, origin_station: '岡谷' });
+  assert.deepEqual(r, { ok: false, errors: { _form: '設定を読み込めませんでした。通信できる場所で開き直してください' } });
+  assert.equal(client.calls.some((c) => c.op === 'upsert'), false); // 送っていない
+  throwOn.length = 0; // 通信が戻った
+  assert.equal((await st.load()).exists, true);
+  assert.equal((await st.save({ ...DEFAULT_SETTINGS, origin_station: '岡谷' })).ok, true);
+});
+
+test('ログイン：エラーで読めなかった（failOn）ときも保存しない', async () => {
+  const st = createSettingsStore({ client: fakeClient({ user_settings: [] }, { failOn: { user_settings: { code: 'PGRST000', message: 'x' } } }), local: fakeLocal(), userId: 'u1' });
+  await st.load();
+  assert.equal((await st.save(DEFAULT_SETTINGS)).ok, false);
+});

@@ -46,7 +46,14 @@ export function renderWelcome({ settings, clubs, state, key, onSave }) {
     const local = {};
     if (!values.origin_station) local.origin_station = '出発駅を入力してください';
     if (!values.origin_prefecture) local.origin_prefecture = '都道府県を入力してください';
-    const res = Object.keys(local).length ? { ok: false, errors: local } : await onSave(values);
+    const btn = form.querySelector('button[type="submit"]');
+    btn.disabled = true; // 保存中は2回押せない
+    let res;
+    try {
+      res = Object.keys(local).length ? { ok: false, errors: local } : await onSave(values);
+    } finally {
+      btn.disabled = false;
+    }
     if (res.ok) return;
     for (const [k, msg] of Object.entries(res.errors ?? {})) {
       const p = form.querySelector(`[data-err="${k}"]`) ?? form.querySelector('[data-err="_form"]');

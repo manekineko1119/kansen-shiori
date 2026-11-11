@@ -4,6 +4,7 @@ import { validateSettings } from '../core/validate.js';
 const KEY = 'kansen.settings';
 const CHECK_MESSAGE = '保存できませんでした。入力を確かめてもう一度保存してください';
 const OFFLINE_MESSAGE = '保存できませんでした。通信できる場所でもう一度保存してください';
+const LOAD_FAILED_MESSAGE = '設定を読み込めませんでした。通信できる場所で開き直してください';
 
 export const SETTINGS_KEYS = ['support_club_id', 'origin_station', 'origin_prefecture', 'origin_airports', 'airport_checkin_min', 'airport_arrival_min', 'arrive_before_min', 'default_modes'];
 
@@ -55,7 +56,16 @@ function readLocal(local) {
 }
 
 export function createSettingsStore({ client, local, userId }) {
+  // 直前の読み込みに失敗したか。失敗したあとは保存しない（端末の値でアカウントの設定を上書きしないため）
+  let loadFailed = false;
+
   async function load() {
+    const r = await loadInner();
+    loadFailed = r.exists === null;
+    return r;
+  }
+
+  async function loadInner() {
     const dev = readLocal(local);
     if (userId == null) return dev;
     let res;
@@ -76,6 +86,7 @@ export function createSettingsStore({ client, local, userId }) {
     for (const k of SETTINGS_KEYS) settings[k] = values?.[k] === undefined ? structuredClone(DEFAULT_SETTINGS[k]) : values[k];
     const v = validateSettings(settings);
     if (!v.ok) return { ok: false, errors: v.errors };
+    if (userId != null && loadFailed) return { ok: false, errors: { _form: LOAD_FAILED_MESSAGE } };
     if (userId == null) {
       try {
         local.setItem(KEY, JSON.stringify(settings));

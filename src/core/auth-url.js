@@ -39,3 +39,16 @@ export function toAppUser(user) {
   if (!user) return null;
   return { id: user.id, isAdmin: user.app_metadata?.role === 'admin' };
 }
+
+// getSession の結果 → ログインの状態（設計書 7章・9章）。
+// 'signed_in'：ログイン中、'signed_out'：未ログインと確かめた、'unknown'：通信できず確かめられない。
+// 期限切れのままオフラインで開くと、supabase-js は session null と AuthRetryableFetchError を返す。
+// これを未ログインとみなすと、端末の写しを消してしまうので 'unknown' にする
+export function authStateFrom(result) {
+  if (result?.timedOut) return { status: 'unknown', user: null };
+  const user = result?.session?.user ?? null;
+  if (user) return { status: 'signed_in', user: toAppUser(user) };
+  const e = result?.error;
+  if (e && (e.name === 'AuthRetryableFetchError' || e.name === 'TypeError' || e.status === 0)) return { status: 'unknown', user: null };
+  return { status: 'signed_out', user: null };
+}

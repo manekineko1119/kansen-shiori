@@ -15,14 +15,18 @@ import { getClient } from './data/client.js';
 import { createSettingsStore } from './data/settings.js';
 import { browserLocal } from './data/local.js';
 import { setReturnTo } from './data/return-to.js';
-import { handleAuthReturn, getAppUser, onAppUserChange, signInWithGoogle, signOut } from './auth/auth.js';
+import { getLastUser, setLastUser, clearLastUser } from './data/last-user.js';
+import { handleAuthReturn, resolveAuth, onAppUserChange, signInWithGoogle, signOut } from './auth/auth.js';
 
 const root = document.getElementById('app');
 const state = createViewState(); // 入力中の値とスクロール位置（メモリ）
 const local = browserLocal();
 let currentRoute = null;
 let masters = null; // 共通データの状態（readMastersSnapshot／refreshMasters の結果）
-let user = null; // { id, isAdmin } | null（画面の出し分けだけに使う。守りは RLS）
+// { id, isAdmin, offline? } | null（画面の出し分けだけに使う。守りは RLS）。
+// offline: true は、期限切れのままオフラインでログインを確かめられず、最後にログインしていた本人の写しを読み取りだけで出している状態（設計書 7章・9章）
+let user = null;
+let signingOut = false; // ログアウトの最中（SIGNED_OUT を期限切れと取り違えないため）
 let loginError = null; // ログインから戻ったときのエラー（'not_invited' | 'failed'）
 let welcomeSettings = null; // #/welcome の初期値（5-7 の load の settings）
 let notice = null; // 画面の上に1回だけ出すお知らせ（ログアウトで端末の写しを消せなかったときなど）
@@ -34,7 +38,14 @@ function updateSize() {
   document.documentElement.dataset.size = sizeClass(window.innerWidth);
 }
 
-const settingsStore = () => createSettingsStore({ client: getClient(), local, userId: user?.id ?? null });
+// 設定の入れ物は利用者ごとに1つ。読み込みに失敗したことを覚えて、その直後の保存を止めるため（5-7）
+let store = null;
+function settingsStore() {
+  const id = user?.id ?? null;
+  if (!store || store.userId !== id) store = { userId: id, ...createSettingsStore({ client: getClient(), local, userId: id }) };
+  return store;
+}
+const OFFLINE_NOTICE = 'オフラインのため、最後にログインしていたときの内容を表示しています。編集はできません';
 
 function topLinks() {
   const box = document.createElement('div');
@@ -55,6 +66,8 @@ function topLinks() {
   } else {
     b.href = '#/login';
     b.textContent = 'ログイン';
+    // 今の画面を戻り先に覚える（ログインのあと、この画面に戻る）
+    b.addEventListener('click', () => { if (parseRoute(location.hash).name !== 'login') setReturnTo(location.hash || '#/search'); });
   }
   box.append(b);
   return box;
@@ -96,11 +109,12 @@ function draw(route) {
   header.querySelector('h1').textContent = TITLES[route.name] ?? '観戦のしおり';
   header.querySelector('h1').after(topLinks());
   const main = document.createElement('main');
-  if (notice) {
+  for (const text of [user?.offline ? OFFLINE_NOTICE : null, notice]) {
+    if (!text) continue;
     const p = document.createElement('p');
     p.className = 'note';
     p.setAttribute('role', 'status');
-    p.textContent = notice;
+    p.textContent = text;
     main.append(p);
   }
   main.append(view(route));
@@ -118,13 +132,20 @@ function renderApp(route) {
 const redraw = () => { if (currentRoute) rerender(state, routeKey(currentRoute), () => draw(currentRoute)); };
 
 async function doSignOut() {
+  signingOut = true;
   try {
-    const { cleaned } = await signOut({ snapshot, userId: user?.id });
-    if (!cleaned) notice = 'ログアウトしました。ただし、この端末の遠征予定・観戦記録の写しを消せませんでした。次に開いたときにもう一度消します（アカウントのデータはそのままです）';
+    const { cleaned, signedOut } = await signOut({ snapshot, userId: user?.id });
+    if (!signedOut) notice = 'ログアウトできませんでした（通信できません）。通信できる場所でもう一度ログアウトしてください';
+    else if (!cleaned) notice = 'ログアウトしました。ただし、この端末の遠征予定・観戦記録の写しを消せませんでした。次に開いたときにもう一度消します（アカウントのデータはそのままです）';
+    if (signedOut) {
+      user = null;
+      clearLastUser();
+    }
   } finally {
-    user = null;
-    location.hash = '#/search';
-    redraw();
+    signingOut = false;
+    // ログアウトのあとは検索画面へ。すでに検索画面なら、hashchange が起きないので描き直す
+    if (parseRoute(location.hash).name === 'search') renderApp(parseRoute(location.hash));
+    else location.hash = '#/search';
   }
 }
 
@@ -138,6 +159,27 @@ async function afterSignIn(returnTo) {
   return returnTo;
 }
 
+// ログインの状態を当てはめる（設計書 7章・9章）
+async function applyAuth(auth, last) {
+  if (auth.status === 'signed_in') {
+    user = auth.user;
+    setLastUser(user);
+    return;
+  }
+  if (auth.status === 'unknown') {
+    // 通信できず確かめられない：最後にログインしていた本人の写しを読み取りだけで出す。写しは消さない
+    user = last ? { ...last, offline: true } : null;
+    return;
+  }
+  // 未ログインと確かめた：端末に残った個人の写しを消す（ログアウトで消せなかったとき。アカウントのデータには触れない）
+  user = null;
+  clearLastUser();
+  await snapshot.removeAllPersonal().catch(() => 0);
+}
+
+// 今の画面をもう一度ルーターに通す（ログインの状態が変わったとき）
+const recheckRoute = () => dispatchEvent(new HashChangeEvent('hashchange'));
+
 async function start() {
   updateSize();
   for (const query of Object.values(MEDIA)) {
@@ -145,32 +187,44 @@ async function start() {
   }
 
   try { snapshot = createSnapshot(await openKv()); } catch { /* 保存なしで続ける */ }
-  // ログインしていないのに個人の写しが残っていたら消す（ログアウトで消せなかったとき。アカウントのデータには触れない）
-  if (!(await getAppUser().catch(() => null))) await snapshot.removeAllPersonal().catch(() => 0);
+  const last = getLastUser();
 
   let ret = { returned: false, error: null, returnTo: null };
   try { ret = await handleAuthReturn(); } catch { ret = { returned: true, error: 'failed', returnTo: '#/search' }; }
-  try { user = await getAppUser(); } catch { user = null; }
-  if (ret.error) {
-    loginError = ret.error;
-    history.replaceState(null, '', '#/login');
-  } else if (ret.returned && user) {
-    history.replaceState(null, '', await afterSignIn(ret.returnTo));
-  }
-  if (user && !welcomeSettings && parseRoute(location.hash).name === 'welcome') {
-    welcomeSettings = (await settingsStore().load()).settings; // 初回の設定の途中で読み直したとき
+
+  if (ret.returned) {
+    // ログインから戻ったとき（通信できている）：状態を確かめてから画面を出す
+    await applyAuth(await resolveAuth(), last);
+    if (ret.error || !user) {
+      // 招待されていない、またはセッションに換えられなかった
+      loginError = ret.error ?? 'failed';
+      history.replaceState(null, '', '#/login');
+    } else {
+      history.replaceState(null, '', await afterSignIn(ret.returnTo));
+    }
+  } else {
+    // ふつうの起動：ログインの確かめを待たずに画面を出す（最後にログインしていた本人として仮に出す）
+    user = last;
   }
 
   // 有効期限が切れたら、ログインの必要な画面はログイン画面へ。戻ったら元の画面に戻す（9章）
   onAppUserChange((u) => {
+    if (signingOut) return;
     const was = user;
-    user = u;
-    if (was && !u && currentRoute && routeAccess(currentRoute.name, null) === 'login') {
-      setReturnTo(location.hash);
-      location.hash = '#/login';
-      return;
+    if (u) {
+      user = u;
+      setLastUser(u);
+    } else if (was && !was.offline) {
+      user = null;
+      if (currentRoute && routeAccess(currentRoute.name, null) === 'login') {
+        setReturnTo(location.hash);
+        location.hash = '#/login';
+        return;
+      }
+    } else {
+      return; // オフラインで読み取りだけのときは、そのまま
     }
-    if ((was?.id ?? null) !== (u?.id ?? null) || (was?.isAdmin ?? false) !== (u?.isAdmin ?? false)) redraw();
+    if ((was?.id ?? null) !== (u?.id ?? null) || (was?.isAdmin ?? false) !== (u?.isAdmin ?? false) || was?.offline) redraw();
   });
 
   startRouter({ render: renderApp, getUser: () => user });
@@ -178,6 +232,19 @@ async function start() {
     masters = { status: 'unavailable', message: '初回は通信できる場所で開いてください' };
     redraw();
   });
+
+  if (!ret.returned) {
+    // 裏でログインを確かめ、結果に合わせて画面を出し直す
+    await applyAuth(await resolveAuth(), last);
+    if (user && !user.offline && !welcomeSettings && parseRoute(location.hash).name === 'welcome') {
+      welcomeSettings = (await settingsStore().load()).settings; // 初回の設定の途中で読み直したとき
+    }
+    if (!user && last && currentRoute && routeAccess(currentRoute.name, null) === 'login') setReturnTo(location.hash);
+    recheckRoute();
+  } else if (user && !welcomeSettings && parseRoute(location.hash).name === 'welcome') {
+    welcomeSettings = (await settingsStore().load()).settings;
+    redraw();
+  }
 }
 
 // 共通データ：スナップショットで先に出し、裏で最新を取って差し替える（NFR-04）
@@ -200,7 +267,7 @@ addEventListener('hashchange', async () => {
   if (notice && parseRoute(location.hash).name !== 'search') notice = null; // お知らせはログアウト直後の画面だけ
   loginError = null; // ログインから戻ったときのエラーは、そのときの1回だけ出す
   const r = parseRoute(location.hash);
-  if (r.name === 'welcome' && user && !welcomeSettings) {
+  if (r.name === 'welcome' && user && !user.offline && !welcomeSettings) {
     welcomeSettings = (await settingsStore().load()).settings;
     redraw();
   }
