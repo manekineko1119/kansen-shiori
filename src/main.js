@@ -14,9 +14,10 @@ function updateSize() {
   document.documentElement.dataset.size = sizeClass(window.innerWidth);
 }
 
-function renderApp(route) {
+// keepScroll：幅の区分が変わって作り直すときだけ true。画面の遷移では先頭から始める
+function renderApp(route, keepScroll = false) {
   currentRoute = route;
-  const scrollY = window.scrollY;
+  const scrollY = keepScroll ? window.scrollY : 0;
   const app = document.createElement('div');
   app.className = 'app';
   const col = document.createElement('div');
@@ -37,7 +38,7 @@ updateSize();
 for (const query of Object.values(MEDIA)) {
   matchMedia(query).addEventListener('change', () => {
     updateSize();
-    if (currentRoute) renderApp(currentRoute); // 画面の作り直しの中身は 5-3
+    if (currentRoute) renderApp(currentRoute, true); // 画面の作り直しの中身は 5-3
   });
 }
 startRouter({ render: renderApp, getUser });

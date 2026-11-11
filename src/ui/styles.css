@@ -134,7 +134,7 @@ main {
   border-radius: 0 0 3px 3px;
   background: var(--theme-primary);
 }
-.menu-brand, .menu-settings { display: none; }
+.menu .menu-brand, .menu a.menu-settings { display: none; }
 
 /* ---------- 部品 ---------- */
 /* 見出し：しおりの目次のように、罫線を右へ伸ばす */
@@ -200,7 +200,7 @@ a:focus-visible, button:focus-visible, .input:focus-visible {
     border-top: 0;
     border-right: 1px solid var(--rule);
   }
-  .menu-brand {
+  .menu .menu-brand {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -223,7 +223,7 @@ a:focus-visible, button:focus-visible, .input:focus-visible {
   .menu a:hover { background: var(--bg); color: var(--ink); }
   .menu a[aria-current] { background: var(--theme-tint); color: var(--theme-primary); }
   .menu a[aria-current]::before { display: none; }
-  .menu-settings { display: flex; }
+  .menu a.menu-settings { display: flex; }
   .gearbtn { display: none; }
   .top { width: 100%; max-width: 1200px; margin: 0 auto; padding: 24px 32px 12px; }
   .top h1 { font-size: 24px; }
