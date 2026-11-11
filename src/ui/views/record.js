@@ -94,8 +94,22 @@ export function renderRecord(ctx) {
 
   const id = ctx.route.params.fixtureId;
   const extra = ctx.user ? (ctx.personal?.data?.extraFixtures ?? []) : [];
-  const fixture = mergeFixtures(masters.fixturesById, extra)[id] ?? null;
   const detail = el('div', { class: 'record-detail' }, el('a', { class: 'back', href: '#/records' }, '‹ 観戦記録の一覧'));
+  // 共通データ → 自分の extraFixtures → ID で1件読む（前のシーズンの試合。D28）。読み込み中は「読み込み中…」
+  let fixture = mergeFixtures(masters.fixturesById, extra)[id] ?? null;
+  let loading = false;
+  if (!fixture) {
+    if (ctx.user && (!ctx.personal || ctx.personal.status === 'loading')) loading = true;
+    else {
+      const found = ctx.data.fetchFixture(id);
+      if (found === undefined) loading = true;
+      else fixture = found;
+    }
+  }
+  if (loading) {
+    root.append(split({ list: el('div', { class: 'rec-list' }), detail: el('section', { class: 'sec' }, el('p', { class: 'muted' }, '読み込み中…')) }));
+    return root;
+  }
   if (!fixture) {
     root.append(split({ list: el('div', { class: 'rec-list' }), detail: notFound() }));
     return root;
@@ -109,12 +123,17 @@ export function renderRecord(ctx) {
   const supportClubId = ctx.settings?.support_club_id ?? null;
   const scoreboard = renderScoreboard({ fixture, clubsById: masters.clubsById, stadiumsById: masters.stadiumsById, supportClubId });
   const isExtra = !masters.fixturesById[id];
+  const isFetched = isExtra && !extra.some((f) => f.id === id); // 画面から読んだ試合
 
   detail.append(scoreboard, videosSection(fixture));
   if (edit === 'fixture' && canEditFixture) {
     detail.append(renderFixtureEdit(ctx, {
       fixture, formKey: `${plainKey}:fixture`, doneHref: base, clubsById: masters.clubsById,
-      onSaved: async () => { await ctx.data.reloadMasters(); if (isExtra) await ctx.data.reloadPersonal(); },
+      onSaved: async () => {
+        if (isFetched) ctx.data.forgetFixture(id); // 読み直す
+        await ctx.data.reloadMasters();
+        if (isExtra) await ctx.data.reloadPersonal();
+      },
     }));
   } else {
     detail.append(sourceSection(fixture, canEditFixture, `${base}?edit=fixture`));

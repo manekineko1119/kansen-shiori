@@ -17,6 +17,7 @@ import { createSettingsHolder } from './data/settings-holder.js';
 import { createPersonalHolder } from './data/personal-holder.js';
 import { createTripStore } from './data/trips.js';
 import { createRecordStore } from './data/records.js';
+import { createFixtureCache } from './data/fixture-cache.js';
 import { createHistory } from './data/history.js';
 import { browserLocal } from './data/local.js';
 import { setReturnTo } from './data/return-to.js';
@@ -52,6 +53,7 @@ const settingsStore = () => settings.store();
 const personal = createPersonalHolder({
   client: getClient, getSnapshot: () => snapshot, getUser: () => user, getMasters: () => masters, now: Date.now, onChange: () => redraw(),
 });
+const fixtureCache = createFixtureCache({ client: getClient, onChange: () => redraw() });
 const OFFLINE_NOTICE = 'オフラインのため、最後にログインしていたときの内容を表示しています。編集はできません';
 
 // 共通データを最新に読み直して、画面を描き直す（管理者が試合の情報を保存したあと）
@@ -75,6 +77,8 @@ function draw(route) {
       history: createHistory(local),
       trips: createTripStore({ client: getClient() }),
       records: createRecordStore({ client: getClient() }),
+      fetchFixture: (id) => fixtureCache.get(id), // 共通データにない試合を ID で1件読む（undefined＝読み込み中、null＝なし）
+      forgetFixture: (id) => fixtureCache.forget(id),
       reloadMasters, // 試合の情報を保存したあとに、共通データを読み直す
       goLogin: () => { setReturnTo(location.hash || '#/search'); location.hash = '#/login'; }, // 今の画面を戻り先に覚えてログインへ
       reloadPersonal: () => personal.reload(), // 保存・削除の成功のあとに呼ぶ（D33）

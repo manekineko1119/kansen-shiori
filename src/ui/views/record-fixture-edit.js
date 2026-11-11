@@ -4,7 +4,7 @@ import { el } from '../components/parts.js';
 import { bindForm } from '../mount.js';
 import { readValues, createRunner } from '../components/form-util.js';
 import {
-  fixtureEditFromForm, fixtureFormValues, removeScorerRow, scorerRowIndexes,
+  fixtureEditFromForm, fixtureFormValues, removeScorerRow, scorerRowIndexes, scorerRows, addScorerRow,
   STATUS_OPTIONS, SCORER_TYPES, VIDEO_KINDS,
 } from '../../core/record-form.js';
 
@@ -25,34 +25,31 @@ const select = (name, options, value, label) => {
  */
 export function renderFixtureEdit(ctx, { fixture, formKey, doneHref, clubsById, onSaved }) {
   const initial = fixtureFormValues(fixture);
-  const saved = ctx.state.getForm(formKey);
-  const count = Number(saved.scorer_count ?? initial.scorer_count) || 0;
+  const scorers = scorerRows(initial, ctx.state.getForm(formKey));
   const homeName = clubName(fixture.home_club_id, clubsById);
   const awayName = clubName(fixture.away_club_id, clubsById);
   const sides = [['home', `${homeName}（ホーム）`], ['away', `${awayName}（アウェイ）`]];
 
   const rowsState = () => ({ ...ctx.state.getForm(formKey), ...readValues(form) });
   const rows = [];
-  for (let i = 0; i < count; i++) {
-    const v = (k, fallback) => initial[`scorer_${i}_${k}`] ?? fallback;
+  for (let i = 0; i < scorers.length; i++) {
+    const v = (k) => scorers[i][k];
     const del = el('button', { class: 'btn btn-sub btn-danger btn-small', type: 'button', 'aria-label': `得点者${i + 1}行目を削除` }, '削除');
     del.addEventListener('click', () => { ctx.state.setForm(formKey, removeScorerRow(rowsState(), i)); ctx.redraw(); });
     rows.push(el('fieldset', { class: 'scorer-row' },
       el('legend', null, `得点者 ${i + 1}`),
       el('div', { class: 'row2' },
-        select(`scorer_${i}_side`, sides, v('side', 'home'), '得点したチーム'),
-        select(`scorer_${i}_type`, Object.entries(SCORER_TYPES), v('type', 'goal'), '種類')),
+        select(`scorer_${i}_side`, sides, v('side'), '得点したチーム'),
+        select(`scorer_${i}_type`, Object.entries(SCORER_TYPES), v('type'), '種類')),
       el('div', { class: 'row2' },
-        el('input', { name: `scorer_${i}_player`, class: 'input', type: 'text', autocomplete: 'off', placeholder: '選手名', 'aria-label': '選手名', value: v('player', '') }),
-        el('input', { name: `scorer_${i}_minute`, class: 'input', type: 'text', inputmode: 'numeric', autocomplete: 'off', placeholder: '時間（64 や 45+1）', 'aria-label': '時間', value: v('minute', '') })),
+        el('input', { name: `scorer_${i}_player`, class: 'input', type: 'text', autocomplete: 'off', placeholder: '選手名', 'aria-label': '選手名', value: v('player') }),
+        el('input', { name: `scorer_${i}_minute`, class: 'input', type: 'text', inputmode: 'numeric', autocomplete: 'off', placeholder: '時間（64 や 45+1）', 'aria-label': '時間', value: v('minute') })),
       el('p', { class: 'err', 'data-err': `scorer_${i}_side` }), el('p', { class: 'err', 'data-err': `scorer_${i}_minute` }), el('p', { class: 'err', 'data-err': `scorer_${i}_type` }),
       del));
   }
   const add = el('button', { class: 'btn btn-sub btn-small', type: 'button' }, '得点者を追加');
   add.addEventListener('click', () => {
-    const v = rowsState();
-    const n = Number(v.scorer_count ?? count) || 0;
-    ctx.state.setForm(formKey, { ...v, scorer_count: String(n + 1), [`scorer_${n}_side`]: 'home', [`scorer_${n}_type`]: 'goal' });
+    ctx.state.setForm(formKey, addScorerRow(rowsState()));
     ctx.redraw();
   });
 
@@ -66,7 +63,7 @@ export function renderFixtureEdit(ctx, { fixture, formKey, doneHref, clubsById, 
     el('div', { class: 'row2' }, score('home_score', `${homeName}のスコア`, initial.home_score), score('away_score', `${awayName}のスコア`, initial.away_score)),
     el('h2', null, '得点者'),
     rows,
-    el('input', { type: 'hidden', name: 'scorer_count', value: String(count) }),
+    el('input', { type: 'hidden', name: 'scorer_count', value: String(scorers.length) }),
     add,
     el('h2', null, '試合動画'),
     el('p', { class: 'muted' }, '空にすると、手入力の動画だけを消します（自動で登録された動画は残ります）。'),

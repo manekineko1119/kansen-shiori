@@ -121,6 +121,27 @@ export function removeScorerRow(values, i) {
   return out;
 }
 
+// 画面に出す得点者の行。入力中の値（saved）に scorer_count があればそれだけで決める（消した DB の行を戻さない）。なければ DB の値
+export function scorerRows(initial, saved) {
+  const src = saved.scorer_count !== undefined ? saved : initial;
+  const n = Number(src.scorer_count) || 0;
+  return Array.from({ length: n }, (_, i) => ({
+    side: src[`scorer_${i}_side`] ?? 'home',
+    player: src[`scorer_${i}_player`] ?? '',
+    minute: src[`scorer_${i}_minute`] ?? '',
+    type: src[`scorer_${i}_type`] ?? 'goal',
+  }));
+}
+
+// 空の行を末尾に足す（選手名・時間は必ず空で始まる）
+export function addScorerRow(values) {
+  const n = Number(values.scorer_count) || 0;
+  return {
+    ...values, scorer_count: String(n + 1),
+    [`scorer_${n}_side`]: 'home', [`scorer_${n}_player`]: '', [`scorer_${n}_minute`]: '', [`scorer_${n}_type`]: 'goal',
+  };
+}
+
 const isScore = (v) => Number.isInteger(v) && v >= 0;
 
 export function validateFixtureEdit(edit, { homeClubId, awayClubId } = {}) {

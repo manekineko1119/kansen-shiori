@@ -94,3 +94,28 @@ test('出どころの文と日本時間の更新日時', () => {
   assert.equal(formatDateTimeJst('2026-12-31T15:00:00Z'), '2027/1/1 0:00');
   assert.equal(formatDateTimeJst('x'), null);
 });
+
+import { scorerRows, addScorerRow } from '../src/core/record-form.js';
+
+test('得点者の行：DB に2件 → 1件目を削除 → 追加 で [2件目, 空]。消した行の値は戻らない', () => {
+  const f = {
+    home_club_id: 'nara', away_club_id: 'matsumoto',
+    scorers: [{ club_id: 'nara', player: 'A', minute: '5', type: 'goal' }, { club_id: 'matsumoto', player: 'B', minute: '60', type: 'penalty' }],
+  };
+  const initial = fixtureFormValues(f);
+  assert.deepEqual(scorerRows(initial, {}).map((r) => r.player), ['A', 'B']);
+  const removed = removeScorerRow(initial, 0);
+  assert.deepEqual(scorerRows(initial, removed).map((r) => r.player), ['B']);
+  const added = addScorerRow(removed);
+  assert.deepEqual(scorerRows(initial, added), [
+    { side: 'away', player: 'B', minute: '60', type: 'penalty' },
+    { side: 'home', player: '', minute: '', type: 'goal' },
+  ]);
+});
+
+test('得点者の行：DB が1件だけでも、削除 → 追加で消した名前は戻らない。何も保存されていなければ DB の値', () => {
+  const initial = fixtureFormValues({ home_club_id: 'n', away_club_id: 'm', scorers: [{ club_id: 'n', player: 'A', minute: '5', type: 'goal' }] });
+  const added = addScorerRow(removeScorerRow(initial, 0));
+  assert.deepEqual(scorerRows(initial, added), [{ side: 'home', player: '', minute: '', type: 'goal' }]);
+  assert.equal(scorerRows(initial, {}).length, 1);
+});
