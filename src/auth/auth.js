@@ -10,7 +10,8 @@ export async function signInWithGoogle(returnTo = null) {
   if (returnTo) setReturnTo(returnTo);
   const { error } = await getClient().auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: location.origin + location.pathname },
+    // select_account：Google にログイン中でも、毎回アカウントを選べるようにする（複数のアカウントを持つ人のため）
+    options: { redirectTo: location.origin + location.pathname, queryParams: { prompt: 'select_account' } },
   });
   if (error) throw error;
 }
