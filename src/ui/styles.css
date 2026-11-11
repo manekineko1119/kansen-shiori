@@ -164,6 +164,29 @@ h2:first-child { margin-top: 0; }
 }
 .input:hover { border-color: var(--ink-2); }
 
+/* 操作ボタン：ページの流れの中に置く（画面下に固定しない。設計書 3.5） */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 48px; padding: 0 20px; margin-top: 16px;
+  border: 0; border-radius: var(--r-s);
+  background: var(--theme-primary); color: var(--theme-on-primary);
+  font: inherit; font-weight: 700; cursor: pointer;
+}
+.btn:hover { background: var(--theme-deep); }
+.btn-sub { background: var(--paper); color: var(--theme-primary); border: 1px solid var(--rule); }
+.btn-sub:hover { background: var(--theme-tint); }
+.err { color: var(--lose); font-size: 13px; }
+.note { background: var(--note-bg); border-radius: var(--r-s); padding: 10px 12px; margin-top: 12px; }
+.check { display: flex; align-items: center; gap: 8px; min-height: 48px; }
+
+/* 見出しの横の小さなリンク（ログイン・ログアウト・管理） */
+.toplinks { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+.toplink {
+  display: inline-flex; align-items: center; min-height: 48px; padding: 0 10px;
+  border: 0; background: none; color: var(--theme-primary); font: inherit; font-size: 13px; font-weight: 700;
+  text-decoration: none; cursor: pointer;
+}
+
 /* 2列：S は1列、M・L は2列。S の「右の列を別の画面にする」切り替えは 5-3 以降で足す */
 .two-col { display: grid; gap: 16px; }
 .two-col > * { min-width: 0; }
