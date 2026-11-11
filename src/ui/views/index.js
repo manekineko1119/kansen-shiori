@@ -7,6 +7,7 @@ import { renderSettings } from './settings.js';
 import { renderSearch } from './search.js';
 import { renderResult } from './result.js';
 import { renderFixtures } from './fixtures.js';
+import { renderCalendar } from './calendar.js';
 import { renderTrips, renderTrip, renderTripNew } from './trips.js';
 import { el, section } from '../components/parts.js';
 
@@ -17,7 +18,7 @@ export const VIEWS = {
   search: renderSearch,
   result: renderResult,
   fixtures: renderFixtures,
-  calendar: placeholder,
+  calendar: renderCalendar,
   trips: renderTrips,
   trip: renderTrip,
   'trip-new': renderTripNew,
