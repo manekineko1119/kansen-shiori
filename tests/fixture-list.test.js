@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { fixtureRows, nearestIndex } from '../src/core/fixture-list.js';
+import { fixtureRows, nearestIndex, shouldJumpToToday } from '../src/core/fixture-list.js';
 import { jstNow } from '../src/core/time.js';
 
 const clubsById = {
@@ -59,4 +59,10 @@ test('nearestIndex：日本時間 0:30（UTC では前日 15:30）は日本の�
   const rows = fixtureRows([fx('1', '2026-11-07', 'matsumoto', 'gifu'), fx('2', '2026-11-08', 'gifu', 'matsumoto')], env);
   const nowMs = Date.UTC(2026, 10, 7, 15, 30);   // 日本時間 11/8 0:30
   assert.equal(nearestIndex(rows, jstNow(nowMs).date), 1);
+});
+
+test('shouldJumpToToday：0 より大きい位置が記録されていなければ今日に近い行へ動く', () => {
+  assert.equal(shouldJumpToToday(undefined), true);   // 未記録
+  assert.equal(shouldJumpToToday(0), true);            // redraw の rerender が 0 を記録したあと
+  assert.equal(shouldJumpToToday(320), false);         // 利用者が動かした位置を奪わない
 });

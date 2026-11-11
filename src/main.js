@@ -23,6 +23,8 @@ const root = document.getElementById('app');
 const state = createViewState(); // 入力中の値とスクロール位置（メモリ）
 const local = browserLocal();
 let currentRoute = null;
+// ブラウザの自動のスクロール復元と、アプリの復元（scrollPlan）を取り違えないため
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 let masters = null; // 共通データの状態（readMastersSnapshot／refreshMasters の結果）
 // { id, isAdmin, offline? } | null（画面の出し分けだけに使う。守りは RLS）。offline: true は、期限切れのままオフラインで、最後にログインしていた本人の写しを読み取りだけで出している状態（7章・9章）
 let user = null;

@@ -1,7 +1,7 @@
 // 日程（#/fixtures。設計書 3章・3.5、FR-20・22・57）：応援クラブの試合の一覧と、選んだ試合（?f=<試合ID>）の詳細
 // 一覧と詳細は両方作り、S で一覧を隠すのは CSS だけ（D31）。選んだ試合は URL が持つ（D32）
 import { el, innerLink, outcomeBadge, split } from '../components/parts.js';
-import { fixtureRows, nearestIndex } from '../../core/fixture-list.js';
+import { fixtureRows, nearestIndex, shouldJumpToToday } from '../../core/fixture-list.js';
 import { fixtureSide, opponentOf, venueOf, competitionLabel, statusLabel } from '../../core/fixture-view.js';
 import { formatDateJa } from '../../core/format.js';
 import { formatScore, matchOutcome } from '../../core/result.js';
@@ -69,11 +69,11 @@ export function renderFixtures(ctx) {
   }
   root.append(split({ list, detail: detailNode }));
 
-  // 今日に近い行まで（この画面のスクロール位置が記録されていないときだけ）
+  // 今日に近い行まで（この画面のスクロール位置が0 より大きい位置が記録されていないときだけ）
   const idx = nearestIndex(rows, ctx.today);
-  if (!selected && idx > 0 && !state.hasScroll(key)) {
+  if (!selected && idx > 0 && shouldJumpToToday(state.getScroll(key))) {
     requestAnimationFrame(() => requestAnimationFrame(() => {
-      if (state.hasScroll(key)) return;
+      if (!shouldJumpToToday(state.getScroll(key))) return;
       root.querySelector(`[data-fixture="${CSS.escape(rows[idx].id)}"]`)?.scrollIntoView({ block: 'center' });
     }));
   }

@@ -36,3 +36,8 @@ export function nearestIndex(rows, today) {
   const i = rows.findIndex((r) => r.date >= today);
   return i === -1 ? rows.length - 1 : i;
 }
+
+// 今日に近い行へ動くか：0 より大きい位置が記録されていなければ動く（rerender は描き直しの前に 0 を記録するため、0 は「未記録」と同じに扱う）
+export function shouldJumpToToday(savedScroll) {
+  return !(savedScroll > 0);
+}
