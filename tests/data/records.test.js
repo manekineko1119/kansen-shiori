@@ -82,8 +82,14 @@ test('saveFixtureInfo：RLS で0行しか更新されなかったとき（管理
 test('saveFixtureInfo：期限切れ・動画の失敗', async () => {
   const expired = createRecordStore({ client: fakeClient({ fixtures: [{ id: 'f1' }] }, { failOn: { fixtures: { code: 'PGRST303' } } }) });
   assert.equal(await expired.saveFixtureInfo('f1', edit, ids), 'expired');
-  const vfail = createRecordStore({ client: fakeClient({ fixtures: [{ id: 'f1' }] }, { failOn: { fixture_videos: { code: '42501' } } }) });
-  assert.deepEqual(await vfail.saveFixtureInfo('f1', edit, ids), { ok: false, errors: { _form: '権限がありません' } });
+  const PARTIAL = { ok: false, partial: true, errors: { _form: '試合の情報は保存しました。動画だけ保存できませんでした。もう一度保存してください' } };
+  const vclient = fakeClient({ fixtures: [{ id: 'f1' }] }, { failOn: { fixture_videos: { code: '42501' } } });
+  assert.deepEqual(await createRecordStore({ client: vclient }).saveFixtureInfo('f1', edit, ids), PARTIAL);
+  assert.equal(vclient.calls.filter((c) => c.table === 'fixtures' && c.op === 'update').length, 1); // 試合の更新は入っている
+  const down = fakeClient({ fixtures: [{ id: 'f1' }] }, { throwOn: ['fixture_videos'] });
+  assert.deepEqual(await createRecordStore({ client: down }).saveFixtureInfo('f1', edit, ids), PARTIAL);
+  const vexp = fakeClient({ fixtures: [{ id: 'f1' }] }, { failOn: { fixture_videos: { code: 'PGRST301' } } });
+  assert.equal(await createRecordStore({ client: vexp }).saveFixtureInfo('f1', edit, ids), 'expired');
 });
 
 // ---- 写真（6-7。設計書 4.2.1・9章）

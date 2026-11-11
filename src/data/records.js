@@ -24,6 +24,9 @@ function recordRow(record, photoPath) {
   return row;
 }
 
+const PARTIAL_MESSAGE = '試合の情報は保存しました。動画だけ保存できませんでした。もう一度保存してください';
+const partialOrExpired = (e) => (fail(e) === 'expired' ? 'expired' : { ok: false, partial: true, errors: { _form: PARTIAL_MESSAGE } });
+
 export function createRecordStore({ client, photos = null }) {
   // 手入力で保存する動画（種類ごと）。URL があれば upsert、空なら手入力の行だけ消す（自動の動画は消さない）
   async function saveVideo(fixtureId, kind, url) {
@@ -103,13 +106,18 @@ export function createRecordStore({ client, photos = null }) {
         if (error) return fail(error);
         // RLS で守られた更新は、権限がないとエラーにならず 0 行になる
         if (!data || data.length === 0) return { ok: false, errors: { _form: FORM_MESSAGES.forbidden } };
+      } catch (e) {
+        return fail(e);
+      }
+      // 試合の更新はもう入っている。動画だけ失敗したときは、途中まで保存したことが分かる形で返す（もう一度保存すれば同じ値で入り直す）
+      try {
         for (const kind of ['highlight', 'inside']) {
           const res = await saveVideo(fixtureId, kind, edit.videos[kind]);
-          if (res.error) return fail(res.error);
+          if (res.error) return partialOrExpired(res.error);
         }
         return { ok: true };
       } catch (e) {
-        return fail(e);
+        return partialOrExpired(e);
       }
     },
   };

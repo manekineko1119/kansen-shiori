@@ -85,7 +85,13 @@ export function renderFixtureEdit(ctx, { fixture, formKey, doneHref, clubsById, 
       const m = /^scorers\.(\d+)\.(\w+)$/.exec(k);
       return [m ? `scorer_${kept[Number(m[1])]}_${m[2]}` : k, msg];
     }));
-    run(() => ctx.data.records.saveFixtureInfo(fixture.id, edit, { homeClubId: fixture.home_club_id, awayClubId: fixture.away_club_id }),
+    // 動画だけ失敗したとき（partial）は、試合の更新が入っているので共通データを読み直す。入力は消さず、理由を出す
+    const save = async () => {
+      const res = await ctx.data.records.saveFixtureInfo(fixture.id, edit, { homeClubId: fixture.home_club_id, awayClubId: fixture.away_club_id });
+      if (res?.partial) await onSaved();
+      return res;
+    };
+    run(save,
       form.querySelector('button[type="submit"]'),
       async () => {
         ctx.state.clearForm(formKey);
