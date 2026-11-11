@@ -156,3 +156,13 @@ test('ログイン：エラーで読めなかった（failOn）ときも保存�
   await st.load();
   assert.equal((await st.save(DEFAULT_SETTINGS)).ok, false);
 });
+
+test('端末の設定：形の違う出発空港の要素は捨てる', async () => {
+  const odd = fakeLocal({ 'kansen.settings': '{"origin_airports":[{"code":1,"access_min":"30"},{"code":"NGO","name":"中部国際空港","access_min":180}]}' });
+  assert.deepEqual((await createSettingsStore({ client: null, local: odd, userId: null }).load()).settings.origin_airports.map((a) => a.code), ['NGO']);
+});
+
+test('ログイン：期限切れの保存は _form で知らせる', async () => {
+  const st = createSettingsStore({ client: fakeClient({ user_settings: [] }, { failOn: { user_settings: { code: 'PGRST301', message: 'JWT expired' } } }), local: fakeLocal(), userId: 'u1' });
+  assert.deepEqual((await st.save(DEFAULT_SETTINGS)).errors, { _form: 'ログインの有効期限が切れました。もう一度ログインしてください' });
+});

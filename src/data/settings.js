@@ -1,5 +1,6 @@
 // 設定（未ログイン：localStorage、ログイン：user_settings）。設計書 4.2・4.5・7.3・9章
 import { validateSettings } from '../core/validate.js';
+import { toFormError, FORM_MESSAGES } from './errors.js';
 
 const KEY = 'kansen.settings';
 const CHECK_MESSAGE = '保存できませんでした。入力を確かめてもう一度保存してください';
@@ -29,7 +30,7 @@ const TYPE_OK = {
   support_club_id: (v) => typeof v === 'string' && v !== '',
   origin_station: (v) => typeof v === 'string',
   origin_prefecture: (v) => typeof v === 'string',
-  origin_airports: (v) => Array.isArray(v),
+  origin_airports: (v) => Array.isArray(v),   // 要素の形は pick で見る
   airport_checkin_min: isInt,
   airport_arrival_min: isInt,
   arrive_before_min: isInt,
@@ -40,6 +41,8 @@ const TYPE_OK = {
 function pick(src) {
   const out = {};
   for (const k of SETTINGS_KEYS) out[k] = TYPE_OK[k](src?.[k]) ? src[k] : structuredClone(DEFAULT_SETTINGS[k]);
+  // 出発空港：code が文字列・access_min が整数でない要素は捨てる（配列そのものは残す）
+  out.origin_airports = out.origin_airports.filter((a) => typeof a?.code === 'string' && Number.isInteger(a.access_min));
   return out;
 }
 
@@ -53,6 +56,14 @@ function readLocal(local) {
   } catch {
     return { settings: pick(null), exists: false }; // 壊れた値は捨てる
   }
+}
+
+// 保存の失敗の理由。code 付き（42501・期限切れ以外）は、これまでどおり入力の確認を促す
+function formErrors(e) {
+  const r = toFormError(e);
+  if (r === 'expired') return { _form: FORM_MESSAGES.expired };
+  if (e?.code && e.code !== '42501') return { _form: CHECK_MESSAGE };
+  return r;
 }
 
 export function createSettingsStore({ client, local, userId }) {
@@ -97,12 +108,9 @@ export function createSettingsStore({ client, local, userId }) {
     }
     try {
       const { error } = await client.from('user_settings').upsert(settings, { onConflict: 'user_id' });
-      if (error) {
-        const msg = error.code === '42501' ? '権限がありません' : error.code ? CHECK_MESSAGE : OFFLINE_MESSAGE;
-        return { ok: false, errors: { _form: msg } };
-      }
-    } catch {
-      return { ok: false, errors: { _form: OFFLINE_MESSAGE } };
+      if (error) return { ok: false, errors: formErrors(error) };
+    } catch (e) {
+      return { ok: false, errors: formErrors(e) };
     }
     return { ok: true, settings };
   }

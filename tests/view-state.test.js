@@ -36,3 +36,10 @@ test('routeKey：同じ画面・同じ項目なら同じ値、違えば違う値
   assert.notEqual(routeKey(parseRoute('#/result?f=x')), routeKey(parseRoute('#/result?f=y')));
   assert.notEqual(routeKey(parseRoute('#/trips')), routeKey(parseRoute('#/records')));
 });
+
+test('clearForm：入力を消す', () => {
+  const s = createViewState();
+  s.setForm('k1', { memo: 'あ' });
+  s.clearForm('k1');
+  assert.deepEqual(s.getForm('k1'), {});
+});

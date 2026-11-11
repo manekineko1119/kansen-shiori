@@ -192,6 +192,36 @@ h2:first-child { margin-top: 0; }
 .two-col > * { min-width: 0; }
 .two-col > .sec + .sec { margin-top: 0; }
 
+/* 一覧＋詳細（D31）：S は1列で、詳細を選んでいるとき（data-detail="1"）は一覧を隠す。M・L は2列（下の media query） */
+.split { display: grid; gap: 16px; }
+.split > * { min-width: 0; }
+.split[data-detail="1"] > .split-list { display: none; }
+.split:not([data-detail="1"]) > .split-detail:empty { display: none; }
+
+/* 帯の文字：S は短い方、M・L は長い方 */
+.long { display: none; }
+
+/* 行（外部サイト・アプリ内の移動）：行全体がタップ領域 */
+.row {
+  display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 8px 0;
+  border-top: 1px solid var(--rule); color: inherit; text-decoration: none;
+}
+.row:first-of-type { border-top: 0; }
+.row-main { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.row-label { font-weight: 700; color: var(--theme-primary); }
+.row-mark { flex: none; color: var(--ink-2); font-weight: 700; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* 勝ち・負け・引き分けの印 */
+.badge {
+  display: inline-flex; align-items: center; justify-content: center; min-width: 28px; height: 28px; padding: 0 6px;
+  border-radius: 14px; font-weight: 800; color: var(--on-result); background: var(--draw);
+}
+.badge.win { background: var(--win); }
+.badge.lose { background: var(--lose); }
+.badge.draw { background: var(--draw); }
+.badge-none { background: var(--bg); color: var(--ink-2); font-size: 12px; font-weight: 700; }
+
 /* キーボードで移動したときの印 */
 a:focus-visible, button:focus-visible, .input:focus-visible {
   outline: 3px solid var(--theme-primary);
@@ -201,6 +231,10 @@ a:focus-visible, button:focus-visible, .input:focus-visible {
 /* ---------- M：メイン画面（600〜1023px）：2列。メニューは画面下のまま ---------- */
 @media (min-width: 600px) {
   .two-col { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: start; gap: 20px; }
+  .split { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: start; gap: 20px; }
+  .split[data-detail="1"] > .split-list { display: block; }
+  .short { display: none; }
+  .long { display: inline; }
   main { padding-left: max(20px, env(safe-area-inset-left)); padding-right: max(20px, env(safe-area-inset-right)); }
   .top { padding-left: max(20px, env(safe-area-inset-left)); padding-right: 16px; }
 }

@@ -13,6 +13,7 @@ export function createViewState() {
   return {
     getForm: (key) => ({ ...(forms.get(key) ?? {}) }),
     setForm: (key, values) => { forms.set(key, { ...values }); },
+    clearForm: (key) => { forms.delete(key); },
     getScroll: (key) => scrolls.get(key) ?? 0,
     setScroll: (key, y) => { scrolls.set(key, y); },
   };
