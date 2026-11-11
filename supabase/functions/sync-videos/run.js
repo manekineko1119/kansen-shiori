@@ -1,7 +1,7 @@
 // 試合動画の登録の本体（設計書 6.3、D14・D18）。
 // 通信・DB・現在時刻は引数で受け取る（Deno・fetch・Date.now() を使わない）。
 import { planVideoUpserts, toVideos } from '../_shared/match-video.js';
-import { jstToday } from '../_shared/edge-auth.js';
+import { jstToday, isClubId } from '../_shared/edge-auth.js';
 
 const API = 'https://www.googleapis.com/youtube/v3';
 const DAY_MS = 86400000;
@@ -12,6 +12,14 @@ const enc = encodeURIComponent;
 export const channelsUrl = (handle, key) => `${API}/channels?part=id,contentDetails&forHandle=${enc(handle)}&key=${enc(key)}`;
 export const playlistItemsUrl = (playlistId, key) => `${API}/playlistItems?part=snippet,contentDetails,status&maxResults=50&playlistId=${enc(playlistId)}&key=${enc(key)}`;
 export const videosUrl = (ids, key) => `${API}/videos?part=snippet,liveStreamingDetails,status&id=${enc(ids.join(','))}&key=${enc(key)}`;
+
+// YouTube が 200 以外を返したときの文。本文の error.errors[0].reason（quotaExceeded など）だけを入れる。
+// ほかの項目（message など）は URL・キーが入りうるので使わない。reason も英数字と _.- の64文字までだけ
+export function youtubeErrorMessage(status, body) {
+  const reason = body?.error?.errors?.[0]?.reason;
+  const safe = typeof reason === 'string' && /^[A-Za-z0-9_.-]{1,64}$/.test(reason) ? reason : null;
+  return `YouTube API の応答が ${status}${safe ? `（${safe}）` : ''}`;
+}
 
 // 取得元を1つ処理して、{ read, saved, notApplied } を返す。例外は呼び出し側で記録する
 async function syncSource({ db, getJson, nowMs, clubId, apiKey }, sources, index) {
@@ -39,11 +47,15 @@ async function syncSource({ db, getJson, nowMs, clubId, apiKey }, sources, index
     sources: [source],
     existing: fixtures.length > 0 ? await db.videosOf(fixtures.map((f) => f.id)) : [],
   });
+  // upsertVideo：true＝書いた、false＝手入力なので書かなかった、null＝同じ値なので書かなかった（数えない）
   let saved = 0;
+  let notApplied = 0;
   for (const row of rows) {
-    if (await db.upsertVideo(row)) saved += 1;
+    const applied = await db.upsertVideo(row);
+    if (applied === true) saved += 1;
+    else if (applied === false) notApplied += 1;
   }
-  return { read: videos.length, saved, notApplied: rows.length - saved };
+  return { read: videos.length, saved, notApplied };
 }
 
 async function sync(args, report) {
@@ -70,7 +82,9 @@ async function sync(args, report) {
 // 戻り値：{ ok, message }。最後に必ず sync_runs を1行にする
 export async function runSyncVideos({ db, getJson, nowMs, clubId, apiKey }) {
   const report = { error: null, message: '' };
-  if (!apiKey) {
+  if (!isClubId(clubId)) {
+    report.error = 'club_id の形が正しくありません';
+  } else if (!apiKey) {
     report.error = 'YouTube の APIキーが設定されていません';
   } else {
     try {

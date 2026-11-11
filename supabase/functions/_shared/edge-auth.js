@@ -46,3 +46,19 @@ export function jstDayStartIso(nowMs) {
 export function jstToday(nowMs) {
   return new Date(nowMs + JST_OFFSET_MS).toISOString().slice(0, 10);
 }
+
+// 取り込むクラブの ID（club_id）の形：小文字の英数字とハイフンだけ（PostgREST の or() の文字列に入れるため）
+export function isClubId(value) {
+  return typeof value === 'string' && /^[a-z0-9-]+$/.test(value);
+}
+
+// ブラウザから呼べるオリジン（GitHub Pages と、ローカルの確認の 8080 番。設計書 6.2）
+const ALLOWED_ORIGINS = ['https://manekineko1119.github.io', 'http://localhost:8080'];
+
+// CORS で許すリクエストヘッダー。x-cron-secret は pg_cron（サーバー）だけが使うので入れない
+export const CORS_ALLOW_HEADERS = 'authorization, content-type, x-client-info, apikey';
+
+// 許すオリジンならそのまま、そうでなければ null（完全一致だけ）
+export function allowedOrigin(origin) {
+  return typeof origin === 'string' && ALLOWED_ORIGINS.includes(origin) ? origin : null;
+}

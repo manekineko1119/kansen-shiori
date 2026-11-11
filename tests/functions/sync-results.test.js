@@ -24,6 +24,7 @@ function makeDb(over = {}) {
     club: async (id) => clubs.find((c) => c.id === id) ?? null,
     competitionOf: async () => 'J3',
     reserveRun: async (args) => { calls.reserveRun.push(args); return { runId: 7, pagesAllowed: 5 }; },
+    skipReason: async () => 'limit',
     finishRun: async (id, row) => { calls.finishRun.push([id, row]); return true; },
     fixturesOf: async () => [fixture],
     clubs: async () => clubs,
@@ -75,20 +76,53 @@ test('正常：一覧1回・試合ページ1回、結果と得点者を書き、
   assert.equal(row.ok, true);
   assert.equal(row.list_read, 1);
   assert.equal(row.pages_read, 1);
-  assert.deepEqual(r, { ok: true, message: row.message, list_read: 1, pages_read: 1 });
+  assert.deepEqual(r, { ok: true, message: row.message, list_read: 1, pages_read: 1, skipped_reason: null });
 });
 
-test('上限：今日の一覧が上限なら何も読まずに記録して終わる', async () => {
-  const { db, calls } = makeDb({ reserveRun: async () => null });
+test('上限：予約が0行で理由が limit なら、一覧を読まず skipped_reason: limit の行を残す', async () => {
+  const { db, calls } = makeDb({ reserveRun: async () => null, skipReason: async () => 'limit' });
   const io = makeIo(pageOk);
   const r = await runSyncResults({ db, fetchText: io.fetchText, sleep: io.sleep, nowMs: NOW, clubId: 'matsumoto' });
   assert.deepEqual(io.urls, []);
-  assert.equal(recordCount(calls), 1);
-  assert.equal(finalRow(calls).ok, false);
-  assert.equal(finalRow(calls).list_read, 0);
-  assert.equal(finalRow(calls).pages_read, 0);
-  assert.match(finalRow(calls).message, /上限/);
+  assert.deepEqual(calls.finishRun, []);
+  assert.deepEqual(calls.insertRun, [{
+    job: 'results', ok: false, message: '今日の一覧ページを読む回数の上限に達しているため、読みませんでした',
+    list_read: 0, pages_read: 0, skipped_reason: 'limit',
+  }]);
   assert.equal(r.ok, false);
+  assert.equal(r.skipped_reason, 'limit');
+});
+
+test('実行中：予約が0行で理由が running なら、一覧を読まず skipped_reason: running の行を残す', async () => {
+  const { db, calls } = makeDb({ reserveRun: async () => null, skipReason: async () => 'running' });
+  const io = makeIo(pageOk);
+  const r = await runSyncResults({ db, fetchText: io.fetchText, sleep: io.sleep, nowMs: NOW, clubId: 'matsumoto' });
+  assert.deepEqual(io.urls, []);
+  assert.deepEqual(calls.insertRun, [{
+    job: 'results', ok: false, message: '実行中のため読みません',
+    list_read: 0, pages_read: 0, skipped_reason: 'running',
+  }]);
+  assert.equal(r.skipped_reason, 'running');
+});
+
+test('読まなかった理由が分からない値なら limit として残す（check 制約に当たらない）', async () => {
+  const { db, calls } = makeDb({ reserveRun: async () => null, skipReason: async () => null });
+  await runSyncResults({ db, fetchText: makeIo(pageOk).fetchText, sleep: async () => {}, nowMs: NOW, clubId: 'matsumoto' });
+  assert.equal(calls.insertRun[0].skipped_reason, 'limit');
+});
+
+test('clubId の形が違う：DB も Jリーグ公式も読まず、失敗として記録する', async () => {
+  for (const clubId of ['', 'Matsumoto', 'a,b', 'x.eq.y', 'matsumoto)']) {
+    let touched = 0;
+    const { db, calls } = makeDb({ currentSeason: async () => { touched += 1; return null; }, club: async () => { touched += 1; return null; } });
+    const io = makeIo(pageOk);
+    const r = await runSyncResults({ db, fetchText: io.fetchText, sleep: io.sleep, nowMs: NOW, clubId });
+    assert.deepEqual([io.urls, touched, calls.reserveRun.length], [[], 0, 0], clubId);
+    assert.equal(r.ok, false);
+    assert.equal(calls.insertRun.length, 1);
+    assert.match(calls.insertRun[0].message, /club_id の形が正しくありません/);
+    assert.equal(calls.insertRun[0].skipped_reason, null);
+  }
 });
 
 test('「今日」は日本時間：UTC 15:30 は翌日の日付', async () => {
@@ -179,16 +213,17 @@ test('今のシーズンの season_clubs にない：一覧を読まずに失敗
   assert.equal(recordCount(calls), 1);
 });
 
-test('同時の2回：2回目は予約できず、何も読まずに上限として記録する', async () => {
+test('同時の2回：2回目は予約できず、何も読まずに実行中として記録する', async () => {
   let n = 0;
-  const { db, calls } = makeDb({ reserveRun: async () => (n++ === 0 ? { runId: 7, pagesAllowed: 5 } : null) });
+  const { db, calls } = makeDb({ reserveRun: async () => (n++ === 0 ? { runId: 7, pagesAllowed: 5 } : null), skipReason: async () => 'running' });
   const io1 = makeIo(pageOk);
   const io2 = makeIo(pageOk);
   await runSyncResults({ db, fetchText: io1.fetchText, sleep: io1.sleep, nowMs: NOW, clubId: 'matsumoto' });
   const r2 = await runSyncResults({ db, fetchText: io2.fetchText, sleep: io2.sleep, nowMs: NOW, clubId: 'matsumoto' });
   assert.deepEqual(io2.urls, []);
   assert.equal(r2.ok, false);
-  assert.match(r2.message, /上限/);
+  assert.match(r2.message, /実行中/);
+  assert.equal(calls.insertRun[0].skipped_reason, 'running');
   assert.equal(calls.finishRun.length, 1);
   assert.equal(calls.insertRun.length, 1);
   assert.equal(calls.insertRun[0].list_read, 0);

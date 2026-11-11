@@ -1,13 +1,12 @@
 // 試合動画の登録の入口（設計書 6.3、D14・D16）。受け付けと supabase-js の準備だけを行い、処理は run.js に任せる
 import { createClient } from 'npm:@supabase/supabase-js@2.118.0';
-import { authorizeCaller, pickSecretKey } from '../_shared/edge-auth.js';
-import { runSyncVideos } from './run.js';
+import { authorizeCaller, pickSecretKey, isClubId } from '../_shared/edge-auth.js';
+import { json, preflight } from '../_lib/http.ts';
+import { runSyncVideos, youtubeErrorMessage } from './run.js';
 
 // 相手が応答しないとき、20秒で読むのをやめる（設計書 6.2）。転送はたどらず、3xx は 200 以外として失敗にする（読むのは決めたページだけ）
 const FETCH_TIMEOUT_MS = 20000;
 
-const json = (body: unknown, status = 200) =>
-  new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
 
 // supabase-js のエラーは投げる（run.js が ok: false で記録する）
 function check<T>({ data, error }: { data: T; error: { message: string } | null }): T {
@@ -42,7 +41,7 @@ function makeDb(supabase: ReturnType<typeof createClient>) {
   };
 }
 
-// 状態コードだけをエラーに入れる（URL に APIキーが入っているため）
+// 状態コードと理由（reason）だけをエラーに入れる（URL・本文の message に APIキーが入りうるため）
 async function getJson(url: string) {
   let res: Response;
   try {
@@ -51,12 +50,19 @@ async function getJson(url: string) {
     // 元の例外の文には URL（APIキー）が入りうるので使わない
     throw new Error('YouTube API に接続できません');
   }
-  if (res.status !== 200) throw new Error(`YouTube API の応答が ${res.status}`);
+  if (res.status !== 200) {
+    // 本文の error.errors[0].reason だけを使う（読めなければ状態コードだけ）
+    const body = await res.json().catch(() => null);
+    throw new Error(youtubeErrorMessage(res.status, body));
+  }
   return await res.json();
 }
 
 Deno.serve(async (req: Request) => {
-  if (req.method !== 'POST') return json({ ok: false, message: 'POST だけ受け付けます' }, 405);
+  // ブラウザ（管理画面の「今すぐ取り込む」）の事前の問い合わせ
+  const pre = preflight(req);
+  if (pre) return pre;
+  if (req.method !== 'POST') return json(req, { ok: false, message: 'POST だけ受け付けます' }, 405);
   const supabase = createClient(Deno.env.get('SUPABASE_URL')!, pickSecretKey(Deno.env)!, { auth: { persistSession: false } });
 
   // 管理者のログインの JWT（なければ・確かめられなければ user = null）
@@ -67,18 +73,20 @@ Deno.serve(async (req: Request) => {
     if (!error) user = data.user;
   }
   const caller = authorizeCaller({ headerSecret: req.headers.get('x-cron-secret'), cronSecret: Deno.env.get('CRON_SECRET'), user });
-  if (caller === null) return json({ ok: false, message: '認証できません' }, 401);
+  if (caller === null) return json(req, { ok: false, message: '認証できません' }, 401);
 
   const body = await req.json().catch(() => null);
   const clubId = typeof body?.club_id === 'string' ? body.club_id : '';
-  if (clubId === '') return json({ ok: false, message: 'club_id が必要です' }, 400);
+  if (clubId === '') return json(req, { ok: false, message: 'club_id が必要です' }, 400);
+  // PostgREST の or() の文字列に入れるので、形を確かめる
+  if (!isClubId(clubId)) return json(req, { ok: false, message: 'club_id の形が正しくありません' }, 400);
 
   try {
     const result = await runSyncVideos({
       db: makeDb(supabase), getJson, nowMs: Date.now(), clubId, apiKey: Deno.env.get('YOUTUBE_API_KEY') ?? '',
     });
-    return json({ ok: result.ok, message: result.message });
+    return json(req, { ok: result.ok, message: result.message });
   } catch (e) {
-    return json({ ok: false, message: `記録できませんでした：${(e as Error).message}` }, 500);
+    return json(req, { ok: false, message: `記録できませんでした：${(e as Error).message}` }, 500);
   }
 });

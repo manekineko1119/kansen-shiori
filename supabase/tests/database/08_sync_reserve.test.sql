@@ -1,7 +1,7 @@
 -- 取り込みの回数の予約（設計書 6.2、D21）
 -- 同時に2つの実行が走っても1日の上限（一覧2回・試合ページ10件）を超えないよう、読む前に回数を押さえる
 begin;
-select plan(16);
+select plan(18);
 
 -- 列
 select col_not_null('public', 'sync_runs', 'running', 'running は空にできない');
@@ -15,8 +15,11 @@ select results_eq($$select pages_allowed from public.sync_reserve_run('results',
   $$values (5)$$, '1回目：試合ページを5件まで予約できる');
 select results_eq($$select running, ok, list_read, pages_read, message from public.sync_runs$$,
   $$values (true, false, 1::smallint, 5::smallint, '実行中')$$, '予約の行が入る');
+-- 実行中の行があると予約できない（13_sync_running）ので、1回目を予約どおりの回数で終わりにしてから2回目を予約する
+select ok(public.sync_finish_run((select id from public.sync_runs where running), true, null, 1, 5), '1回目を終わりにする');
 select results_eq($$select pages_allowed from public.sync_reserve_run('results', '2026-11-09T15:00:00Z', 2, 10, 5)$$,
-  $$values (5)$$, '2回目（同時に走った別の実行）：残りの5件');
+  $$values (5)$$, '2回目：残りの5件');
+select ok(public.sync_finish_run((select id from public.sync_runs where running), true, null, 1, 5), '2回目を終わりにする');
 select is_empty($$select * from public.sync_reserve_run('results', '2026-11-09T15:00:00Z', 2, 10, 5)$$,
   '3回目：一覧の上限（2回）なので予約できない');
 

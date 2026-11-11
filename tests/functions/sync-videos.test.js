@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { runSyncVideos, channelsUrl, playlistItemsUrl, videosUrl } from '../../supabase/functions/sync-videos/run.js';
+import { runSyncVideos, channelsUrl, playlistItemsUrl, videosUrl, youtubeErrorMessage } from '../../supabase/functions/sync-videos/run.js';
 
 const KEY = 'AIzaFAKE-key-0000';
 const NOW = Date.UTC(2026, 10, 9, 22, 0); // 日本時間 2026-11-10 7:00
@@ -156,4 +156,35 @@ test('取得元が複数：順に処理し、記録は1回', async () => {
   await run(db, io.getJson);
   assert.equal(io.urls.length, 4);
   assert.equal(calls.insertRun.length, 1);
+});
+
+test('upsertVideo が null（同じ内容で書き換えなし）：登録にも手入力にも数えない', async () => {
+  const { db } = makeDb([{ channel: '@yamagachannel', kinds, uploads_playlist_id: 'UUabc' }], { upsertVideo: async () => null });
+  const r = await run(db, makeGetJson().getJson);
+  assert.equal(r.message, '@yamagachannel：動画 3 本を調べ、0 本を登録しました');
+});
+
+test('clubId の形が違う：DB も YouTube も読まず、失敗として記録する', async () => {
+  for (const clubId of ['', 'Matsumoto', 'a,b', 'x.eq.y']) {
+    let touched = 0;
+    const { db, calls } = makeDb([{ channel: '@yamagachannel', kinds }], { club: async () => { touched += 1; return null; } });
+    const io = makeGetJson();
+    const r = await run(db, io.getJson, { clubId });
+    assert.deepEqual([io.urls.length, touched, r.ok], [0, 0, false], clubId);
+    assert.deepEqual(calls.insertRun, [{ job: 'videos', ok: false, message: 'club_id の形が正しくありません', list_read: 0, pages_read: 0 }]);
+  }
+});
+
+test('youtubeErrorMessage：403 は error.errors[0].reason だけを入れる', () => {
+  const body = { error: { code: 403, message: `The request cannot be completed because you have exceeded your quota. key=${KEY}`, errors: [{ message: 'quota', domain: 'youtube.quota', reason: 'quotaExceeded' }] } };
+  assert.equal(youtubeErrorMessage(403, body), 'YouTube API の応答が 403（quotaExceeded）');
+  assert.equal(youtubeErrorMessage(403, body).includes(KEY), false);
+});
+
+test('youtubeErrorMessage：reason がない・JSON でない・おかしな値なら状態コードだけ', () => {
+  assert.equal(youtubeErrorMessage(403, null), 'YouTube API の応答が 403');
+  assert.equal(youtubeErrorMessage(403, { error: { errors: [] } }), 'YouTube API の応答が 403');
+  assert.equal(youtubeErrorMessage(403, { error: { errors: [{ reason: `bad key=${KEY}` }] } }), 'YouTube API の応答が 403');
+  assert.equal(youtubeErrorMessage(403, { error: { errors: [{ reason: 'x'.repeat(65) }] } }), 'YouTube API の応答が 403');
+  assert.equal(youtubeErrorMessage(500, { error: { errors: [{ reason: 'backendError' }] } }), 'YouTube API の応答が 500（backendError）');
 });

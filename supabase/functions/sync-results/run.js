@@ -2,7 +2,13 @@
 // 通信・DB・待ち時間・現在時刻は引数で受け取る（Deno・fetch・Date.now() を使わない）。
 import { ACCESS_LIMITS, planSync, scheduleListUrl, formatResultsMessage } from '../_shared/sync-plan.js';
 import { parseScheduleList, parseMatchPage, buildScorers, clubSlugFromUrl } from '../_shared/jleague-parse.js';
-import { jstDayStartIso, jstToday } from '../_shared/edge-auth.js';
+import { jstDayStartIso, jstToday, isClubId } from '../_shared/edge-auth.js';
+
+// 一覧を読まなかった回の理由と、sync_runs.message（設計書 3.4・6.2、D37）
+const SKIP_MESSAGES = {
+  limit: '今日の一覧ページを読む回数の上限に達しているため、読みませんでした',
+  running: '実行中のため読みません',
+};
 
 // 試合ページを1つ読んで得点者を保存する。
 // 取得・読み取り・buildScorers の失敗は得点者 null（失敗の印）にして理由を返す。DB のエラーは投げたままにする（その実行が ok: false になる）
@@ -25,6 +31,10 @@ async function importScorers({ db, fetchText, sleep, counts, target, fixture }) 
 
 async function sync({ db, fetchText, sleep, nowMs, clubId }, state, report) {
   const { counts } = state;
+  if (!isClubId(clubId)) {
+    report.error = 'club_id の形が正しくありません';
+    return;
+  }
   const season = await db.currentSeason();
   const club = await db.club(clubId);
   const clubSlug = clubSlugFromUrl(club?.jleague_url);
@@ -33,7 +43,8 @@ async function sync({ db, fetchText, sleep, nowMs, clubId }, state, report) {
     report.error = '取り込めません：今のシーズン・クラブの Jリーグ公式の URL・大会のどれかが見つかりません';
     return;
   }
-  // 読む前に回数を予約する（同時に走っても1日の上限を超えない。D21）
+  // 読む前に回数を予約する（同時に走っても1日の上限を超えない。D21）。
+  // 別の実行が10分以内に始まって終わっていなければ予約できない（実行を1つずつにする）
   const reserved = await db.reserveRun({
     dayStartIso: jstDayStartIso(nowMs),
     listLimit: ACCESS_LIMITS.listPerDay,
@@ -41,7 +52,9 @@ async function sync({ db, fetchText, sleep, nowMs, clubId }, state, report) {
     pagesPerRun: ACCESS_LIMITS.matchPagesPerRun,
   });
   if (!reserved) {
-    report.error = '今日の一覧ページを読む回数の上限に達しているため、読みませんでした';
+    // 予約が0行：上限か実行中か。分からない値は limit にする（check 制約に当たらないように）
+    const reason = await db.skipReason();
+    state.skippedReason = reason === 'running' ? 'running' : 'limit';
     return;
   }
   state.runId = reserved.runId;
@@ -72,16 +85,24 @@ async function sync({ db, fetchText, sleep, nowMs, clubId }, state, report) {
   report.notApplied = [...notApplied];
 }
 
-// 戻り値：{ ok, message, list_read, pages_read }。最後に必ず sync_runs を1行にする（予約できていれば finishRun、できていなければ insertRun）
+// 戻り値：{ ok, message, list_read, pages_read, skipped_reason }。最後に必ず sync_runs を1行にする
+// （予約できていれば finishRun、できていなければ insertRun。上限・実行中で読まなかった回は skipped_reason を入れる）
 export async function runSyncResults({ db, fetchText, sleep, nowMs, clubId }) {
-  const state = { runId: null, counts: { listRead: 0, pagesRead: 0 } };
+  const state = { runId: null, skippedReason: null, counts: { listRead: 0, pagesRead: 0 } };
   const report = { unmatched: [], duplicates: [], unknownStates: [], skipped: 0, scorerFailures: [], notApplied: [], error: null };
   try {
     await sync({ db, fetchText, sleep, nowMs, clubId }, state, report);
   } catch (e) {
     report.error = String(e?.message ?? e);
   }
-  const result = { ok: report.error === null, message: formatResultsMessage(report), list_read: state.counts.listRead, pages_read: state.counts.pagesRead };
+  const skipped = report.error === null ? state.skippedReason : null;
+  const result = {
+    ok: report.error === null && skipped === null,
+    message: skipped ? SKIP_MESSAGES[skipped] : formatResultsMessage(report),
+    list_read: state.counts.listRead,
+    pages_read: state.counts.pagesRead,
+    skipped_reason: skipped,
+  };
   if (state.runId === null) await db.insertRun({ job: 'results', ...result });
   else await db.finishRun(state.runId, result);
   return result;
