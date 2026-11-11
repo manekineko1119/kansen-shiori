@@ -47,3 +47,27 @@ test('通信できないときは null（読み込めませんでした）。res
   assert.equal(up.calls.filter((c) => c.table === 'fixtures').length, 2);
   assert.equal(cache2.fixtures('2025').length, 1);
 });
+
+test('シーズンの所属クラブ：読み込み中は undefined、読めたら配列。同じシーズンは通信1回', async () => {
+  const client = fakeClient({ season_clubs: [{ season_id: '2025', competition: 'J3', club_id: 'a' }, { season_id: '2026-27', competition: 'J3', club_id: 'b' }] });
+  let changed = 0;
+  const cache = createSeasonCache({ client: () => client, onChange: () => { changed++; } });
+  assert.equal(cache.seasonClubs('2025'), undefined);
+  assert.equal(cache.seasonClubs('2025'), undefined);
+  await tick();
+  assert.equal(changed, 1);
+  assert.deepEqual(cache.seasonClubs('2025').map((r) => r.club_id), ['a']);
+  assert.equal(client.calls.filter((c) => c.table === 'season_clubs').length, 1);
+});
+
+test('resetSeasons：シーズンの選択肢・所属クラブ・試合をすべて捨てて、読み直す', async () => {
+  const client = fakeClient({ ...tables(), season_clubs: [{ season_id: '2025', competition: 'J3', club_id: 'a' }] });
+  const cache = createSeasonCache({ client: () => client, onChange: () => {} });
+  cache.seasons(); cache.seasonClubs('2025'); cache.fixtures('2025');
+  await tick();
+  cache.resetSeasons();
+  assert.deepEqual([cache.seasons(), cache.seasonClubs('2025'), cache.fixtures('2025')], [undefined, undefined, undefined]);
+  await tick();
+  assert.equal(cache.seasons().length, 2);
+  assert.equal(client.calls.filter((c) => c.table === 'season_clubs').length, 2);
+});

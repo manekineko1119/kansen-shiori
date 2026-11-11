@@ -595,3 +595,21 @@ a:focus-visible, button:focus-visible, .input:focus-visible {
 .rec-list .item .add { flex: none; margin-left: auto; font-size: 12px; font-weight: 700; color: var(--theme-primary); }
 .rec-list .item.sel { background: var(--theme-tint); box-shadow: inset 4px 0 0 var(--theme-primary); }
 .rec-empty { padding: 8px 0; }
+
+/* ---------- 管理画面（クラブ・スタジアム・シーズン。設計書 3.4） ---------- */
+.admin .back { display: inline-block; padding: 8px 0; font-weight: 700; color: var(--theme-primary); text-decoration: none; }
+.admin .row[aria-current="true"] { background: var(--theme-tint); box-shadow: inset 4px 0 0 var(--theme-primary); padding-left: 8px; }
+.admin .cur { flex: none; font-size: 13px; font-weight: 700; color: var(--theme-primary); }
+.admin .sec > .btn { margin-top: 12px; }
+.admin textarea.input { min-height: 84px; resize: vertical; font: inherit; }
+.admin .hint { margin: 0; color: var(--ink-2); font-size: 13px; overflow-wrap: anywhere; }
+.admin .hint:empty { display: none; }
+.admin .row-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.admin .row-actions .btn, .admin .airrow > .btn, .admin .admin-form > .btn-small { margin-top: 12px; }
+.admin .admin-form > .btn-small { margin-right: 8px; }
+.admin .airrow .airrow { margin-top: 12px; }
+.row-soon { color: var(--ink-2); }
+.row-soon .row-label { color: var(--ink-2); }
+@media (min-width: 600px) {
+  .admin .split-detail .back { display: none; }
+}

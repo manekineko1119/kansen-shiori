@@ -20,6 +20,7 @@ function validateStation(errors, st, i) {
   if (isBlank(st?.name)) errors[`${p}.name`] = '駅名を入力してください';
   // 種類：nearest＝最寄り駅、shuttle＝シャトルバスの発着駅、bus＝路線バスの発着駅（設計書 4.1）
   if (!['nearest', 'shuttle', 'bus'].includes(st?.kind)) errors[`${p}.kind`] = '種類は最寄り駅・シャトルバスの駅・路線バスの駅のどれかにしてください';
+  if (st?.walk_min !== null && st?.walk_min !== undefined) checkRange(errors, `${p}.walk_min`, st.walk_min, 0, 300, '徒歩', '分');
   const toyoko = st?.toyoko ?? [];
   if (!Array.isArray(toyoko)) { errors[`${p}.toyoko`] = '東横インの形式が正しくありません'; return; }
   if (toyoko.length > 3) errors[`${p}.toyoko`] = '東横インは1駅につき3店までです';
@@ -42,6 +43,7 @@ export function validateStadium(s) {
     if (!/^[A-Za-z]{3}$/.test(a?.iata ?? '')) errors[`airports.${i}.iata`] = '空港コードは英字3文字にしてください';
     checkRange(errors, `airports.${i}.access_min`, a?.access_min, 0, 300, '所要時間', '分');
   });
+  if (!isBlank(s.verified_at) && !isValidDate(s.verified_at)) errors.verified_at = '最終確認日を YYYY-MM-DD の形で入力してください';
   const ag = s.agoda_area;
   if (ag !== null && ag !== undefined) {
     if ((ag.type !== 'region' && ag.type !== 'city') || !isInt(ag.id) || ag.id <= 0) {
@@ -56,6 +58,16 @@ export function validateClub(c) {
   requireText(errors, c, 'id', 'ID');
   requireText(errors, c, 'name', '名前');
   requireText(errors, c, 'short_name', '略称');
+  return result(errors);
+}
+
+// シーズン（設計書 4.1）。id は '2026-27' や '2026' の形
+export function validateSeason(s) {
+  const errors = {};
+  if (!/^\d{4}(-\d{2})?$/.test(s.id ?? '')) errors.id = 'IDは 2026-27 や 2026 の形にしてください';
+  if (!isValidDate(s.starts_on)) errors.starts_on = '開始日を YYYY-MM-DD の形で入力してください';
+  if (!isValidDate(s.ends_on)) errors.ends_on = '終了日を YYYY-MM-DD の形で入力してください';
+  else if (isValidDate(s.starts_on) && s.ends_on < s.starts_on) errors.ends_on = '終了日は開始日より後にしてください';
   return result(errors);
 }
 

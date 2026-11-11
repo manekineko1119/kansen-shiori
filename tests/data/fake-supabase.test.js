@@ -58,3 +58,10 @@ test('偽物：insert・upsert・update のあとの select／single／maybeSing
   const up = await c.from('trips').upsert({ id: 'y', title: 'd' }).select().maybeSingle();
   assert.equal(up.data.id, 'y');
 });
+
+test('偽物：failNth はその表への n 回目の呼び出しだけ失敗させる', async () => {
+  const c = fakeClient({ seasons: [{ id: 'a', is_current: true }] }, { failNth: { seasons: { n: 2, code: '42501', message: 'x' } } });
+  assert.equal((await c.from('seasons').update({ is_current: false }).eq('id', 'a')).error, null);
+  assert.equal((await c.from('seasons').update({ is_current: true }).eq('id', 'a')).error.code, '42501');
+  assert.equal((await c.from('seasons').update({ is_current: true }).eq('id', 'a')).error, null);
+});

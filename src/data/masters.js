@@ -70,3 +70,8 @@ export async function fetchSeasonFixtures({ client }, seasonId) {
 export async function fetchSeasons({ client }) {
   return check(await client.from('seasons').select('id, starts_on, ends_on, is_current').order('starts_on', { ascending: false }));
 }
+
+// シーズンの所属クラブ（管理画面。今のシーズン以外は共通データに入っていない）
+export async function fetchSeasonClubs({ client }, seasonId) {
+  return check(await client.from('season_clubs').select('*').eq('season_id', seasonId));
+}

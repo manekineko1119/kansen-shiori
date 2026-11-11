@@ -1,13 +1,15 @@
 // テスト用の Supabase クライアントの偽物（5-5・5-7・段6 で使う）
 // tables: { 表の名前: 行の配列 }
 // opts.failOn: { 表・関数・バケットの名前: { message, code? } } → { data: null, error } を返す
+// opts.failNth: { 表の名前: { n, message, code? } } → その表への n 回目（1 から数える）の呼び出しだけ失敗させる
 // opts.throwOn: 表・関数・バケットの名前の配列 → TypeError('Failed to fetch') を投げる
 // opts.rpcs / opts.functions: { 名前: (args または opts) => data }（なければ data は null）
 // 呼び出しはすべて calls に残る。from()：{ table, op, ... }、rpc：{ op: 'rpc', name, args }、
 // functions.invoke：{ op: 'invoke', name, opts }、storage：{ op: 'upload' | 'remove' | 'signedUrl', bucket, ... }
-export function fakeClient(tables, { failOn = {}, throwOn = [], rpcs = {}, functions = {} } = {}) {
+export function fakeClient(tables, { failOn = {}, failNth = {}, throwOn = [], rpcs = {}, functions = {} } = {}) {
   const calls = [];
   const objects = {}; // { バケット: { パス: file } }
+  const counts = {}; // 表ごとの呼び出しの回数（failNth 用）
   let nextId = 0; // insert で id がない行に付ける 'id-1'、'id-2'…
 
   // 表以外の呼び出しの共通の結果
@@ -36,6 +38,8 @@ export function fakeClient(tables, { failOn = {}, throwOn = [], rpcs = {}, funct
       const run = () => {
         if (throwOn.includes(table)) throw new TypeError('Failed to fetch');
         if (failOn[table]) return { data: null, error: failOn[table] };
+        counts[table] = (counts[table] ?? 0) + 1;
+        if (failNth[table]?.n === counts[table]) return { data: null, error: { message: failNth[table].message, code: failNth[table].code } };
         if (call.op === 'upsert' || call.op === 'insert') {
           const rows = tables[table] ?? (tables[table] = []);
           if (call.op === 'insert') call.rows = call.rows.map((r) => (r.id == null ? { ...r, id: `id-${++nextId}` } : r));

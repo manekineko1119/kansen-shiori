@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   validateStadium, validateClub, validateSettings, validateFixture,
-  validateTrip, validateMatchRecord, validateEmail,
+  validateTrip, validateMatchRecord, validateEmail, validateSeason,
 } from '../src/core/validate.js';
 
 const ok = { id: 'gifu-memorial', name: '岐阜メモリアルセンター長良川競技場', prefecture: '岐阜県', address: '岐阜市長良福光大野2675-28', lat: 35.45, lng: 136.76, stations: [], airports: [] };
@@ -115,4 +115,25 @@ test('設定：分の範囲と移動手段（設計書 4.2 の check と同じ�
   assert.ok(validateSettings({ arrive_before_min: 1.5 }).errors.arrive_before_min);
   assert.ok(validateSettings({ default_modes: ['ship'] }).errors.default_modes);
   assert.ok(validateSettings({ default_modes: 'train' }).errors.default_modes);
+});
+
+test('スタジアム：駅の徒歩の分と最終確認日', () => {
+  const st = (walk_min) => [{ name: '岐阜', kind: 'nearest', walk_min, toyoko: [] }];
+  assert.equal(validateStadium({ ...ok, stations: st(null) }).ok, true);
+  assert.equal(validateStadium({ ...ok, stations: st(15) }).ok, true);
+  assert.ok(validateStadium({ ...ok, stations: st(NaN) }).errors['stations.0.walk_min']);
+  assert.ok(validateStadium({ ...ok, stations: st(301) }).errors['stations.0.walk_min']);
+  assert.equal(validateStadium({ ...ok, verified_at: '2026-11-11' }).ok, true);
+  assert.ok(validateStadium({ ...ok, verified_at: '2026-02-30' }).errors.verified_at);
+});
+
+test('シーズン：id・開始日・終了日', () => {
+  const s = { id: '2026-27', starts_on: '2026-08-01', ends_on: '2027-06-30' };
+  assert.equal(validateSeason(s).ok, true);
+  assert.equal(validateSeason({ ...s, id: '2026' }).ok, true);
+  assert.ok(validateSeason({ ...s, id: '26-27' }).errors.id);
+  assert.ok(validateSeason({ ...s, starts_on: '' }).errors.starts_on);
+  assert.equal(validateSeason({ ...s, ends_on: '2026-08-01' }).ok, true);
+  assert.ok(validateSeason({ ...s, ends_on: '2026-07-31' }).errors.ends_on);
+  assert.ok(validateSeason({ ...s, ends_on: '2027-02-30' }).errors.ends_on);
 });

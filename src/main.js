@@ -20,6 +20,7 @@ import { createRecordStore } from './data/records.js';
 import { createPhotoStore } from './data/photos.js';
 import { createFixtureCache } from './data/fixture-cache.js';
 import { createSeasonCache } from './data/season-cache.js';
+import { createAdminStore } from './data/admin.js';
 import { createHistory } from './data/history.js';
 import { browserLocal } from './data/local.js';
 import { setReturnTo } from './data/return-to.js';
@@ -94,6 +95,9 @@ function draw(route) {
       forgetFixture: (id) => fixtureCache.forget(id),
       seasons: () => seasonCache.seasons(), // シーズンの選択肢（undefined＝読み込み中、null＝読めない）
       seasonFixtures: (id) => seasonCache.fixtures(id), // 今のシーズン以外の試合（同上）
+      seasonClubs: (id) => seasonCache.seasonClubs(id), // シーズンの所属クラブ（管理画面。同上）
+      resetSeasons: () => seasonCache.resetSeasons(), // シーズンを作った・所属クラブを変えたあとに、覚えたものを捨てる
+      admin: createAdminStore({ client: getClient() }), // 管理画面の保存（書けるのは管理者だけ。守りは RLS）
       reloadMasters, // 試合の情報を保存したあとに、共通データを読み直す
       goLogin: () => { setReturnTo(location.hash || '#/search'); location.hash = '#/login'; }, // 今の画面を戻り先に覚えてログインへ
       reloadPersonal: () => personal.reload(), // 保存・削除の成功のあとに呼ぶ（D33）
