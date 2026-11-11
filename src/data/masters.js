@@ -59,3 +59,14 @@ export async function fetchFixturesByIds({ client }, ids) {
   const rows = check(await client.from('fixtures').select('*, fixture_videos(*)').in('id', ids));
   return rows.map(normalizeFixtureRow);
 }
+
+// 今のシーズン以外のシーズンの試合を season_id で読む（観戦記録の一覧。設計書 3.4.2）
+export async function fetchSeasonFixtures({ client }, seasonId) {
+  const rows = check(await client.from('fixtures').select('*').eq('season_id', seasonId).order('match_date'));
+  return rows.map(normalizeFixtureRow);
+}
+
+// シーズンの選択肢。新しい順
+export async function fetchSeasons({ client }) {
+  return check(await client.from('seasons').select('id, starts_on, ends_on, is_current').order('starts_on', { ascending: false }));
+}

@@ -10,6 +10,7 @@ import { renderFixtures } from './fixtures.js';
 import { renderCalendar } from './calendar.js';
 import { renderTrips, renderTrip, renderTripNew } from './trips.js';
 import { renderRecord } from './record.js';
+import { renderRecords } from './records.js';
 import { el, section } from '../components/parts.js';
 
 const placeholder = (ctx) => renderPlaceholder(ctx.route, ctx.state, ctx.key, ctx.masters.status === 'loading' ? null : ctx.masters);
@@ -23,7 +24,7 @@ export const VIEWS = {
   trips: renderTrips,
   trip: renderTrip,
   'trip-new': renderTripNew,
-  records: placeholder,
+  records: renderRecords,
   record: renderRecord,
   settings: renderSettings,
   admin: placeholder,

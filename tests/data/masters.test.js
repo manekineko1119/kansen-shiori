@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizeFixtureRow, readMastersSnapshot, refreshMasters, fetchFixturesByIds } from '../../src/data/masters.js';
+import { normalizeFixtureRow, readMastersSnapshot, refreshMasters, fetchFixturesByIds, fetchSeasonFixtures, fetchSeasons } from '../../src/data/masters.js';
 import { createSnapshot } from '../../src/data/snapshot.js';
 import { fakeClient } from '../helpers/fake-supabase.js';
 import { fakeKv } from '../helpers/fake-storage.js';
@@ -85,4 +85,22 @@ test('fetchFixturesByIds：空なら通信しない。ID 指定で読み kickoff
   const rows = await fetchFixturesByIds({ client: c2 }, ['a']);
   assert.deepEqual(rows.map((f) => [f.id, f.kickoff]), [['a', '14:00']]);
   assert.deepEqual(c2.calls[0].in, [['id', ['a']]]);
+});
+
+test('fetchSeasonFixtures：シーズンの試合だけを日付順に読み、kickoff をそろえる', async () => {
+  const c = fakeClient(tables());
+  const rows = await fetchSeasonFixtures({ client: c }, '2025');
+  assert.deepEqual(rows.map((f) => [f.id, f.kickoff]), [['b', null]]);
+  assert.deepEqual(c.calls[0].eq, [['season_id', '2025']]);
+  assert.deepEqual(c.calls[0].order, { col: 'match_date', ascending: true });
+  await assert.rejects(fetchSeasonFixtures({ client: fakeClient(tables(), { failOn: { fixtures: { message: 'x' } } }) }, '2025'));
+});
+
+test('fetchSeasons：新しい順（starts_on の降順）', async () => {
+  const t = tables();
+  t.seasons = [{ id: '2025', starts_on: '2025-02-01', is_current: false }, { id: '2026-27', starts_on: '2026-08-01', is_current: true }];
+  const c = fakeClient(t);
+  assert.deepEqual((await fetchSeasons({ client: c })).map((s) => s.id), ['2026-27', '2025']);
+  assert.deepEqual(c.calls[0].order, { col: 'starts_on', ascending: false });
+  await assert.rejects(fetchSeasons({ client: fakeClient(t, { throwOn: ['seasons'] }) }));
 });

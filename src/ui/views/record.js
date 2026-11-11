@@ -1,10 +1,12 @@
 // 観戦記録（#/records/:試合ID。設計書 3.4.1、FR-50〜55・58a・59・60・52b）
-// 順：スコアボード → 試合動画 → 出どころ → 自分の記録 → 遠征。M・L は左に記録の一覧（6-8 で作る。今は空の枠）、右に詳細（D31）
+// 順：スコアボード → 試合動画 → 出どころ → 自分の記録 → 遠征。M・L は左に記録の一覧（record-list.js。選んでいる試合のシーズン）、右に詳細（D31）
 // 編集は URL の ?edit=record（自分の記録）・?edit=fixture（管理者の試合の情報）で開く。入力中の値は ?edit を含まないキーに持つ
 import { el, innerLink, split } from '../components/parts.js';
 import { renderScoreboard } from '../components/scoreboard.js';
 import { renderRecordForm } from './record-edit.js';
 import { photoView } from './record-photo.js';
+import { renderRecordList } from '../components/record-list.js';
+import { recordsHref } from '../../core/record-list.js';
 import { renderFixtureEdit } from './record-fixture-edit.js';
 import { routeKey } from '../view-state.js';
 import { mergeFixtures, tripView } from '../../core/trip-view.js';
@@ -145,6 +147,10 @@ export function renderRecord(ctx) {
     const trip = ctx.personal.data.trips.find((t) => t.fixture_id === fixture.id);
     if (trip) detail.append(tripSection(trip, { fixturesById: mergeFixtures(masters.fixturesById, extra), clubsById: masters.clubsById, supportClubId }));
   }
-  root.append(split({ list: el('div', { class: 'rec-list' }), detail }));
+  // 左：選んでいる試合のシーズンの一覧（選んでいる行に印）。未ログインは空の枠
+  const season = fixture.season_id ?? null;
+  const list = ctx.user && season ? renderRecordList(ctx, { seasonId: season, selectedId: id, withControls: false }) : el('div', { class: 'rec-list' });
+  detail.firstChild.setAttribute('href', recordsHref({ season: season === masters.data?.season?.id ? null : season }));
+  root.append(split({ list, detail }));
   return root;
 }

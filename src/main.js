@@ -19,6 +19,7 @@ import { createTripStore } from './data/trips.js';
 import { createRecordStore } from './data/records.js';
 import { createPhotoStore } from './data/photos.js';
 import { createFixtureCache } from './data/fixture-cache.js';
+import { createSeasonCache } from './data/season-cache.js';
 import { createHistory } from './data/history.js';
 import { browserLocal } from './data/local.js';
 import { setReturnTo } from './data/return-to.js';
@@ -55,6 +56,7 @@ const personal = createPersonalHolder({
   client: getClient, getSnapshot: () => snapshot, getUser: () => user, getMasters: () => masters, now: Date.now, onChange: () => redraw(),
 });
 const fixtureCache = createFixtureCache({ client: getClient, onChange: () => redraw() });
+const seasonCache = createSeasonCache({ client: getClient, onChange: () => redraw() }); // 観戦記録の一覧：シーズンごとの試合
 // 写真の Storage（ログイン中だけ。オフラインは出さない）。利用者が変わったら作り直す（署名付き URL の覚えも捨てる）
 let photoStore = null;
 let photoUserId = null;
@@ -69,6 +71,7 @@ const OFFLINE_NOTICE = 'オフラインのため、最後にログインして�
 async function reloadMasters() {
   masters = await refreshMasters({ client: getClient(), snapshot, nowMs: Date.now() });
   personal.sync();
+  seasonCache.reset(); // 保存した試合を含むシーズンを読み直す
   redraw();
 }
 
@@ -89,6 +92,8 @@ function draw(route) {
       records: createRecordStore({ client: getClient(), photos: currentPhotos() }),
       fetchFixture: (id) => fixtureCache.get(id), // 共通データにない試合を ID で1件読む（undefined＝読み込み中、null＝なし）
       forgetFixture: (id) => fixtureCache.forget(id),
+      seasons: () => seasonCache.seasons(), // シーズンの選択肢（undefined＝読み込み中、null＝読めない）
+      seasonFixtures: (id) => seasonCache.fixtures(id), // 今のシーズン以外の試合（同上）
       reloadMasters, // 試合の情報を保存したあとに、共通データを読み直す
       goLogin: () => { setReturnTo(location.hash || '#/search'); location.hash = '#/login'; }, // 今の画面を戻り先に覚えてログインへ
       reloadPersonal: () => personal.reload(), // 保存・削除の成功のあとに呼ぶ（D33）
