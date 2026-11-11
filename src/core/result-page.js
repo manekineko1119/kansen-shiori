@@ -48,26 +48,34 @@ function resolveMatch(query, { fixturesById, clubsById, stadiumsById }, supportC
   };
 }
 
-// 電車・車のリンク（D35）。スタジアムなし（手入力の会場）は会場名の Googleマップ検索。会場未定は出さない
+// 電車・車のリンク（D35）。trainVia は電車のリンクの種類（'yahoo' か 'maps'）。会場未定は出さない
+// スタジアムなし（手入力の会場）：電車は here でなければ会場名で乗換案内、here なら会場名の Googleマップ検索。車は常に会場名の検索
 function routeLinks({ query, settings, match, arrive }) {
-  const out = { train: null, car: null };
+  const out = { train: null, trainVia: null, car: null };
   if (match.venueUnknown) return out;
   const { stadium, name } = match.venue;
   const modes = new Set(query.modes);
   const here = query.origin === 'here';
-  if (!stadium) {
-    const url = mapsSearchUrl({ query: name });
-    if (modes.has('train')) out.train = url;
-    if (modes.has('car')) out.car = url;
-    return out;
-  }
+  const origin = here ? null : `${settings.origin_station}駅`;
   if (modes.has('train')) {
-    out.train = here
-      ? mapsDirectionsUrl({ origin: null, lat: stadium.lat, lng: stadium.lng, travelmode: 'transit' })
-      : yahooTransitUrl({ from: settings.origin_station, to: stadium.stations?.[0]?.name ?? stadium.name, date: arrive?.date ?? match.date, arriveTime: arrive?.time ?? null });
+    if (here) {
+      // Yahoo!乗換案内は現在地を出発地にできないので Googleマップ（スタジアムなしは会場名の検索）
+      out.trainVia = 'maps';
+      out.train = stadium
+        ? mapsDirectionsUrl({ origin: null, lat: stadium.lat, lng: stadium.lng, travelmode: 'transit' })
+        : mapsSearchUrl({ query: name });
+    } else {
+      out.trainVia = 'yahoo';
+      out.train = yahooTransitUrl({
+        from: settings.origin_station, to: stadium ? (stadium.stations?.[0]?.name ?? stadium.name) : name,
+        date: arrive?.date ?? match.date, arriveTime: arrive?.time ?? null,
+      });
+    }
   }
   if (modes.has('car')) {
-    out.car = mapsDirectionsUrl({ origin: here ? null : `${settings.origin_station}駅`, lat: stadium.lat, lng: stadium.lng, travelmode: 'driving' });
+    out.car = stadium
+      ? mapsDirectionsUrl({ origin, lat: stadium.lat, lng: stadium.lng, travelmode: 'driving' })
+      : mapsSearchUrl({ query: name });
   }
   return out;
 }
@@ -104,7 +112,7 @@ export function buildResultPage({ query, masters, settings, supportClubId }) {
 
   const arrive = arrivalTarget(match.date, match.kickoff, settings.arrive_before_min);
   const end = matchEndEstimate(match.date, match.kickoff);
-  const { train, car } = routeLinks({ query, settings, match, arrive });
+  const { train, trainVia, car } = routeLinks({ query, settings, match, arrive });
 
   let bus = null;
   if (modes.has('bus')) {
@@ -119,7 +127,7 @@ export function buildResultPage({ query, masters, settings, supportClubId }) {
     venueUnknown: match.venueUnknown,
     timeline: { arrive, kickoff: arrive ? match.kickoff : null, end },
     stadium,
-    train, car, bus,
+    train, trainVia, car, bus,
     flight: modes.has('plane')
       ? buildFlight({ matchDate: match.date, kickoff: match.kickoff, lodging: query.lodging, settings, stadium, arrive })
       : null,

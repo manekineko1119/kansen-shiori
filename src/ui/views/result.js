@@ -56,11 +56,11 @@ function routeSection(page, query, settings) {
   const when = arrive ? `${formatDateJa(arrive.date)} ${arrive.time}着` : `${formatDateJa(page.summary.date)}（キックオフ時刻未定）`;
   const rows = [];
   if (page.train) {
-    const hereOrVenue = here || !page.stadium;
+    const maps = page.trainVia === 'maps';
     rows.push(extLink({
       href: page.train,
-      label: hereOrVenue ? '電車（Googleマップ）' : '電車（Yahoo!乗換案内）',
-      sub: hereOrVenue ? `${here ? '現在地' : settings.origin_station} → ${page.summary.venueName}` : `${settings.origin_station} → ${to}　${when}`,
+      label: maps ? '電車（Googleマップ）' : '電車（Yahoo!乗換案内）',
+      sub: maps ? `${here ? '現在地' : settings.origin_station} → ${page.summary.venueName}` : `${settings.origin_station} → ${to}　${when}`,
     }));
   }
   if (page.car) {

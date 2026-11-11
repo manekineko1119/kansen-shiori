@@ -93,6 +93,8 @@ test('交通手段に入っていないものと、宿泊なしは null', () => 
   const p = build('f=X&m=train');
   assert.deepEqual([p.car, p.bus, p.flight, p.lodging], [null, null, null, null]);
   assert.equal(typeof p.train, 'string');
+  assert.equal(p.trainVia, 'yahoo');
+  assert.equal(build('f=X&m=car').trainVia, null);
   assert.equal(build('f=X&m=car').train, null);
 });
 
@@ -113,6 +115,7 @@ test('キックオフ未定：到着目標・終了の目安なし。乗換は�
 test('現在地から：電車も車も出発地なしの Googleマップ', () => {
   const p = build('f=X&m=train,car&here=1');
   assert.equal(p.train, mapsDirectionsUrl({ origin: null, lat: 35.4, lng: 136.7, travelmode: 'transit' }));
+  assert.equal(p.trainVia, 'maps');
   assert.equal(p.car, mapsDirectionsUrl({ origin: null, lat: 35.4, lng: 136.7, travelmode: 'driving' }));
 });
 
@@ -132,7 +135,8 @@ test('会場の手入力（スタジアムなし）：電車も車も会場名�
   const p = build('f=LONELY&m=train,car,bus&l=post');
   assert.equal(p.stadium, null);
   assert.equal(p.summary.venueName, '臨時会場');
-  assert.equal(p.train, mapsSearchUrl({ query: '臨時会場' }));
+  assert.equal(p.train, yahooTransitUrl({ from: '松本', to: '臨時会場', date: '2026-10-25', arriveTime: '12:30' }));
+  assert.equal(p.trainVia, 'yahoo');
   assert.equal(p.car, mapsSearchUrl({ query: '臨時会場' }));
   assert.deepEqual(p.bus, { unsupported: true });
   assert.deepEqual(p.lodging.hotels, []);
@@ -145,7 +149,12 @@ test('会場の手入力（スタジアムなし）：電車も車も会場名�
 test('URL の手入力（会場だけ）：相手なし。遠征予定の名前は会場名', () => {
   const p = build('d=2026-12-06&k=19%3A00&v=長野Uスタジアム&m=train,car');
   assert.equal(p.summary.title, '長野Uスタジアム');
-  assert.equal(p.train, mapsSearchUrl({ query: '長野Uスタジアム' }));
+  assert.equal(p.train, yahooTransitUrl({ from: '松本', to: '長野Uスタジアム', date: '2026-12-06', arriveTime: '17:30' }));
+  assert.equal(p.trainVia, 'yahoo');
+  const h = build('d=2026-12-06&v=長野Uスタジアム&m=train,car&here=1');
+  assert.equal(h.train, mapsSearchUrl({ query: '長野Uスタジアム' }));
+  assert.equal(h.trainVia, 'maps');
+  assert.equal(h.car, mapsSearchUrl({ query: '長野Uスタジアム' }));
   assert.deepEqual(p.timeline.arrive, { date: '2026-12-06', time: '17:30' });
   assert.deepEqual(p.tripDraft, { fixture_id: null, custom_venue: '長野Uスタジアム', custom_date: '2026-12-06', title: '長野Uスタジアム遠征', modes: ['train', 'car'], lodging: 'none' });
 });
