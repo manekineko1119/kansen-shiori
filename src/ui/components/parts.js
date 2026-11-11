@@ -19,7 +19,7 @@ function rowBody(label, sub) {
 
 // 外部サイトの行。行全体がタップ領域で、右端に外部リンクの印
 export function extLink({ href, label, sub }) {
-  return el('a', { class: 'row row-ext', href, target: '_blank', rel: 'noopener' },
+  return el('a', { class: 'row row-ext', href, target: '_blank', rel: 'noopener noreferrer' },
     rowBody(label, sub), el('span', { class: 'row-mark', 'aria-hidden': 'true' }, '↗'), el('span', { class: 'sr-only' }, '（外部サイトを開く）'));
 }
 

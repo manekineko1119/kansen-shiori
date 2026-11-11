@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { searchDefaults, queryFromForm, historyLabel, fixtureLabel, upcomingFixtures, ticketInfo } from '../src/core/search-form.js';
+import { searchDefaults, queryFromForm, historyLabel, formFromQuery, fixtureLabel, upcomingFixtures, ticketInfo } from '../src/core/search-form.js';
+import { parseResultQuery } from '../src/core/search-query.js';
 
 const clubsById = {
   matsumoto: { id: 'matsumoto', name: '松本山雅FC', short_name: '松本', home_stadium_id: 'alwin' },
@@ -59,4 +60,14 @@ test('きっぷの文字', () => {
   assert.equal(ticketInfo({ ...x, kickoff: null }, env).kickoff, 'キックオフ未定');
   assert.equal(ticketInfo(x, { ...env, today: '2026-10-25' }).days, '今日');
   assert.equal(ticketInfo({ ...x, home_club_id: 'zz' }, env).where, '10/25（日）会場未定');
+});
+
+test('結果画面の条件 → 検索画面の入力欄の値', () => {
+  assert.deepEqual(formFromQuery(parseResultQuery('f=x&m=train,bus&l=post')), {
+    kind: 'fixture', fixtureId: 'x', opponentId: '', date: '', kickoff: '', venue: '',
+    mode_train: true, mode_car: false, mode_bus: true, mode_plane: false, lodging: 'post', origin: 'settings',
+  });
+  const custom = formFromQuery(parseResultQuery('o=gifu&d=2026-12-06&k=19%3A00&v=長野Uスタジアム&m=car&here=1'));
+  assert.deepEqual([custom.kind, custom.fixtureId, custom.opponentId, custom.date, custom.kickoff, custom.venue, custom.origin],
+    ['custom', '', 'gifu', '2026-12-06', '19:00', '長野Uスタジアム', 'here']);
 });

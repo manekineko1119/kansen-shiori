@@ -5,6 +5,7 @@ import { renderLogin } from './login.js';
 import { renderWelcome } from './welcome.js';
 import { renderSettings } from './settings.js';
 import { renderSearch } from './search.js';
+import { renderResult } from './result.js';
 import { el, section } from '../components/parts.js';
 
 const placeholder = (ctx) => renderPlaceholder(ctx.route, ctx.state, ctx.key, ctx.masters.status === 'loading' ? null : ctx.masters);
@@ -12,7 +13,7 @@ const placeholder = (ctx) => renderPlaceholder(ctx.route, ctx.state, ctx.key, ct
 // ctx.auth：{ loginError, signIn, signOut }。ctx.welcome：{ settings, save }（settings が null なら仮の画面）
 export const VIEWS = {
   search: renderSearch,
-  result: placeholder,
+  result: renderResult,
   fixtures: placeholder,
   calendar: placeholder,
   trips: placeholder,

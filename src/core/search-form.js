@@ -47,6 +47,17 @@ export function queryFromForm(values) {
   return { ok: true, qs: buildResultQuery({ fixtureId, custom, modes, lodging: values.lodging, origin: values.origin }) };
 }
 
+// 結果画面の条件（parseResultQuery の値）→ 検索画面の入力欄の値（「条件を変える」で入れ直す。bindForm の名前に合わせる）
+export function formFromQuery(q) {
+  const c = q.custom ?? {};
+  return {
+    kind: q.fixtureId ? 'fixture' : 'custom',
+    fixtureId: q.fixtureId ?? '', opponentId: c.opponentId ?? '', date: c.date ?? '', kickoff: c.kickoff ?? '', venue: c.venue ?? '',
+    ...Object.fromEntries(Object.keys(MODE_NAMES).map((m) => [`mode_${m}`, q.modes.includes(m)])),
+    lodging: q.lodging, origin: q.origin,
+  };
+}
+
 // 「10/25（日） A 岐阜」。応援クラブの試合でなければ H/A は付けない
 export function fixtureLabel(f, { clubsById, supportClubId }) {
   const side = fixtureSide(f, supportClubId);
