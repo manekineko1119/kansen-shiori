@@ -65,6 +65,8 @@ export function renderSettings(ctx) {
   }
   if (status === undefined) startLoad();
   const loading = status === undefined || status === 'loading';
+  // 読み込みが済むまで（失敗のときも）入力・追加・削除・保存をすべて止める。offline も同じ（既定値の入力が読み込みの結果を上書きしないため）
+  const locked = offline || loading || status === 'failed';
 
   const clubs = ctx.masters.data?.clubs ?? [];
   const clubList = clubs.some((c) => c.id === settings.support_club_id) ? clubs : [...clubs, { id: settings.support_club_id, name: settings.support_club_id }];
@@ -74,10 +76,10 @@ export function renderSettings(ctx) {
   const saved = state.getForm(key);
   const count = Math.min(Math.max(Number(saved.airport_count ?? settings.origin_airports.length) || 0, 0), MAX_AIRPORTS);
 
-  const clubSelect = control('select', 'support_club_id', null, { disabled: offline });
+  const clubSelect = control('select', 'support_club_id', null, { disabled: locked });
   for (const c of clubList) clubSelect.append(new Option(c.name, c.id));
   clubSelect.value = settings.support_club_id;
-  const prefSelect = control('select', 'origin_prefecture', null, { disabled: offline });
+  const prefSelect = control('select', 'origin_prefecture', null, { disabled: locked });
   for (const p of prefectures) prefSelect.append(new Option(p, p));
   prefSelect.value = settings.origin_prefecture;
 
@@ -87,38 +89,38 @@ export function renderSettings(ctx) {
     return el('fieldset', { class: 'airrow' },
       el('legend', null, `空港 ${i + 1}`),
       el('div', { class: 'row2' },
-        field('コード（MMJ など）', n('code'), control('input', n('code'), a.code, { type: 'text', autocomplete: 'off', autocapitalize: 'characters', disabled: offline }), `origin_airports.${i}.code`),
-        field('所要時間（分）', n('access_min'), numberInput(n('access_min'), a.access_min, offline), `origin_airports.${i}.access_min`)),
-      field('名前', n('name'), textInput(n('name'), a.name, offline)),
-      field('駅（乗換案内の到着駅。空でも可）', n('station'), textInput(n('station'), a.station, offline)),
-      field('メモ', n('note'), textInput(n('note'), a.note, offline)),
-      offline ? null : el('button', { class: 'btn btn-sub btn-small', type: 'button', onclick: () => removeRow(i) }, `空港 ${i + 1} を削除`));
+        field('コード（MMJ など）', n('code'), control('input', n('code'), a.code, { type: 'text', autocomplete: 'off', autocapitalize: 'characters', disabled: locked }), `origin_airports.${i}.code`),
+        field('所要時間（分）', n('access_min'), numberInput(n('access_min'), a.access_min, locked), `origin_airports.${i}.access_min`)),
+      field('名前', n('name'), textInput(n('name'), a.name, locked)),
+      field('駅（乗換案内の到着駅。空でも可）', n('station'), textInput(n('station'), a.station, locked)),
+      field('メモ', n('note'), textInput(n('note'), a.note, locked)),
+      offline ? null : el('button', { class: 'btn btn-sub btn-small', type: 'button', disabled: locked, onclick: () => removeRow(i) }, `空港 ${i + 1} を削除`));
   }
 
   const form = el('form', { class: 'sec', novalidate: true },
     el('h2', null, '検索の初期値'),
     field('応援クラブ', 'support_club_id', clubSelect, 'support_club_id'),
     el('div', { class: 'row2' },
-      field('出発駅', 'origin_station', textInput('origin_station', settings.origin_station, offline), 'origin_station'),
+      field('出発駅', 'origin_station', textInput('origin_station', settings.origin_station, locked), 'origin_station'),
       field('都道府県', 'origin_prefecture', prefSelect, 'origin_prefecture')),
     el('input', { type: 'hidden', name: 'airport_count', value: String(count) }),
     el('h2', null, '出発空港'),
     el('p', { class: 'muted' }, '飛行機で行くときの出発地です（最大5件）。'),
     Array.from({ length: count }, (_, i) => airportRow(i)),
-    offline ? null : el('button', { class: 'btn btn-sub', type: 'button', disabled: count >= MAX_AIRPORTS, onclick: addRow }, '＋ 空港を追加'),
+    offline ? null : el('button', { class: 'btn btn-sub', type: 'button', disabled: locked || count >= MAX_AIRPORTS, onclick: addRow }, '＋ 空港を追加'),
     el('h2', null, '余裕の時間'),
     el('div', { class: 'row2' },
-      field('空港に着くのは便の何分前（分）', 'airport_checkin_min', numberInput('airport_checkin_min', settings.airport_checkin_min, offline), 'airport_checkin_min'),
-      field('着陸から空港を出るまで（分）', 'airport_arrival_min', numberInput('airport_arrival_min', settings.airport_arrival_min, offline), 'airport_arrival_min')),
-    field('キックオフの何分前に着くか（分）', 'arrive_before_min', numberInput('arrive_before_min', settings.arrive_before_min, offline), 'arrive_before_min'),
+      field('空港に着くのは便の何分前（分）', 'airport_checkin_min', numberInput('airport_checkin_min', settings.airport_checkin_min, locked), 'airport_checkin_min'),
+      field('着陸から空港を出るまで（分）', 'airport_arrival_min', numberInput('airport_arrival_min', settings.airport_arrival_min, locked), 'airport_arrival_min')),
+    field('キックオフの何分前に着くか（分）', 'arrive_before_min', numberInput('arrive_before_min', settings.arrive_before_min, locked), 'arrive_before_min'),
     el('h2', null, 'よく使う交通手段'),
     el('div', null, MODES.map(([m, label]) => el('label', { class: 'check' },
-      el('input', { type: 'checkbox', name: `mode_${m}`, checked: settings.default_modes.includes(m), disabled: offline }), el('span', null, label)))),
+      el('input', { type: 'checkbox', name: `mode_${m}`, checked: settings.default_modes.includes(m), disabled: locked }), el('span', null, label)))),
     el('p', { class: 'err', 'data-err': 'default_modes' }),
     el('p', { class: 'err', 'data-err': '_form', role: 'alert' }, status === 'failed' ? LOAD_FAILED : ''),
     flash ? el('p', { class: 'note', role: 'status', 'data-flash': '' }, '保存しました') : null,
     offline ? el('p', { class: 'muted' }, 'オフラインのため、保存できません。')
-      : el('button', { class: 'btn', type: 'submit', disabled: loading }, loading ? '読み込み中…' : '設定を保存'),
+      : el('button', { class: 'btn', type: 'submit', disabled: locked }, loading ? '読み込み中…' : '設定を保存'),
     status === 'failed' ? el('button', { class: 'btn btn-sub', type: 'button', onclick: () => { startLoad(); ctx.redraw(); } }, '読み込み直す') : null);
 
   // 行の増減は state に入れて作り直す（入力中の値も行の数も残る）
@@ -148,7 +150,7 @@ export function renderSettings(ctx) {
 
   form.addEventListener('submit', async (ev) => {
     ev.preventDefault();
-    if (offline || loading) return;
+    if (locked) return;
     for (const p of form.querySelectorAll('[data-err]')) p.textContent = '';
     flash = false;
     const values = readValues(form);

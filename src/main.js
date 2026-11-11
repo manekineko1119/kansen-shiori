@@ -5,7 +5,7 @@ import { startRouter } from './router.js';
 import { renderFrame } from './ui/frame.js';
 import { renderView } from './ui/views/index.js';
 import { buildCtx } from './ui/ctx.js';
-import { createViewState, routeKey } from './ui/view-state.js';
+import { createViewState, routeKey, sameUserId } from './ui/view-state.js';
 import { rerender } from './ui/mount.js';
 import { openKv } from './data/kv-idb.js';
 import { createSnapshot } from './data/snapshot.js';
@@ -26,6 +26,11 @@ let currentRoute = null;
 let masters = null; // 共通データの状態（readMastersSnapshot／refreshMasters の結果）
 // { id, isAdmin, offline? } | null（画面の出し分けだけに使う。守りは RLS）。offline: true は、期限切れのままオフラインで、最後にログインしていた本人の写しを読み取りだけで出している状態（7章・9章）
 let user = null;
+// 利用者を替える。ID が変わるとき（別の人・未ログイン）は、前の人の入力中の値を捨てる（同じ ID なら残す）
+function setUser(next) {
+  if (!sameUserId(user, next)) state.clearAll();
+  user = next;
+}
 let signingOut = false; // ログアウトの最中（SIGNED_OUT を期限切れと取り違えないため）
 let loginError = null; // ログインから戻ったときのエラー（'not_invited' | 'failed'）
 let welcomeSettings = null; // #/welcome の初期値（5-7 の load の settings）
@@ -90,7 +95,7 @@ async function doSignOut() {
     if (!signedOut) notice = 'ログアウトできませんでした（通信できません）。通信できる場所でもう一度ログアウトしてください';
     else if (!cleaned) notice = 'ログアウトしました。ただし、この端末の遠征予定・観戦記録の写しを消せませんでした。次に開いたときにもう一度消します（アカウントのデータはそのままです）';
     if (signedOut) {
-      user = null;
+      setUser(null);
       clearLastUser();
     }
   } finally {
@@ -132,7 +137,7 @@ async function start() {
 
   if (ret.returned) {
     // ログインから戻ったとき（通信できている）：状態を確かめてから画面を出す
-    user = await userFromAuth(await resolveAuth(), last, snapshot);
+    setUser(await userFromAuth(await resolveAuth(), last, snapshot));
     if (ret.error || !user) {
       // 招待されていない、またはセッションに換えられなかった
       loginError = ret.error ?? 'failed';
@@ -142,7 +147,7 @@ async function start() {
     }
   } else {
     // ふつうの起動：ログインの確かめを待たずに画面を出す（最後にログインしていた本人として仮に出す）
-    user = last;
+    setUser(last);
   }
 
   // 有効期限が切れたら、ログインの必要な画面はログイン画面へ。戻ったら元の画面に戻す（9章）
@@ -150,10 +155,10 @@ async function start() {
     if (signingOut) return;
     const was = user;
     if (u) {
-      user = u;
+      setUser(u);
       setLastUser(u);
     } else if (was && !was.offline) {
-      user = null;
+      setUser(null);
       if (currentRoute && routeAccess(currentRoute.name, null) === 'login') {
         setReturnTo(location.hash);
         location.hash = '#/login';
@@ -173,7 +178,7 @@ async function start() {
 
   if (!ret.returned) {
     // 裏でログインを確かめ、結果に合わせて画面を出し直す
-    user = await userFromAuth(await resolveAuth(), last, snapshot);
+    setUser(await userFromAuth(await resolveAuth(), last, snapshot));
     if (user && !user.offline && !welcomeSettings && parseRoute(location.hash).name === 'welcome') {
       await loadWelcome(); // 初回の設定の途中で読み直したとき
     }

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createViewState, routeKey } from '../src/ui/view-state.js';
+import { createViewState, routeKey, sameUserId } from '../src/ui/view-state.js';
 import { parseRoute } from '../src/core/route.js';
 
 test('入力中の値は画面ごとに分かれ、返した値を書き換えても中身は変わらない', () => {
@@ -42,4 +42,24 @@ test('clearForm：入力を消す', () => {
   s.setForm('k1', { memo: 'あ' });
   s.clearForm('k1');
   assert.deepEqual(s.getForm('k1'), {});
+});
+
+test('clearAll：入力とスクロール位置を全部消す', () => {
+  const s = createViewState();
+  s.setForm('a', { x: '1' });
+  s.setForm('b', { y: '2' });
+  s.setScroll('a', 300);
+  s.clearAll();
+  assert.deepEqual(s.getForm('a'), {});
+  assert.deepEqual(s.getForm('b'), {});
+  assert.equal(s.getScroll('a'), 0);
+});
+
+test('sameUserId：ID が同じなら同じ人（offline・管理者の違いは無視）、未ログインは null どうし', () => {
+  assert.equal(sameUserId(null, null), true);
+  assert.equal(sameUserId(undefined, null), true);
+  assert.equal(sameUserId({ id: 'a' }, { id: 'a', isAdmin: true, offline: true }), true);
+  assert.equal(sameUserId({ id: 'a' }, { id: 'b' }), false);
+  assert.equal(sameUserId({ id: 'a' }, null), false);
+  assert.equal(sameUserId(null, { id: 'a' }), false);
 });
