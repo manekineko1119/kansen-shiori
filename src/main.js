@@ -25,6 +25,7 @@ let masters = null; // 共通データの状態（readMastersSnapshot／refreshM
 let user = null; // { id, isAdmin } | null（画面の出し分けだけに使う。守りは RLS）
 let loginError = null; // ログインから戻ったときのエラー（'not_invited' | 'failed'）
 let welcomeSettings = null; // #/welcome の初期値（5-7 の load の settings）
+let notice = null; // 画面の上に1回だけ出すお知らせ（ログアウトで端末の写しを消せなかったときなど）
 // 何も覚えない Kv（IndexedDB が開けないとき。Safari のプライベートなど）
 const nullKv = { get: async () => undefined, set: async () => {}, delete: async () => {} };
 let snapshot = createSnapshot(nullKv);
@@ -95,6 +96,13 @@ function draw(route) {
   header.querySelector('h1').textContent = TITLES[route.name] ?? '観戦のしおり';
   header.querySelector('h1').after(topLinks());
   const main = document.createElement('main');
+  if (notice) {
+    const p = document.createElement('p');
+    p.className = 'note';
+    p.setAttribute('role', 'status');
+    p.textContent = notice;
+    main.append(p);
+  }
   main.append(view(route));
   col.append(header, main);
   app.append(renderNav(navKeyOf(route.name)), col);
@@ -111,7 +119,8 @@ const redraw = () => { if (currentRoute) rerender(state, routeKey(currentRoute),
 
 async function doSignOut() {
   try {
-    await signOut({ snapshot, userId: user?.id });
+    const { cleaned } = await signOut({ snapshot, userId: user?.id });
+    if (!cleaned) notice = 'ログアウトしました。ただし、この端末の遠征予定・観戦記録の写しを消せませんでした。次に開いたときにもう一度消します（アカウントのデータはそのままです）';
   } finally {
     user = null;
     location.hash = '#/search';
@@ -136,6 +145,8 @@ async function start() {
   }
 
   try { snapshot = createSnapshot(await openKv()); } catch { /* 保存なしで続ける */ }
+  // ログインしていないのに個人の写しが残っていたら消す（ログアウトで消せなかったとき。アカウントのデータには触れない）
+  if (!(await getAppUser().catch(() => null))) await snapshot.removeAllPersonal().catch(() => 0);
 
   let ret = { returned: false, error: null, returnTo: null };
   try { ret = await handleAuthReturn(); } catch { ret = { returned: true, error: 'failed', returnTo: '#/search' }; }
@@ -186,6 +197,7 @@ async function loadMasters() {
 
 // welcome を直接開いたとき（再読み込みなど）は、設定を読み直して初期値にする
 addEventListener('hashchange', async () => {
+  if (notice && parseRoute(location.hash).name !== 'search') notice = null; // お知らせはログアウト直後の画面だけ
   loginError = null; // ログインから戻ったときのエラーは、そのときの1回だけ出す
   const r = parseRoute(location.hash);
   if (r.name === 'welcome' && user && !welcomeSettings) {

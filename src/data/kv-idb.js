@@ -17,6 +17,7 @@ export function openKv(dbName = 'kansen-shiori', storeName = 'kv') {
         get: (key) => run('readonly', (s) => s.get(key)),
         set: (key, value) => run('readwrite', (s) => s.put(value, key)),
         delete: (key) => run('readwrite', (s) => s.delete(key)),
+        keys: () => run('readonly', (s) => s.getAllKeys()),
       });
     };
   });

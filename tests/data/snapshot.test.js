@@ -46,3 +46,20 @@ test('kv が読めずに投げても null', async () => {
   const s = createSnapshot({ get: async () => { throw new Error('x'); } });
   assert.equal(await s.load('a'), null);
 });
+
+// ログアウトで消せなかった個人の写しを、次に開いたときに消す（Codex のレビュー、設計書 4.5）
+test('removeAllPersonal：personal: で始まる写しだけを、どのアカウントのものでも消す', async () => {
+  const kv = fakeKv();
+  const s = createSnapshot(kv);
+  await s.save('masters', { clubs: [] }, 1);
+  await s.save(SNAPSHOT_KEYS.personal('u1'), { trips: [] }, 1);
+  await s.save(SNAPSHOT_KEYS.personal('u2'), { trips: [] }, 1);
+  assert.equal(await s.removeAllPersonal(), 2);
+  assert.deepEqual([...kv._map.keys()], ['masters']);
+  assert.equal(await s.removeAllPersonal(), 0);
+});
+
+test('removeAllPersonal：一覧を出せない Kv（keys がない）では何もしない', async () => {
+  const kv = { get: async () => undefined, set: async () => {}, delete: async () => {} };
+  assert.equal(await createSnapshot(kv).removeAllPersonal(), 0);
+});

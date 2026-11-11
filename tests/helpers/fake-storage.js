@@ -5,6 +5,7 @@ export function fakeKv() {
     async get(key) { return map.has(key) ? map.get(key) : undefined; },
     async set(key, value) { map.set(key, value); },
     async delete(key) { map.delete(key); },
+    async keys() { return [...map.keys()]; },
     _map: map,
   };
 }

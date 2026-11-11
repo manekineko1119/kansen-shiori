@@ -20,6 +20,14 @@ export function createSnapshot(kv) {
     async remove(key) {
       await kv.delete(key);
     },
+    // personal: で始まる写しをすべて消し、消した数を返す。ログアウトで消せなかった写しを、
+    // 次にログインしていない状態で開いたときに消すために使う（アカウントのデータには触れない）
+    async removeAllPersonal() {
+      if (typeof kv.keys !== 'function') return 0;
+      const keys = (await kv.keys()).filter((k) => typeof k === 'string' && k.startsWith('personal:'));
+      for (const k of keys) await kv.delete(k);
+      return keys.length;
+    },
   };
 }
 

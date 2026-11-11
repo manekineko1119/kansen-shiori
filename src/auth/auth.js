@@ -16,12 +16,16 @@ export async function signInWithGoogle(returnTo = null) {
   if (error) throw error;
 }
 
-// ログアウト。個人のスナップショットを消してから。検索履歴と端末の設定は残す（設計書 4.5）
+// ログアウト。端末の個人の写しを消してから。検索履歴と端末の設定は残す（設計書 4.5）。
+// アカウントのデータ（遠征予定・観戦記録・設定）には触れない。
+// 写しを消せなくてもログアウトは進め、{ cleaned: false } を返す（次に開いたときに removeAllPersonal で消す）
 export async function signOut({ snapshot, userId }) {
+  let cleaned = true;
   if (userId) {
-    try { await snapshot.remove(SNAPSHOT_KEYS.personal(userId)); } catch { /* 消せなくてもログアウトは進める */ }
+    try { await snapshot.remove(SNAPSHOT_KEYS.personal(userId)); } catch { cleaned = false; }
   }
   await getClient().auth.signOut();
+  return { cleaned };
 }
 
 export async function getAppUser() {
