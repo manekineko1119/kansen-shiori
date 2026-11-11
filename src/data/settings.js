@@ -71,7 +71,9 @@ export function createSettingsStore({ client, local, userId }) {
   }
 
   async function save(values) {
-    const settings = pick(values);
+    // 項目の置き換えはしない。足りない項目を既定で補い、設定以外の項目を捨てるだけ（型違いは検証で止める）
+    const settings = {};
+    for (const k of SETTINGS_KEYS) settings[k] = values?.[k] === undefined ? structuredClone(DEFAULT_SETTINGS[k]) : values[k];
     const v = validateSettings(settings);
     if (!v.ok) return { ok: false, errors: v.errors };
     if (userId == null) {

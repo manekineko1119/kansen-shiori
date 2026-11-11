@@ -120,3 +120,19 @@ test('ログイン：load の失敗は例外にせず exists null と error を�
   assert.deepEqual(db.error, { code: '42501', message: 'x' });
   assert.equal(db.settings.origin_station, '塩尻');
 });
+
+test('保存：型違いの入力は既定値に置き換えず、検証で止める', async () => {
+  for (const bad of ['abc', 1.5, null]) {
+    const local = fakeLocal({ 'kansen.settings': '{"arrive_before_min":120}' });
+    const st = createSettingsStore({ client: null, local, userId: null });
+    const r = await st.save({ ...DEFAULT_SETTINGS, arrive_before_min: bad });
+    assert.equal(r.ok, false);
+    assert.ok(r.errors.arrive_before_min);
+    assert.equal(JSON.parse(local.getItem('kansen.settings')).arrive_before_min, 120);
+  }
+  const client = fakeClient({ user_settings: [] });
+  const r = await createSettingsStore({ client, local: fakeLocal(), userId: 'u1' }).save({ ...DEFAULT_SETTINGS, default_modes: 3 });
+  assert.equal(r.ok, false);
+  assert.ok(r.errors.default_modes);
+  assert.equal(client.calls.length, 0);
+});
