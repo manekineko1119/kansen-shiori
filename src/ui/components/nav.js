@@ -8,7 +8,8 @@ export const ICONS = {
   calendar: SVG('<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>'),
   trips: SVG('<path d="M4 19h16M6 15l2-9h8l2 9M9 6V4h6v2"/>'),
   records: SVG('<path d="M5 3h11l3 3v15H5z"/><path d="M9 10h6M9 14h6M9 18h3"/>'),
-  settings: SVG('<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/>'),
+  // 歯車：輪と、外側の8つの歯（太い短い線）と、中心の穴
+  settings: SVG('<circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="2.5"/><path stroke-width="3.4" stroke-linecap="butt" d="M12 2.2v3.6M12 18.2v3.6M2.2 12h3.6M18.2 12h3.6M5.1 5.1l2.5 2.5M16.4 16.4l2.5 2.5M5.1 18.9l2.5-2.5M16.4 7.6l2.5-2.5"/>'),
 };
 
 export const NAV_ITEMS = [
