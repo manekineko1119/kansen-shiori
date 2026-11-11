@@ -183,26 +183,32 @@ export function mapStadiumErrors(errors, values) {
 // ---- クラブ ----
 const lines = (v) => String(v ?? '').split(/\r?\n/).map((s) => s.trim()).filter((s) => s !== '');
 
-function videoSourcesFromForm(values) {
+// 元の取得元に重ねる。画面で編集するのは1件目の channel と highlight・inside のキーワードだけ。
+// 1件目のほかの項目（channel_id など）・ほかの種類・2件目以降は残す。ハンドルを変えたときだけ channel_id・uploads_playlist_id を捨てる
+function videoSourcesFromForm(values, original = []) {
   let channel = toHalfWidth(values.video_channel).trim();
   if (channel === '') return [];
   if (!channel.startsWith('@')) channel = `@${channel}`;
-  const kinds = {};
-  const highlight = lines(values.video_kw_highlight);
-  const inside = lines(values.video_kw_inside);
-  if (highlight.length) kinds.highlight = highlight;
-  if (inside.length) kinds.inside = inside;
-  return [{ channel, kinds }];
+  const [first = {}, ...rest] = original;
+  const { channel_id: channelId, uploads_playlist_id: uploadsId, ...others } = first;
+  const kinds = { ...(first.kinds ?? {}) };
+  for (const [kind, key] of [['highlight', 'video_kw_highlight'], ['inside', 'video_kw_inside']]) {
+    const words = lines(values[key]);
+    if (words.length) kinds[kind] = words;
+    else delete kinds[kind];
+  }
+  const same = first.channel === channel;
+  return [{ ...others, ...(same && channelId !== undefined ? { channel_id: channelId } : {}), ...(same && uploadsId !== undefined ? { uploads_playlist_id: uploadsId } : {}), channel, kinds }, ...rest];
 }
 
 /** theme_colors は送らない（フェーズ2。FR-92） */
-export function clubFromForm(values) {
+export function clubFromForm(values, original = null) {
   return {
     id: text(values.id), name: text(values.name), short_name: text(values.short_name),
     aliases: lines(values.aliases),
     official_url: blankToNull(values.official_url), jleague_url: blankToNull(values.jleague_url),
     home_stadium_id: blankToNull(values.home_stadium_id),
-    video_sources: videoSourcesFromForm(values),
+    video_sources: videoSourcesFromForm(values, original?.video_sources ?? []),
   };
 }
 

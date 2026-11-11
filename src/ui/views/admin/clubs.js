@@ -46,7 +46,7 @@ function clubForm(ctx, club) {
   form.addEventListener('submit', (ev) => {
     ev.preventDefault();
     if (locked) return;
-    const next = clubFromForm(readValues(form));
+    const next = clubFromForm(readValues(form), club);
     const taken = isNew && masters.data.clubs.some((c) => c.id === next.id);
     run(
       async () => (taken ? { ok: false, errors: { id: 'このIDはすでに登録されています' } } : ctx.data.admin.saveClub(next)),

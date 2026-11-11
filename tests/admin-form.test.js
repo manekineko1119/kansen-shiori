@@ -145,3 +145,36 @@ test('クラブ → 入力欄の値 → クラブ', () => {
   assert.equal(values.video_kw_inside, '【INSIDE】');
   assert.deepEqual(clubFromForm(values), club);
 });
+
+const origSources = [
+  { channel: '@yamagachannel', channel_id: 'UC1', uploads_playlist_id: 'UU1', kinds: { highlight: ['明治安田'], inside: ['【INSIDE】'], preview: ['予告'] } },
+  { channel: '@other', kinds: { highlight: ['x'] } },
+];
+
+test('クラブ：別名だけ直しても、2件目・channel_id・ほかの種類のキーワードが残る', () => {
+  const original = { id: 'a', name: 'A', short_name: 'a', aliases: [], video_sources: origSources };
+  const club = clubFromForm({ ...clubToValues(original), aliases: '新しい別名' }, original);
+  assert.deepEqual(club.aliases, ['新しい別名']);
+  assert.deepEqual(club.video_sources, origSources);
+  assert.notEqual(club.video_sources[0], origSources[0]);
+});
+
+test('クラブ：1件目のキーワードを直しても、ほかの項目と2件目は残る。空にした種類だけ消える', () => {
+  const original = { id: 'a', name: 'A', short_name: 'a', video_sources: origSources };
+  const club = clubFromForm({ ...clubToValues(original), video_kw_highlight: '新', video_kw_inside: '' }, original);
+  assert.deepEqual(club.video_sources[0], { channel: '@yamagachannel', channel_id: 'UC1', uploads_playlist_id: 'UU1', kinds: { highlight: ['新'], preview: ['予告'] } });
+  assert.deepEqual(club.video_sources[1], origSources[1]);
+});
+
+test('クラブ：ハンドルを変えると、1件目の channel_id・uploads_playlist_id が消える（2件目は残る）', () => {
+  const original = { id: 'a', name: 'A', short_name: 'a', video_sources: origSources };
+  const club = clubFromForm({ ...clubToValues(original), video_channel: 'newchannel' }, original);
+  assert.deepEqual(club.video_sources[0], { channel: '@newchannel', kinds: origSources[0].kinds });
+  assert.deepEqual(club.video_sources[1], origSources[1]);
+});
+
+test('クラブ：ハンドルを空にすると取得元なし（今までの扱い）。元がなければ1件作る', () => {
+  const original = { id: 'a', name: 'A', short_name: 'a', video_sources: origSources };
+  assert.deepEqual(clubFromForm({ ...clubToValues(original), video_channel: '' }, original).video_sources, []);
+  assert.deepEqual(clubFromForm({ id: 'a', name: 'A', short_name: 'a', video_channel: '@c', video_kw_highlight: 'h' }, { video_sources: [] }).video_sources, [{ channel: '@c', kinds: { highlight: ['h'] } }]);
+});
