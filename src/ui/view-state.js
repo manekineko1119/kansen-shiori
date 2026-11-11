@@ -20,6 +20,15 @@ export function createViewState() {
     // 利用者が変わったとき、前の人の入力とスクロール位置を全部捨てる
     clearAll: () => { forms.clear(); scrolls.clear(); },
     getScroll: (key) => scrolls.get(key) ?? 0,
+    hasScroll: (key) => scrolls.has(key),
     setScroll: (key, y) => { scrolls.set(key, y); },
   };
+}
+
+// 遷移のときのスクロール：'keep'（動かさない）| 'restore'（残した位置へ）| 'top'（先頭へ）。設計書 3.5
+// M・L は同じ画面で query だけ違う（一覧で別の項目を選んだ）なら動かさない。S は残っていれば戻す
+export function scrollPlan({ prev, next, size, hasSaved }) {
+  const sameScreen = prev && prev.name === next.name && JSON.stringify(prev.params ?? {}) === JSON.stringify(next.params ?? {});
+  if (size !== 'S' && sameScreen) return 'keep';
+  return hasSaved ? 'restore' : 'top';
 }

@@ -5,7 +5,7 @@ import { startRouter } from './router.js';
 import { renderFrame } from './ui/frame.js';
 import { renderView } from './ui/views/index.js';
 import { buildCtx } from './ui/ctx.js';
-import { createViewState, routeKey, sameUserId } from './ui/view-state.js';
+import { createViewState, routeKey, sameUserId, scrollPlan } from './ui/view-state.js';
 import { rerender } from './ui/mount.js';
 import { openKv } from './data/kv-idb.js';
 import { createSnapshot } from './data/snapshot.js';
@@ -80,10 +80,15 @@ async function saveWelcome(values) {
   return res;
 }
 
-// 画面の遷移：先頭から始める
+// 画面の遷移：離れる画面の位置を残し、次の画面は scrollPlan に従って先頭・残した位置・そのまま
 function renderApp(route) {
+  const prev = currentRoute;
+  if (prev) state.setScroll(routeKey(prev), window.scrollY);
+  const key = routeKey(route);
+  const plan = scrollPlan({ prev, next: route, size: document.documentElement.dataset.size ?? 'S', hasSaved: state.hasScroll(key) });
   draw(route);
-  window.scrollTo(0, 0);
+  if (plan === 'top') window.scrollTo(0, 0);
+  else if (plan === 'restore') requestAnimationFrame(() => window.scrollTo(0, state.getScroll(key)));
 }
 
 const redraw = () => { if (currentRoute) rerender(state, routeKey(currentRoute), () => draw(currentRoute)); };

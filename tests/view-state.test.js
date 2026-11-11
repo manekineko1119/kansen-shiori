@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createViewState, routeKey, sameUserId } from '../src/ui/view-state.js';
+import { createViewState, routeKey, sameUserId, scrollPlan } from '../src/ui/view-state.js';
 import { parseRoute } from '../src/core/route.js';
 
 test('入力中の値は画面ごとに分かれ、返した値を書き換えても中身は変わらない', () => {
@@ -62,4 +62,36 @@ test('sameUserId：ID が同じなら同じ人（offline・管理者の違いは
   assert.equal(sameUserId({ id: 'a' }, { id: 'b' }), false);
   assert.equal(sameUserId({ id: 'a' }, null), false);
   assert.equal(sameUserId(null, { id: 'a' }), false);
+});
+
+test('hasScroll：記録した位置があるか（0 でも記録していれば true）', () => {
+  const s = createViewState();
+  assert.equal(s.hasScroll('a'), false);
+  s.setScroll('a', 0);
+  assert.equal(s.hasScroll('a'), true);
+  s.clearAll();
+  assert.equal(s.hasScroll('a'), false);
+});
+
+test('scrollPlan：S は残っていれば restore、なければ top', () => {
+  const list = parseRoute('#/fixtures');
+  const detail = parseRoute('#/fixtures?f=a');
+  assert.equal(scrollPlan({ prev: detail, next: list, size: 'S', hasSaved: true }), 'restore');
+  assert.equal(scrollPlan({ prev: list, next: detail, size: 'S', hasSaved: false }), 'top');
+  assert.equal(scrollPlan({ prev: list, next: parseRoute('#/fixtures?f=b'), size: 'S', hasSaved: false }), 'top');
+});
+
+test('scrollPlan：M・L は同じ画面で query だけ違うなら keep、それ以外は restore か top', () => {
+  const a = parseRoute('#/fixtures?f=a');
+  const b = parseRoute('#/fixtures?f=b');
+  for (const size of ['M', 'L']) {
+    assert.equal(scrollPlan({ prev: a, next: b, size, hasSaved: true }), 'keep');
+    assert.equal(scrollPlan({ prev: a, next: b, size, hasSaved: false }), 'keep');
+    assert.equal(scrollPlan({ prev: a, next: parseRoute('#/calendar'), size, hasSaved: true }), 'restore');
+    assert.equal(scrollPlan({ prev: a, next: parseRoute('#/calendar'), size, hasSaved: false }), 'top');
+  }
+  // params が違えば（遠征予定 A → B）keep しない
+  assert.equal(scrollPlan({ prev: parseRoute('#/trips/1'), next: parseRoute('#/trips/2'), size: 'M', hasSaved: false }), 'top');
+  // 最初の描画（prev なし）
+  assert.equal(scrollPlan({ prev: null, next: a, size: 'M', hasSaved: false }), 'top');
 });

@@ -7,9 +7,6 @@ import { formatDateJa } from '../../core/format.js';
 import { formatScore, matchOutcome } from '../../core/result.js';
 import { buildResultQuery } from '../../core/search-query.js';
 
-// 今日に近い行まで1回だけスクロールした画面（作り直しで位置を奪わない）
-const autoScrolled = new Set();
-
 const selectedId = (route) => new URLSearchParams(route.query ?? '').get('f');
 
 function listRow(r, selected) {
@@ -72,12 +69,11 @@ export function renderFixtures(ctx) {
   }
   root.append(split({ list, detail: detailNode }));
 
-  // 今日に近い行まで（スクロール位置が記録されていない最初の1回だけ）
+  // 今日に近い行まで（この画面のスクロール位置が記録されていないときだけ）
   const idx = nearestIndex(rows, ctx.today);
-  if (!selected && idx > 0 && !state.getScroll(key) && !autoScrolled.has(key)) {
-    autoScrolled.add(key);
+  if (!selected && idx > 0 && !state.hasScroll(key)) {
     requestAnimationFrame(() => requestAnimationFrame(() => {
-      if (state.getScroll(key)) return;
+      if (state.hasScroll(key)) return;
       root.querySelector(`[data-fixture="${CSS.escape(rows[idx].id)}"]`)?.scrollIntoView({ block: 'center' });
     }));
   }
