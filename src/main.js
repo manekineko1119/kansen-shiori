@@ -3,21 +3,23 @@ import { sizeClass, MEDIA } from './core/layout.js';
 import { startRouter } from './router.js';
 import { renderNav, navKeyOf, ICONS } from './ui/components/nav.js';
 import { renderPlaceholder, TITLES } from './ui/views/placeholder.js';
+import { createViewState, routeKey } from './ui/view-state.js';
+import { rerender } from './ui/mount.js';
 
 // ログインは 5-6 で作る。それまでは常に未ログイン
 const getUser = () => null;
 
 const root = document.getElementById('app');
+const state = createViewState(); // 入力中の値とスクロール位置（メモリ）
 let currentRoute = null;
 
 function updateSize() {
   document.documentElement.dataset.size = sizeClass(window.innerWidth);
 }
 
-// keepScroll：幅の区分が変わって作り直すときだけ true。画面の遷移では先頭から始める
-function renderApp(route, keepScroll = false) {
+// 画面の枠と本文を作って差し替える（スクロールは触らない）
+function draw(route) {
   currentRoute = route;
-  const scrollY = keepScroll ? window.scrollY : 0;
   const app = document.createElement('div');
   app.className = 'app';
   const col = document.createElement('div');
@@ -27,18 +29,23 @@ function renderApp(route, keepScroll = false) {
   header.innerHTML = `<h1></h1><a class="gearbtn" href="#/settings" aria-label="設定">${ICONS.settings}</a>`;
   header.querySelector('h1').textContent = TITLES[route.name] ?? '観戦のしおり';
   const main = document.createElement('main');
-  main.append(renderPlaceholder(route)); // 5-3 で本物の画面に差し替える
+  main.append(renderPlaceholder(route, state, routeKey(route))); // 5-3 で本物の画面に差し替える
   col.append(header, main);
   app.append(renderNav(navKeyOf(route.name)), col);
   root.replaceChildren(app);
-  window.scrollTo(0, scrollY);
+}
+
+// 画面の遷移：先頭から始める
+function renderApp(route) {
+  draw(route);
+  window.scrollTo(0, 0);
 }
 
 updateSize();
 for (const query of Object.values(MEDIA)) {
   matchMedia(query).addEventListener('change', () => {
     updateSize();
-    if (currentRoute) renderApp(currentRoute, true); // 画面の作り直しの中身は 5-3
+    if (currentRoute) rerender(state, routeKey(currentRoute), () => draw(currentRoute)); // 入力とスクロールを残す
   });
 }
 startRouter({ render: renderApp, getUser });

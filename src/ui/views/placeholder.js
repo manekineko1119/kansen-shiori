@@ -1,11 +1,13 @@
 // 段6 までの仮の画面。5-3 の確認用に、入力欄と長い本文を置く
+import { bindForm } from '../mount.js';
+
 export const TITLES = {
   search: 'スタジアム検索', result: '検索結果', fixtures: '日程', calendar: 'カレンダー',
   trips: '遠征予定', trip: '遠征予定の詳細', records: '観戦記録', record: '観戦記録の詳細',
   settings: '設定', login: 'ログイン', welcome: 'ようこそ', admin: '管理',
 };
 
-export function renderPlaceholder(route) {
+export function renderPlaceholder(route, state, key) {
   const el = document.createElement('div');
   if (route.forbidden) {
     el.innerHTML = '<section class="sec"><h2>権限がありません</h2><p class="muted">この画面を開く権限がありません。</p></section>';
@@ -28,5 +30,6 @@ export function renderPlaceholder(route) {
     b.append(p);
   }
   el.append(a, b);
+  bindForm(a, state, key); // 作り直しても入力を残す
   return el;
 }
