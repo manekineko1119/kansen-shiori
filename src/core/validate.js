@@ -59,12 +59,22 @@ export function validateClub(c) {
   return result(errors);
 }
 
+const MODES = ['train', 'car', 'bus', 'plane'];
+
 export function validateSettings(s) {
   const errors = {};
   (s.origin_airports ?? []).forEach((a, i) => {
     if (!/^[A-Za-z]{3,4}$/.test(a?.code ?? '')) errors[`origin_airports.${i}.code`] = '空港コードは英字3文字（都市コードは4文字）にしてください';
     checkRange(errors, `origin_airports.${i}.access_min`, a?.access_min, 0, 600, '所要時間', '分');
   });
+  // 設計書 4.2 の check と同じ範囲。指定のない項目は見ない
+  const ranges = [['airport_checkin_min', 0, 240, '空港に着く時間'], ['airport_arrival_min', 0, 120, '着陸から空港を出るまでの時間'], ['arrive_before_min', 0, 600, '到着の目安']];
+  for (const [k, min, max, label] of ranges) {
+    if (s[k] !== undefined) checkRange(errors, k, s[k], min, max, label, '分');
+  }
+  if (s.default_modes !== undefined && !(Array.isArray(s.default_modes) && s.default_modes.every((m) => MODES.includes(m)))) {
+    errors.default_modes = '移動手段は電車・車・バス・飛行機のどれかにしてください';
+  }
   return result(errors);
 }
 

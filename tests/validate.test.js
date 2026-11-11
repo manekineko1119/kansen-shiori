@@ -105,3 +105,14 @@ test('遠征予定：空白だけのタイトルはエラー、前後の空白�
   assert.ok(validateTrip({ fixture_id: 'x', title: '   ' }).errors.title);
   assert.equal(validateTrip({ fixture_id: 'x', title: ` ${'あ'.repeat(50)} ` }).ok, true);
 });
+
+test('設定：分の範囲と移動手段（設計書 4.2 の check と同じ）', () => {
+  assert.equal(validateSettings({ airport_checkin_min: 240, airport_arrival_min: 0, arrive_before_min: 600, default_modes: ['train', 'car', 'bus', 'plane'] }).ok, true);
+  assert.ok(validateSettings({ airport_checkin_min: 999 }).errors.airport_checkin_min);
+  assert.ok(validateSettings({ airport_checkin_min: -1 }).errors.airport_checkin_min);
+  assert.ok(validateSettings({ airport_arrival_min: 121 }).errors.airport_arrival_min);
+  assert.ok(validateSettings({ arrive_before_min: 601 }).errors.arrive_before_min);
+  assert.ok(validateSettings({ arrive_before_min: 1.5 }).errors.arrive_before_min);
+  assert.ok(validateSettings({ default_modes: ['ship'] }).errors.default_modes);
+  assert.ok(validateSettings({ default_modes: 'train' }).errors.default_modes);
+});

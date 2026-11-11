@@ -2,6 +2,7 @@
 import { validateSettings } from '../core/validate.js';
 
 const KEY = 'kansen.settings';
+const CHECK_MESSAGE = '保存できませんでした。入力を確かめてもう一度保存してください';
 const OFFLINE_MESSAGE = '保存できませんでした。通信できる場所でもう一度保存してください';
 
 export const SETTINGS_KEYS = ['support_club_id', 'origin_station', 'origin_prefecture', 'origin_airports', 'airport_checkin_min', 'airport_arrival_min', 'arrive_before_min', 'default_modes'];
@@ -21,10 +22,23 @@ export const DEFAULT_SETTINGS = Object.freeze({
   default_modes: ['train'],
 });
 
-// 設定の項目だけを取り出し、足りない項目は既定で補う
+// 項目ごとの型の検査（設計書 4.2）。合わない項目は既定値に戻す（4.5）
+const isInt = (v) => Number.isInteger(v);
+const TYPE_OK = {
+  support_club_id: (v) => typeof v === 'string' && v !== '',
+  origin_station: (v) => typeof v === 'string',
+  origin_prefecture: (v) => typeof v === 'string',
+  origin_airports: (v) => Array.isArray(v),
+  airport_checkin_min: isInt,
+  airport_arrival_min: isInt,
+  arrive_before_min: isInt,
+  default_modes: (v) => Array.isArray(v) && v.every((m) => typeof m === 'string'),
+};
+
+// 設定の項目だけを取り出し、足りない・型の違う項目は既定で補う
 function pick(src) {
   const out = {};
-  for (const k of SETTINGS_KEYS) out[k] = src?.[k] ?? structuredClone(DEFAULT_SETTINGS[k]);
+  for (const k of SETTINGS_KEYS) out[k] = TYPE_OK[k](src?.[k]) ? src[k] : structuredClone(DEFAULT_SETTINGS[k]);
   return out;
 }
 
@@ -44,8 +58,14 @@ export function createSettingsStore({ client, local, userId }) {
   async function load() {
     const dev = readLocal(local);
     if (userId == null) return dev;
-    const { data, error } = await client.from('user_settings').select('*').eq('user_id', userId).maybeSingle();
-    if (error) throw new Error(error.message ?? 'error');
+    let res;
+    try {
+      res = await client.from('user_settings').select('*').eq('user_id', userId).maybeSingle();
+    } catch (e) {
+      return { settings: dev.settings, exists: null, error: { code: 'network', message: e?.message ?? 'network' } };
+    }
+    const { data, error } = res;
+    if (error) return { settings: dev.settings, exists: null, error: { code: error.code ?? 'unknown', message: error.message ?? 'error' } };
     if (!data) return { settings: dev.settings, exists: false };
     return { settings: pick(data), exists: true };
   }
@@ -65,7 +85,7 @@ export function createSettingsStore({ client, local, userId }) {
     try {
       const { error } = await client.from('user_settings').upsert(settings, { onConflict: 'user_id' });
       if (error) {
-        const msg = error.code === '42501' ? '権限がありません' : OFFLINE_MESSAGE;
+        const msg = error.code === '42501' ? '権限がありません' : error.code ? CHECK_MESSAGE : OFFLINE_MESSAGE;
         return { ok: false, errors: { _form: msg } };
       }
     } catch {

@@ -83,7 +83,40 @@ test('ログイン：権限なし・通信失敗・その他のエラー', async
   assert.deepEqual((await mk({ failOn: { user_settings: { message: 'boom' } } }).save(DEFAULT_SETTINGS)).errors, { _form: '保存できませんでした。通信できる場所でもう一度保存してください' });
 });
 
-test('ログイン：読み込みの失敗は例外にする', async () => {
-  const st = createSettingsStore({ client: fakeClient({ user_settings: [] }, { throwOn: ['user_settings'] }), local: fakeLocal(), userId: 'u1' });
-  await assert.rejects(st.load());
+test('端末の設定：型違いの項目だけ既定値に戻す', async () => {
+  const local = fakeLocal({ 'kansen.settings': '{"origin_station":"岡谷","arrive_before_min":"abc","default_modes":3,"origin_airports":"x","airport_checkin_min":1.5,"support_club_id":7}' });
+  const r = await createSettingsStore({ client: null, local, userId: null }).load();
+  assert.equal(r.exists, true);
+  assert.equal(r.settings.origin_station, '岡谷');
+  assert.equal(r.settings.arrive_before_min, 90);
+  assert.deepEqual(r.settings.default_modes, ['train']);
+  assert.deepEqual(r.settings.origin_airports, DEFAULT_SETTINGS.origin_airports);
+  assert.equal(r.settings.airport_checkin_min, 60);
+  assert.equal(r.settings.support_club_id, 'matsumoto');
+});
+
+test('ログイン：範囲外の値は項目ごとの理由を返して送らない', async () => {
+  const client = fakeClient({ user_settings: [] });
+  const st = createSettingsStore({ client, local: fakeLocal(), userId: 'u1' });
+  const r = await st.save({ ...DEFAULT_SETTINGS, airport_checkin_min: 999 });
+  assert.equal(r.ok, false);
+  assert.ok(r.errors.airport_checkin_min);
+  assert.equal(client.calls.length, 0);
+});
+
+test('ログイン：code 付きのエラー（42501 以外）は入力の確認を促す', async () => {
+  const st = createSettingsStore({ client: fakeClient({ user_settings: [] }, { failOn: { user_settings: { code: '23514', message: 'check' } } }), local: fakeLocal(), userId: 'u1' });
+  assert.deepEqual((await st.save(DEFAULT_SETTINGS)).errors, { _form: '保存できませんでした。入力を確かめてもう一度保存してください' });
+});
+
+test('ログイン：load の失敗は例外にせず exists null と error を返す', async () => {
+  const local = fakeLocal({ 'kansen.settings': '{"origin_station":"塩尻"}' });
+  const net = await createSettingsStore({ client: fakeClient({ user_settings: [] }, { throwOn: ['user_settings'] }), local, userId: 'u1' }).load();
+  assert.equal(net.exists, null);
+  assert.equal(net.error.code, 'network');
+  assert.equal(net.settings.origin_station, '塩尻');
+  const db = await createSettingsStore({ client: fakeClient({ user_settings: [] }, { failOn: { user_settings: { code: '42501', message: 'x' } } }), local, userId: 'u1' }).load();
+  assert.equal(db.exists, null);
+  assert.deepEqual(db.error, { code: '42501', message: 'x' });
+  assert.equal(db.settings.origin_station, '塩尻');
 });
