@@ -36,7 +36,10 @@ function head({ year, month }, form) {
   const next = shiftMonth(year, month, 1);
   return el('div', { class: 'cal-head' },
     el('a', { class: 'cal-nav', href: calendarHref(prev.year, prev.month), 'aria-label': '前の月' }, '‹'),
-    el('h2', { class: 'cal-title num' }, String(year), el('small', null, '年'), String(month), el('small', null, '月')),
+    // 年は上に小さく、月を大きく（シーズンが年をまたぐので年は必ず見せる）
+    el('h2', { class: 'cal-title num', 'aria-label': `${year}年${month}月` },
+      el('span', { class: 'cal-year' }, `${year}年`),
+      el('span', { class: 'cal-month' }, String(month), el('small', null, '月'))),
     el('a', { class: 'cal-nav', href: calendarHref(next.year, next.month), 'aria-label': '次の月' }, '›'),
     el('div', { class: 'cal-form num', role: 'img', 'aria-label': form.length ? `直近${form.length}試合の結果` : '直近の結果なし' },
       el('span', null, '直近'),

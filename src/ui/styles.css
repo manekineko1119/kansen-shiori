@@ -444,10 +444,11 @@ a:focus-visible, button:focus-visible, .input:focus-visible {
 .sec.cal { padding: 12px 8px; }
 /* 見出し：「‹ 2026年11月 ›」を1つのまとまりとして中央に置き、その下に直近の結果 */
 .cal-head { display: grid; grid-template-columns: 44px auto 44px; justify-content: center; align-items: center; column-gap: 20px; row-gap: 6px; margin-bottom: 8px; }
-.cal-title { justify-content: center; align-items: baseline; gap: 0; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: .02em; }
+.cal-title { flex-direction: column; justify-content: center; align-items: center; gap: 0; margin: 0; min-width: 4.5em; line-height: 1.1; }
 .cal-title::after { content: none; }
-.cal-title small { font-size: 14px; margin: 0 6px 0 2px; }
-.cal-title small:last-child { margin-right: 0; }
+.cal-year { font-size: 12px; font-weight: 600; color: var(--ink-2); letter-spacing: .04em; }
+.cal-month { font-size: 30px; font-weight: 700; letter-spacing: .02em; }
+.cal-month small { font-size: 15px; margin-left: 2px; }
 .cal-nav {
   display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; font-size: 20px; line-height: 1;
   color: var(--ink); text-decoration: none; border: 1px solid var(--rule); background: var(--paper);
