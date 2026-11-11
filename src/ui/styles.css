@@ -299,3 +299,58 @@ a:focus-visible, button:focus-visible, .input:focus-visible {
 @media (prefers-reduced-motion: no-preference) {
   .menu a, .gearbtn { transition: background-color 0.15s ease, color 0.15s ease; }
 }
+
+/* ---------- 検索画面（#/search）：きっぷ・チップ・検索履歴 ---------- */
+.search > .note:first-child { margin-top: 0; }
+.prompt { background: var(--paper); border-radius: var(--r-m); padding: 0 16px; margin-bottom: 12px; border-left: 4px solid var(--theme-accent); }
+.prompt .row { border-top: 0; }
+.ticket {
+  position: relative; display: grid; grid-template-columns: 1fr 96px; margin-bottom: 4px;
+  color: var(--theme-on-primary); border-radius: var(--r-l); overflow: hidden;
+  background:
+    repeating-linear-gradient(60deg, color-mix(in srgb, var(--theme-on-primary) 7%, transparent) 0 1px, transparent 1px 7px),
+    repeating-linear-gradient(-60deg, color-mix(in srgb, var(--theme-on-primary) 7%, transparent) 0 1px, transparent 1px 7px),
+    var(--theme-primary);
+}
+.ticket::before, .ticket::after { content: ""; position: absolute; right: 86px; width: 20px; height: 20px; border-radius: 50%; background: var(--bg); }
+.ticket::before { top: -10px; }
+.ticket::after { bottom: -10px; }
+.tk-main { padding: 14px 14px 0 18px; min-width: 0; cursor: pointer; }
+.tk-k { font-size: 12px; letter-spacing: .06em; opacity: .85; }
+.tk-route { display: flex; align-items: center; gap: 10px; margin: 6px 0 4px; font-size: 28px; font-weight: 900; line-height: 1.1; letter-spacing: .12em; }
+.tk-route span { min-width: 0; }
+.tk-route i { flex: 1; max-width: 72px; height: 2px; background: currentColor; position: relative; opacity: .9; }
+.tk-route i::after { content: ""; position: absolute; right: -1px; top: -4px; border: 5px solid transparent; border-left: 8px solid currentColor; border-right: 0; }
+.tk-vs { font-size: 15px; font-weight: 700; line-height: 1.4; }
+.tk-where { font-size: 13px; opacity: .85; padding-bottom: 4px; }
+.tk-stub {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 10px 4px 0; text-align: center;
+  border-left: 2px dashed color-mix(in srgb, var(--theme-on-primary) 45%, transparent);
+}
+.tk-stub span { font-size: 11px; opacity: .85; letter-spacing: .04em; }
+.tk-stub b { font-size: 30px; line-height: 1; }
+.tk-stub b.tk-undecided { font-size: 13px; line-height: 1.4; font-weight: 700; }
+.tk-stub em { margin-top: 6px; font-style: normal; font-size: 12px; font-weight: 700; color: var(--on-accent); background: var(--theme-accent); border-radius: 999px; padding: 1px 9px; }
+.tk-btn {
+  grid-column: 1 / -1; margin: 14px 14px 14px 18px; min-height: 48px; border: 0; border-radius: var(--r-s);
+  background: var(--theme-accent); color: var(--on-accent); font-weight: 800; font-size: 16px; letter-spacing: .06em;
+}
+.tk-btn:hover { filter: brightness(1.06); }
+.ticket :focus-visible { outline-color: var(--theme-accent); }
+
+.seg { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { position: relative; display: inline-flex; cursor: pointer; }
+.chip input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.chip span {
+  display: inline-flex; align-items: center; gap: 4px; min-height: 44px; padding: 0 16px;
+  border-radius: 999px; border: 1px solid var(--rule); background: var(--paper); font-size: 14px;
+}
+.chip input:checked + span { background: var(--theme-primary); border-color: var(--theme-primary); color: var(--theme-on-primary); font-weight: 700; }
+.chip input:checked + span::before { content: ""; width: 10px; height: 6px; margin: -3px 2px 0 -4px; border: solid currentColor; border-width: 0 0 2px 2px; transform: rotate(-45deg); }
+.chip input:focus-visible + span { outline: 3px solid var(--theme-primary); outline-offset: 2px; }
+.search-form .sec .seg { margin-bottom: 2px; }
+.btn-wide { width: 100%; min-height: 52px; }
+.cta { margin-top: 20px; }
+.hist a { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 48px; border-top: 1px solid var(--rule); font-size: 14px; color: inherit; text-decoration: none; }
+.hist a:first-child { border-top: 0; }
+.hist a .muted { color: var(--theme-primary); font-weight: 700; flex: none; }
