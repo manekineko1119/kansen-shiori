@@ -86,3 +86,59 @@ test('reload：保存のあとに読み直し、今のものを差し替える',
   await holder.reload();
   assert.deepEqual(holder.current.data.trips.map((t) => t.id), ['t1', 't2']);
 });
+
+// 読み込みを手で終わらせられる偽物。from() を呼んだ時点の利用者の中身を、release のときに返す
+function gatedSetup(user) {
+  const env = { user, changes: 0 };
+  const rows = { u1: { trips: [{ id: 'u1-trip', fixture_id: 'a' }], match_records: [] }, u2: { trips: [{ id: 'u2-trip', fixture_id: 'a' }], match_records: [] } };
+  const gates = {};
+  const client = {
+    from(table) {
+      const owner = env.user?.id;
+      const q = {
+        select() { return q; },
+        in() { return q; },
+        then(res, rej) {
+          return new Promise((ok) => { (gates[owner] ??= []).push(() => ok({ data: rows[owner][table] ?? [], error: null })); }).then(res, rej);
+        },
+      };
+      return q;
+    },
+  };
+  const holder = createPersonalHolder({
+    client: () => client, getSnapshot: () => createSnapshot(fakeKv()), getUser: () => env.user, getMasters: () => masters,
+    now: () => T, onChange: () => { env.changes += 1; },
+  });
+  const release = async (owner) => { for (const g of gates[owner] ?? []) g(); gates[owner] = []; await tick(); await tick(); };
+  return { env, holder, release };
+}
+
+test('読み込み中に利用者が替わったら、前の人の結果を採らない（中身の違う u1・u2。u1 を後に終わらせる）', async () => {
+  const { env, holder, release } = gatedSetup({ id: 'u1' });
+  holder.sync();
+  env.user = { id: 'u2' };
+  holder.sync();
+  await release('u2');
+  await release('u1');
+  assert.deepEqual(holder.current.data.trips.map((t) => t.id), ['u2-trip']);
+});
+
+test('読み込み中にログアウト（null）になったら採らない', async () => {
+  const { env, holder, release } = gatedSetup({ id: 'u1' });
+  holder.sync();
+  env.user = null;
+  holder.sync();
+  await release('u1');
+  assert.equal(holder.current, null);
+});
+
+test('読み込み中に online から offline に替わったら、online の結果を採らない', async () => {
+  const { env, holder, release } = gatedSetup({ id: 'u1' });
+  holder.sync();
+  env.user = { id: 'u1', offline: true };
+  holder.sync();
+  await tick();
+  assert.equal(holder.current.status, 'unavailable'); // 写しなし
+  await release('u1');
+  assert.equal(holder.current.status, 'unavailable');
+});
