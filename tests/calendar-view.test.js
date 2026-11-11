@@ -93,3 +93,20 @@ test('dayEntries: 色のクラス（tone）と印（mark）', () => {
   assert.deepEqual(dayEntries(items, '2026-11-08', env).map((e) => [e.tone, e.mark]), [['h', 'H']]);
   assert.deepEqual([bandTone({ type: 'result', outcome: null }), bandTone({ type: 'fixture', homeAway: 'A' })], ['none', 'a']);
 });
+
+test('parseCalendarQuery: 年は 2000〜2099 だけ（範囲外は今日の月）', () => {
+  const t = { year: 2026, month: 11, day: null };
+  assert.deepEqual(parseCalendarQuery('m=9999-12', '2026-11-02'), t);
+  assert.deepEqual(parseCalendarQuery('m=0050-05', '2026-11-02'), t);
+  assert.deepEqual(parseCalendarQuery('m=2026-13', '2026-11-02'), t);
+  assert.deepEqual(parseCalendarQuery('m=2100-01', '2026-11-02'), t);
+  assert.deepEqual(parseCalendarQuery('m=2000-01', '2026-11-02'), { year: 2000, month: 1, day: null });
+  assert.deepEqual(parseCalendarQuery('d=9999-12-31', '2026-11-02'), t);
+  assert.deepEqual(parseCalendarQuery('m=2026-11&d=0050-05-05', '2026-11-02'), { year: 2026, month: 11, day: null });
+});
+
+test('parseCalendarQuery: m が壊れていれば今日の月。d はその月の日だけ残す', () => {
+  assert.deepEqual(parseCalendarQuery('m=abc&d=2026-12-05', '2026-11-02'), { year: 2026, month: 11, day: null });
+  assert.deepEqual(parseCalendarQuery('m=2026-13&d=2026-11-14', '2026-11-02'), { year: 2026, month: 11, day: '2026-11-14' });
+  assert.deepEqual(parseCalendarQuery('m=2026-11&d=2026-12-05', '2026-11-02'), { year: 2026, month: 11, day: '2026-12-05' });
+});

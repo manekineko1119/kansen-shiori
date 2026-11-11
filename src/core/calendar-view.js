@@ -3,23 +3,25 @@ import { isValidDate } from './time.js';
 import { OUTCOME_MARK } from './result.js';
 import { bandLabel, competitionLabel, opponentOf } from './fixture-view.js';
 
+const inRange = (s) => Number(s.slice(0, 4)) >= 2000 && Number(s.slice(0, 4)) <= 2099;
 const pad = (n, w = 2) => String(n).padStart(w, '0');
 
 export function monthParam(year, month) {
   return `${pad(year, 4)}-${pad(month)}`;
 }
 
-// ?m=YYYY-MM&d=YYYY-MM-DD を読む。読めない値は無視する（m は今日の月、d はなし）。
-// m がなく d だけ読めるときは d の月。day は 'YYYY-MM-DD' か null
+// ?m=YYYY-MM&d=YYYY-MM-DD を読む。年は 2000〜2099 だけ。読めない値は無視する（m は今日の月、d はなし）。
+// m がないときだけ、読める d の月を出す。m が壊れているときは今日の月で、d はその月の日なら残す。day は 'YYYY-MM-DD' か null
 export function parseCalendarQuery(query, today) {
   const params = new URLSearchParams(query ?? '');
   const m = params.get('m') ?? '';
   const d = params.get('d') ?? '';
-  const day = isValidDate(d) ? d : null;
+  const day = isValidDate(d) && inRange(d) ? d : null;
   const hit = /^(\d{4})-(\d{2})$/.exec(m);
-  if (hit && Number(hit[2]) >= 1 && Number(hit[2]) <= 12) return { year: Number(hit[1]), month: Number(hit[2]), day };
-  const base = (day ?? today).split('-').map(Number);
-  return { year: base[0], month: base[1], day };
+  if (hit && inRange(m) && Number(hit[2]) >= 1 && Number(hit[2]) <= 12) return { year: Number(hit[1]), month: Number(hit[2]), day };
+  const [ty, tm] = today.split('-').map(Number);
+  if (m === '' && day) return { year: Number(day.slice(0, 4)), month: Number(day.slice(5, 7)), day };
+  return { year: ty, month: tm, day: day && day.slice(0, 7) === today.slice(0, 7) ? day : null };
 }
 
 // 前の月・次の月（年をまたぐ）
