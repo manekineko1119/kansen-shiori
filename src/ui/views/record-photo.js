@@ -22,17 +22,22 @@ export function photoView(ctx, path) {
  * 選んだファイルは画面のメモリに持つ（開閉・回転で消えたら選び直し）
  * 戻り値：node、makeBlob（選んでいなければ null。縮小は保存のときに行う）、fail(message, onRetry)（写真だけ失敗したとき「もう一度アップロード」を出す）
  */
-export function renderPhotoField(ctx, { record, onRemove }) {
+export function renderPhotoField(ctx, { record, onRemove, retry: failed = null, onFile = () => {} }) {
   if (!ctx.data.photos || ctx.user?.offline) return null;
-  let file = null;
+  let file = failed?.file ?? null;
   const input = el('input', { id: 'r-photo', class: 'input', type: 'file', accept: 'image/*' });
   const name = el('p', { class: 'muted', 'data-photo-name': '' });
   const err = el('p', { class: 'err', 'data-err': 'photo' });
   const retry = el('button', { class: 'btn btn-sub btn-small', type: 'button', hidden: true }, '写真をもう一度アップロード');
+  const showName = () => {
+    name.textContent = file ? `${file.name}（保存すると${record?.photo_path ? '差し替わります' : '追加されます'}）` : '';
+  };
+  showName();
   input.addEventListener('change', () => {
     file = input.files?.[0] ?? null;
-    name.textContent = file ? `${file.name}（保存すると${record?.photo_path ? '差し替わります' : '追加されます'}）` : '';
+    showName();
     err.textContent = '';
+    onFile(file);
   });
   const remove = record?.photo_path
     ? el('button', { class: 'btn btn-sub btn-danger btn-small', type: 'button', onclick: onRemove }, '写真を削除')
@@ -42,15 +47,18 @@ export function renderPhotoField(ctx, { record, onRemove }) {
     el('label', { for: 'r-photo' }, '写真（1枚）'),
     record?.photo_path ? photoView(ctx, record.photo_path) : null,
     input, name, err, retry, remove);
-  return {
+  const api = {
     node,
     get makeBlob() { return file ? () => resizeToJpeg(file) : null; },
+    get file() { return file; },
     removeButton: remove,
     retryButton: retry,
+    showFailed: (onRetry) => { if (failed) api.fail(failed.message, onRetry); },
     fail(message, onRetry) {
       err.textContent = message;
       retry.hidden = false;
       retry.onclick = onRetry;
     },
   };
+  return api;
 }

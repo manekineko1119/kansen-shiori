@@ -21,7 +21,6 @@ const field = (label, name, node) => el('div', { class: 'field' }, el('label', {
  */
 export function renderRecordForm(ctx, { fixture, record, trip, formKey, doneHref }) {
   const initial = recordFormValues(record);
-  let savedWithoutPhoto = false; // 記録は保存したが、写真だけ失敗している
   const total = el('span', { class: 'fig', 'data-total': '' });
 
   const styles = Object.entries(WATCH_LABELS).map(([v, label]) => el('label', { class: 'chip' },
@@ -34,13 +33,16 @@ export function renderRecordForm(ctx, { fixture, record, trip, formKey, doneHref
   // 保存・削除のあと：入力中の値を捨て、個人データを読み直して戻る
   const finish = async () => {
     ctx.state.clearForm(formKey);
+    ctx.state.clearPhotoRetry(formKey);
     await ctx.data.reloadPersonal();
     ctx.navigate(doneHref);
   };
   let run = null; // フォームを作ったあとに入れる（photo の onRemove から使う）
   // 写真を外すのは保存済みの記録の写真（入力中の値は使わない）
+  const failed = ctx.state.getPhotoRetry(formKey); // 写真だけ失敗した保存が残っていれば、描き直しても出し直す
   const photo = renderPhotoField(ctx, {
-    record,
+    record, retry: failed,
+    onFile: (f) => { const cur = ctx.state.getPhotoRetry(formKey); if (cur) ctx.state.setPhotoRetry(formKey, { ...cur, file: f }); },
     onRemove: () => {
       if (!window.confirm(CONFIRM_REMOVE_PHOTO)) return;
       run(() => ctx.data.records.removePhoto(record), photo.removeButton, async () => { await ctx.data.reloadPersonal(); });
@@ -59,7 +61,7 @@ export function renderRecordForm(ctx, { fixture, record, trip, formKey, doneHref
     el('p', { class: 'err', 'data-err': '_form', role: 'alert' }),
     el('div', { class: 'actions' },
       el('button', { class: 'btn', type: 'submit' }, '保存'),
-      el('a', { class: 'btn btn-sub', href: doneHref, onclick: () => { if (savedWithoutPhoto) ctx.data.reloadPersonal(); } }, 'キャンセル')));
+      el('a', { class: 'btn btn-sub', href: doneHref }, 'キャンセル')));
 
   bindForm(form, ctx.state, formKey); // 開閉・回転で入力を残す（段6 の約束）
   // 費用の合計は入力のたびに出し直す。数字でない欄は 0 として合計しない
@@ -69,13 +71,16 @@ export function renderRecordForm(ctx, { fixture, record, trip, formKey, doneHref
 
   run = createRunner(ctx, form, 'record-form');
   const nextRecord = () => ({ ...recordFromForm(readValues(form)), fixture_id: fixture.id, trip_id: trip?.id ?? null });
+  const retryUpload = () => run(() => ctx.data.records.attachPhoto(nextRecord(), photo.makeBlob), photo.retryButton, finish);
+  photo?.showFailed(retryUpload);
   form.addEventListener('submit', (ev) => {
     ev.preventDefault();
     run(() => ctx.data.records.saveWithPhoto(nextRecord(), photo?.makeBlob ?? null), form.querySelector('button[type="submit"]'), async (res) => {
       if (!res.photoError) { await finish(); return; }
-      // 記録は保存済み。写真だけ「もう一度アップロード」を出し、画面は閉じない（描き直さないので、選んだ写真も残る）
-      savedWithoutPhoto = true;
-      photo.fail(res.photoError, () => run(() => ctx.data.records.attachPhoto(nextRecord(), photo.makeBlob), photo.retryButton, finish));
+      // 記録は保存済み：すぐ読み直す（D33）。写真だけ失敗した状態（選んだファイルと理由）はメモリに置き、描き直しても「もう一度アップロード」を出す
+      ctx.state.setPhotoRetry(formKey, { file: photo.file, message: `記録は保存しました。${res.photoError}` });
+      photo.fail(`記録は保存しました。${res.photoError}`, retryUpload);
+      await ctx.data.reloadPersonal();
     });
   });
 

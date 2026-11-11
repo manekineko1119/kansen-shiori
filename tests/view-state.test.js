@@ -95,3 +95,24 @@ test('scrollPlan：M・L は同じ画面で query だけ違うなら keep、そ�
   // 最初の描画（prev なし）
   assert.equal(scrollPlan({ prev: null, next: a, size: 'M', hasSaved: false }), 'top');
 });
+
+test('写真の再アップロードの状態：置く・取り出す・消す。描き直しても同じキーで取り出せる（6-7 のレビュー）', () => {
+  const s = createViewState();
+  assert.equal(s.getPhotoRetry('k'), null);
+  const file = { name: 'a.jpg' };
+  s.setPhotoRetry('k', { file, message: '写真をアップロードできませんでした' });
+  assert.deepEqual(s.getPhotoRetry('k'), { file, message: '写真をアップロードできませんでした' });
+  assert.equal(s.getPhotoRetry('k').file, file); // 同じ File（コピーしない）
+  assert.equal(s.getPhotoRetry('other'), null);
+  s.clearPhotoRetry('k');
+  assert.equal(s.getPhotoRetry('k'), null);
+});
+
+test('写真の再アップロードの状態：clearForm では消えず、利用者が変わる clearAll で消える（別の人が取り出せない）', () => {
+  const s = createViewState();
+  s.setPhotoRetry('k', { file: {}, message: 'm' });
+  s.clearForm('k');
+  assert.notEqual(s.getPhotoRetry('k'), null);
+  s.clearAll();
+  assert.equal(s.getPhotoRetry('k'), null);
+});
