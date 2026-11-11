@@ -17,6 +17,7 @@ import { createSettingsHolder } from './data/settings-holder.js';
 import { createPersonalHolder } from './data/personal-holder.js';
 import { createTripStore } from './data/trips.js';
 import { createRecordStore } from './data/records.js';
+import { createPhotoStore } from './data/photos.js';
 import { createFixtureCache } from './data/fixture-cache.js';
 import { createHistory } from './data/history.js';
 import { browserLocal } from './data/local.js';
@@ -54,6 +55,14 @@ const personal = createPersonalHolder({
   client: getClient, getSnapshot: () => snapshot, getUser: () => user, getMasters: () => masters, now: Date.now, onChange: () => redraw(),
 });
 const fixtureCache = createFixtureCache({ client: getClient, onChange: () => redraw() });
+// 写真の Storage（ログイン中だけ。オフラインは出さない）。利用者が変わったら作り直す（署名付き URL の覚えも捨てる）
+let photoStore = null;
+let photoUserId = null;
+function currentPhotos() {
+  const id = user && !user.offline ? user.id : null;
+  if (id !== photoUserId) { photoUserId = id; photoStore = id ? createPhotoStore({ client: getClient(), userId: id }) : null; }
+  return photoStore;
+}
 const OFFLINE_NOTICE = 'オフラインのため、最後にログインしていたときの内容を表示しています。編集はできません';
 
 // 共通データを最新に読み直して、画面を描き直す（管理者が試合の情報を保存したあと）
@@ -76,7 +85,8 @@ function draw(route) {
       adoptSettings: (s, forUserId) => { if (forUserId === (user?.id ?? null)) settings.adopt(s); },
       history: createHistory(local),
       trips: createTripStore({ client: getClient() }),
-      records: createRecordStore({ client: getClient() }),
+      photos: currentPhotos(),
+      records: createRecordStore({ client: getClient(), photos: currentPhotos() }),
       fetchFixture: (id) => fixtureCache.get(id), // 共通データにない試合を ID で1件読む（undefined＝読み込み中、null＝なし）
       forgetFixture: (id) => fixtureCache.forget(id),
       reloadMasters, // 試合の情報を保存したあとに、共通データを読み直す

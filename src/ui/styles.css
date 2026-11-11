@@ -560,3 +560,8 @@ a:focus-visible, button:focus-visible, .input:focus-visible {
   .sb-score { font-size: 48px; }
   .sb-team { font-size: 14px; }
 }
+/* 観戦記録の写真 */
+.rec-photo { margin: 12px 0 0; }
+.rec-photo img { display: block; width: 100%; height: auto; max-height: 70vh; object-fit: contain; background: var(--bg); border-radius: var(--r-s); }
+.photo-field .btn { align-self: flex-start; }
+.photo-field .err:empty, .photo-field .muted:empty { display: none; }

@@ -4,6 +4,7 @@
 import { el, innerLink, split } from '../components/parts.js';
 import { renderScoreboard } from '../components/scoreboard.js';
 import { renderRecordForm } from './record-edit.js';
+import { photoView } from './record-photo.js';
 import { renderFixtureEdit } from './record-fixture-edit.js';
 import { routeKey } from '../view-state.js';
 import { mergeFixtures, tripView } from '../../core/trip-view.js';
@@ -40,11 +41,12 @@ function sourceSection(fixture, canEditFixture, editHref) {
     canEditFixture ? el('a', { class: 'btn btn-sub btn-small', href: editHref }, '試合の情報を編集') : null);
 }
 
-function recordView(record, editHref, offline) {
+function recordView(ctx, record, editHref, offline) {
   const rows = COST_KEYS.flatMap((k) => [el('span', null, COST_LABELS[k]), el('span', null, formatYen(record[k]))]);
   return el('section', { class: 'sec record-view' },
     el('h2', null, '自分の記録'),
     el('dl', { class: 'kv' }, el('dt', null, '観戦方法'), el('dd', null, WATCH_LABELS[record.watch_style] ?? record.watch_style), el('dt', null, '公開'), el('dd', null, '非公開')),
+    record.photo_path ? photoView(ctx, record.photo_path) : null,
     el('h2', { class: 'sec-in' }, '費用'),
     el('div', { class: 'costs num' }, rows, el('span', { class: 'tot' }, '合計'), el('span', { class: 'tot fig' }, formatYen(costTotal(record)))),
     record.memo ? [el('h2', { class: 'sec-in' }, '感想'), el('p', { class: 'memo' }, record.memo)] : null,
@@ -80,7 +82,7 @@ function mineSection(ctx, { fixture, base, formKey, editing }) {
   const record = p.data.records.find((r) => r.fixture_id === fixture.id) ?? null;
   const trip = p.data.trips.find((t) => t.fixture_id === fixture.id) ?? null;
   if (editing && !offline) return renderRecordForm(ctx, { fixture, record, trip, formKey, doneHref: base });
-  if (record) return recordView(record, `${base}?edit=record`, offline);
+  if (record) return recordView(ctx, record, `${base}?edit=record`, offline);
   if (offline) return el('section', { class: 'sec' }, el('p', { class: 'muted' }, 'この試合の観戦記録はありません。'));
   return el('section', { class: 'sec' }, el('a', { class: 'btn btn-wide', href: `${base}?edit=record` }, '観戦記録を追加'));
 }
