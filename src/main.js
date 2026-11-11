@@ -10,11 +10,13 @@ import { rerender } from './ui/mount.js';
 import { openKv } from './data/kv-idb.js';
 import { createSnapshot } from './data/snapshot.js';
 import { loadMasters } from './data/masters-loader.js';
+import { refreshMasters } from './data/masters.js';
 import { userFromAuth } from './auth/apply.js';
 import { getClient } from './data/client.js';
 import { createSettingsHolder } from './data/settings-holder.js';
 import { createPersonalHolder } from './data/personal-holder.js';
 import { createTripStore } from './data/trips.js';
+import { createRecordStore } from './data/records.js';
 import { createHistory } from './data/history.js';
 import { browserLocal } from './data/local.js';
 import { setReturnTo } from './data/return-to.js';
@@ -52,6 +54,13 @@ const personal = createPersonalHolder({
 });
 const OFFLINE_NOTICE = 'オフラインのため、最後にログインしていたときの内容を表示しています。編集はできません';
 
+// 共通データを最新に読み直して、画面を描き直す（管理者が試合の情報を保存したあと）
+async function reloadMasters() {
+  masters = await refreshMasters({ client: getClient(), snapshot, nowMs: Date.now() });
+  personal.sync();
+  redraw();
+}
+
 // 画面の枠と本文を作って差し替える（スクロールは触らない）
 function draw(route) {
   currentRoute = route;
@@ -65,6 +74,9 @@ function draw(route) {
       adoptSettings: (s, forUserId) => { if (forUserId === (user?.id ?? null)) settings.adopt(s); },
       history: createHistory(local),
       trips: createTripStore({ client: getClient() }),
+      records: createRecordStore({ client: getClient() }),
+      reloadMasters, // 試合の情報を保存したあとに、共通データを読み直す
+      goLogin: () => { setReturnTo(location.hash || '#/search'); location.hash = '#/login'; }, // 今の画面を戻り先に覚えてログインへ
       reloadPersonal: () => personal.reload(), // 保存・削除の成功のあとに呼ぶ（D33）
     },
     navigate: (hash) => { location.hash = hash; },

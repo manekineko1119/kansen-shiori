@@ -1,0 +1,96 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import {
+  recordFromForm, fixtureEditFromForm, validateFixtureEdit, validateMatchRecord, costTotal, recordFormValues,
+  fixtureFormValues, removeScorerRow, scorerRowIndexes, youtubeId, thumbnailUrl, sourceLabel,
+} from '../src/core/record-form.js';
+import { formatDateTimeJst } from '../src/core/format.js';
+
+test('recordFromForm：全角・カンマ・空・数字でない値・メモの空白', () => {
+  assert.deepEqual(
+    recordFromForm({ watch_style: 'stadium', cost_transport: '１，２００', cost_lodging: '', cost_ticket: '3500', cost_goods: 'abc', cost_food: '0', memo: '  良い試合 ' }),
+    { watch_style: 'stadium', cost_transport: 1200, cost_lodging: null, cost_ticket: 3500, cost_goods: NaN, cost_food: 0, memo: '良い試合' });
+  assert.equal(recordFromForm({ watch_style: 'stadium', cost_ticket: '1,200' }).cost_ticket, 1200);
+  assert.equal(recordFromForm({ watch_style: 'stadium', memo: ' ' }).memo, null);
+  assert.ok(Number.isNaN(recordFromForm({ watch_style: 'stadium', cost_food: '-5' }).cost_food));
+});
+
+test('費用が数字でなければ検証で止まる。全角は通る', () => {
+  assert.equal(validateMatchRecord(recordFromForm({ watch_style: 'stadium', cost_goods: 'abc' })).errors.cost_goods, '費用は0以上の整数で入力してください');
+  assert.equal(validateMatchRecord(recordFromForm({ watch_style: 'stadium', cost_goods: '１，２００' })).ok, true);
+});
+
+test('費用の合計：空と NaN は 0 として足さない', () => {
+  assert.equal(costTotal({ cost_transport: 1200, cost_lodging: null, cost_ticket: 3500, cost_goods: NaN, cost_food: 0 }), 4700);
+  assert.equal(costTotal(recordFromForm({ watch_style: 'stadium' })), 0);
+});
+
+test('recordFormValues：なければ空と「現地」。数は文字列', () => {
+  assert.deepEqual(recordFormValues(null), { watch_style: 'stadium', memo: '', cost_transport: '', cost_lodging: '', cost_ticket: '', cost_goods: '', cost_food: '' });
+  assert.deepEqual(recordFormValues({ watch_style: 'broadcast', cost_transport: 9800, cost_food: 0, memo: 'x' }),
+    { watch_style: 'broadcast', memo: 'x', cost_transport: '9800', cost_lodging: '', cost_ticket: '', cost_goods: '', cost_food: '0' });
+});
+
+const edit = fixtureEditFromForm({
+  status: 'finished', home_score: '1', away_score: '3',
+  scorer_0_side: 'home', scorer_0_player: '田中 太一', scorer_0_minute: '64', scorer_0_type: 'goal',
+  scorer_1_side: 'away', scorer_1_player: '', scorer_1_minute: '', scorer_1_type: 'goal',
+  video_highlight: 'https://www.youtube.com/watch?v=abc', video_inside: '',
+});
+const ids = { homeClubId: 'nara', awayClubId: 'matsumoto' };
+
+test('fixtureEditFromForm：名前が空の得点者の行は捨てる。動画の空は null', () => {
+  assert.deepEqual(edit.fixture.scorers, [{ side: 'home', player: '田中 太一', minute: '64', type: 'goal' }]);
+  assert.deepEqual(edit.videos, { highlight: 'https://www.youtube.com/watch?v=abc', inside: null });
+  assert.deepEqual([edit.fixture.status, edit.fixture.home_score, edit.fixture.away_score], ['finished', 1, 3]);
+});
+
+test('validateFixtureEdit：スコア・時間・動画の URL', () => {
+  assert.equal(validateFixtureEdit(edit, ids).ok, true);
+  assert.equal(validateFixtureEdit({ ...edit, fixture: { ...edit.fixture, home_score: null } }, ids).errors.home_score, 'スコアを入力してください');
+  assert.ok(validateFixtureEdit({ ...edit, fixture: { ...edit.fixture, away_score: -1 } }, ids).errors.away_score);
+  assert.ok(validateFixtureEdit({ ...edit, videos: { highlight: 'https://evil.example/', inside: null } }, ids).errors.video_highlight);
+  assert.ok(validateFixtureEdit({ ...edit, videos: { highlight: null, inside: 'https://youtu.be/x' } }, ids).ok);
+  assert.ok(validateFixtureEdit({ ...edit, fixture: { ...edit.fixture, scorers: [{ side: 'home', player: 'a', minute: '45+x', type: 'goal' }] } }, ids).errors['scorers.0.minute']);
+  assert.equal(validateFixtureEdit({ ...edit, fixture: { ...edit.fixture, scorers: [{ side: 'home', player: 'a', minute: '90+2', type: 'penalty' }] } }, ids).ok, true);
+});
+
+test('validateFixtureEdit：延期はスコアなしで通る。壊れた数・状態は止める', () => {
+  const blank = { videos: { highlight: null, inside: null } };
+  assert.equal(validateFixtureEdit({ fixture: { status: 'postponed', home_score: null, away_score: null, scorers: [] }, ...blank }, ids).ok, true);
+  assert.ok(validateFixtureEdit({ fixture: { status: 'postponed', home_score: NaN, away_score: null, scorers: [] }, ...blank }, ids).errors.home_score);
+  assert.ok(validateFixtureEdit({ fixture: { status: 'zzz', home_score: null, away_score: null, scorers: [] }, ...blank }, ids).errors.status);
+});
+
+test('得点者の行：初期値は club_id から側へ。行の削除は後ろを詰める。元の行の番号に戻せる', () => {
+  const f = {
+    status: 'finished', home_club_id: 'nara', away_club_id: 'matsumoto', home_score: 1, away_score: 2,
+    scorers: [{ club_id: 'nara', player: 'A', minute: '5', type: 'goal' }, { club_id: 'matsumoto', player: 'B', minute: '60', type: 'penalty' }],
+    fixture_videos: [{ kind: 'inside', url: 'https://youtu.be/x', source: 'api' }],
+  };
+  const v = fixtureFormValues(f);
+  assert.deepEqual([v.scorer_0_side, v.scorer_1_side, v.scorer_1_type, v.scorer_count, v.video_inside, v.video_highlight], ['home', 'away', 'penalty', '2', 'https://youtu.be/x', '']);
+  const r = removeScorerRow(v, 0);
+  assert.deepEqual([r.scorer_0_player, r.scorer_0_side, r.scorer_1_player, r.scorer_count], ['B', 'away', undefined, '1']);
+  assert.deepEqual(scorerRowIndexes({ scorer_0_player: '', scorer_1_player: 'x', scorer_2_player: ' ', scorer_3_player: 'y' }), [1, 3]);
+});
+
+test('youtubeId：watch?v= と youtu.be/。取り出せなければ null', () => {
+  assert.equal(youtubeId('https://www.youtube.com/watch?v=dQw4w9WgXcQ'), 'dQw4w9WgXcQ');
+  assert.equal(youtubeId('https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=10s'), 'dQw4w9WgXcQ');
+  assert.equal(youtubeId('https://youtu.be/dQw4w9WgXcQ?t=5'), 'dQw4w9WgXcQ');
+  assert.equal(youtubeId('https://www.youtube.com/playlist?list=x'), null);
+  assert.equal(youtubeId('https://evil.example/watch?v=abc'), null);
+  assert.equal(youtubeId('https://youtu.be/a"b'), null);
+  assert.equal(youtubeId('not a url'), null);
+  assert.equal(thumbnailUrl('abc'), 'https://i.ytimg.com/vi/abc/mqdefault.jpg');
+});
+
+test('出どころの文と日本時間の更新日時', () => {
+  assert.equal(sourceLabel({ result_source: 'manual' }), '手入力');
+  assert.equal(sourceLabel({ result_source: 'api' }), 'Jリーグ公式から自動');
+  assert.equal(sourceLabel({ result_source: null }), null);
+  assert.equal(formatDateTimeJst('2026-10-25T21:05:00+00:00'), '2026/10/26 6:05');
+  assert.equal(formatDateTimeJst('2026-12-31T15:00:00Z'), '2027/1/1 0:00');
+  assert.equal(formatDateTimeJst('x'), null);
+});

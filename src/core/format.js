@@ -30,6 +30,14 @@ export function formatYen(n) {
   return n == null ? '－' : `${n.toLocaleString('en-US')}円`;
 }
 
+// ISO の日時（例：2026-10-25T21:05:00+00:00）を日本時間の '2026/10/26 6:05' に。読めなければ null
+export function formatDateTimeJst(iso) {
+  const ms = Date.parse(iso);
+  if (!Number.isFinite(ms)) return null;
+  const d = new Date(ms + 9 * 3600000);
+  return `${d.getUTCFullYear()}/${d.getUTCMonth() + 1}/${d.getUTCDate()} ${d.getUTCHours()}:${String(d.getUTCMinutes()).padStart(2, '0')}`;
+}
+
 export function minutesText(min) {
   const h = Math.floor(min / 60);
   const m = min % 60;
