@@ -32,7 +32,7 @@ export function fakeClient(tables, { failOn = {}, failNth = {}, throwOn = [], rp
   const client = {
     calls,
     from(table) {
-      const call = { table, op: 'select', eq: [], in: [], order: null, limit: null, rows: null };
+      const call = { table, op: 'select', eq: [], in: [], gte: [], order: null, limit: null, rows: null };
       calls.push(call);
       let single = false;
       const run = () => {
@@ -46,7 +46,8 @@ export function fakeClient(tables, { failOn = {}, failNth = {}, throwOn = [], rp
           for (const r of call.rows) rows.push(r);
           return { data: single ? (call.rows[0] ?? null) : call.rows, error: null };
         }
-        const matches = (r) => call.eq.every(([col, val]) => r[col] === val) && call.in.every(([col, vals]) => vals.includes(r[col]));
+        const matches = (r) => call.eq.every(([col, val]) => r[col] === val) && call.in.every(([col, vals]) => vals.includes(r[col]))
+          && call.gte.every(([col, val]) => r[col] >= val);
         if (call.op === 'update') {
           const hit = (tables[table] ?? []).filter(matches);
           for (const r of hit) Object.assign(r, call.values);
@@ -70,6 +71,7 @@ export function fakeClient(tables, { failOn = {}, failNth = {}, throwOn = [], rp
         select(columns) { call.columns = columns; return q; },
         eq(col, val) { call.eq.push([col, val]); return q; },
         in(col, vals) { call.in.push([col, vals]); return q; },
+        gte(col, val) { call.gte.push([col, val]); return q; }, // 文字列の比較（ISO の日時は同じ形なら並びが合う）
         order(col, opt = {}) { call.order = { col, ascending: opt.ascending !== false }; return q; },
         limit(n) { call.limit = n; return q; },
         maybeSingle() { single = true; return q; },

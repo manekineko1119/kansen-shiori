@@ -21,6 +21,7 @@ import { createPhotoStore } from './data/photos.js';
 import { createFixtureCache } from './data/fixture-cache.js';
 import { createSeasonCache } from './data/season-cache.js';
 import { createAdminStore } from './data/admin.js';
+import { createAdminCache } from './data/admin-cache.js';
 import { createHistory } from './data/history.js';
 import { browserLocal } from './data/local.js';
 import { setReturnTo } from './data/return-to.js';
@@ -38,7 +39,7 @@ let masters = null; // 共通データの状態（readMastersSnapshot／refreshM
 let user = null;
 // 利用者を替える。ID が変わるとき（別の人・未ログイン）は、前の人の入力中の値を捨てる（同じ ID なら残す）
 function setUser(next) {
-  if (!sameUserId(user, next)) state.clearAll();
+  if (!sameUserId(user, next)) { state.clearAll(); adminCache.reset(); }
   user = next;
   personal.sync(); // 利用者・状態が変わったら、前の人の個人データを捨てて読み直す
 }
@@ -58,6 +59,8 @@ const personal = createPersonalHolder({
 });
 const fixtureCache = createFixtureCache({ client: getClient, onChange: () => redraw() });
 const seasonCache = createSeasonCache({ client: getClient, onChange: () => redraw() }); // 観戦記録の一覧：シーズンごとの試合
+// 管理画面のテスター・取り込みの状況・写真の使用量と「今すぐ取り込む」の実行中（管理者だけ。守りは RLS と関数）
+const adminCache = createAdminCache({ store: () => createAdminStore({ client: getClient() }), onChange: () => redraw() });
 // 写真の Storage（ログイン中だけ。オフラインは出さない）。利用者が変わったら作り直す（署名付き URL の覚えも捨てる）
 let photoStore = null;
 let photoUserId = null;
@@ -98,6 +101,7 @@ function draw(route) {
       seasonClubs: (id) => seasonCache.seasonClubs(id), // シーズンの所属クラブ（管理画面。同上）
       resetSeasons: () => seasonCache.resetSeasons(), // シーズンを作った・所属クラブを変えたあとに、覚えたものを捨てる
       admin: createAdminStore({ client: getClient() }), // 管理画面の保存（書けるのは管理者だけ。守りは RLS）
+      adminCache, // 管理画面の読み取り（読み込み中は undefined）と「今すぐ取り込む」
       reloadMasters, // 試合の情報を保存したあとに、共通データを読み直す
       goLogin: () => { setReturnTo(location.hash || '#/search'); location.hash = '#/login'; }, // 今の画面を戻り先に覚えてログインへ
       reloadPersonal: () => personal.reload(), // 保存・削除の成功のあとに呼ぶ（D33）

@@ -1,5 +1,6 @@
-// 管理画面の共通の部品（クラブ・スタジアム・シーズン。設計書 3.4）。この画面から src/data/・src/auth/ は読まない
+// 管理画面の共通の部品（クラブ・スタジアム・シーズン・テスター・取り込みなど。設計書 3.4）。この画面から src/data/・src/auth/ は読まない
 import { el } from '../../components/parts.js';
+import { formatDateJa, formatDateTimeJst } from '../../../core/format.js';
 
 // 選んでいる項目は URL が持つ（D32）：#/admin/clubs?id=matsumoto、新規は ?new=1
 export function selection(route) {
@@ -58,3 +59,23 @@ export const flashNote = (section, id) => (hasFlash(section, id) ? el('p', { cla
 export function dropFlashOnInput(form) {
   form.addEventListener('input', () => { clearFlash(); form.querySelector('[data-flash]')?.remove(); });
 }
+
+// 管理画面の読み取りの結果（ctx.data.adminCache）：読み込み中・読めない・期限切れなら、その旨の要素を返す（読めていれば null）
+export function loadGuard(ctx, res) {
+  if (res === undefined) return el('p', { class: 'muted' }, '読み込み中です。');
+  if (res === 'expired') {
+    queueMicrotask(() => ctx.onExpired()); // 描いている途中で画面を移らない
+    return el('p', { class: 'muted' }, 'ログインの有効期限が切れました。');
+  }
+  if (!res.ok) return el('p', { class: 'note', role: 'status' }, res.message);
+  return null;
+}
+
+// 試合の短い名前（'11/8（土） 松本 vs 岐阜'）
+export function matchLabel(ctx, f) {
+  const name = (id) => ctx.masters.clubsById[id]?.short_name ?? id ?? '未定';
+  return `${formatDateJa(f.match_date)} ${name(f.home_club_id)} vs ${name(f.away_club_id)}`;
+}
+
+// ISO の日時 → '2026/11/12 7:00'（日本時間）。読めなければ '－'
+export const dateTimeText = (iso) => (iso ? formatDateTimeJst(iso) ?? '－' : '－');
