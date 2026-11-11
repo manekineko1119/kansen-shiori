@@ -35,7 +35,7 @@ export function fakeClient(tables, { failOn = {}, throwOn = [] } = {}) {
         order(col, opt = {}) { call.order = { col, ascending: opt.ascending !== false }; return q; },
         limit(n) { call.limit = n; return q; },
         maybeSingle() { single = true; return q; },
-        upsert(rows) { call.op = 'upsert'; call.rows = Array.isArray(rows) ? rows : [rows]; return q; },
+        upsert(rows, opts = {}) { call.op = 'upsert'; call.values = rows; call.onConflict = opts.onConflict; call.rows = Array.isArray(rows) ? rows : [rows]; return q; },
         then(resolve, reject) {
           try {
             return Promise.resolve(run()).then(resolve, reject);
