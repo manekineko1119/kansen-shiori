@@ -18,6 +18,7 @@ import { createSettingsHolder } from './data/settings-holder.js';
 import { createPersonalHolder } from './data/personal-holder.js';
 import { createTripStore } from './data/trips.js';
 import { createRecordStore } from './data/records.js';
+import { createVisitStore } from './data/visits.js';
 import { createPhotoStore } from './data/photos.js';
 import { createFixtureCache } from './data/fixture-cache.js';
 import { createSeasonCache } from './data/season-cache.js';
@@ -109,6 +110,7 @@ function draw(route) {
       trips: createTripStore({ client: getClient() }),
       photos: currentPhotos(),
       records: createRecordStore({ client: getClient(), photos: currentPhotos() }),
+      visits: createVisitStore({ client: getClient() }), // 手で足した行った会場の追加・削除
       fetchFixture: (id) => fixtureCache.get(id), // 共通データにない試合を ID で1件読む（undefined＝読み込み中、null＝なし）
       forgetFixture: (id) => fixtureCache.forget(id),
       seasons: () => seasonCache.seasons(), // シーズンの選択肢（undefined＝読み込み中、null＝読めない）

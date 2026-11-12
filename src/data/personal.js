@@ -9,7 +9,10 @@ export async function readPersonalSnapshot(snapshot, userId) {
   const v = await snapshot.load(SNAPSHOT_KEYS.personal(userId));
   const d = v?.data;
   const ok = d && ['trips', 'records', 'extraFixtures'].every((k) => Array.isArray(d[k]));
-  return ok ? v : null;
+  if (!ok) return null;
+  // visits は後から足した項目。ない古い写しは捨てずに [] を補う。あるのに配列でなければ壊れた写し
+  if (d.visits === undefined) return { ...v, data: { ...d, visits: [] } };
+  return Array.isArray(d.visits) ? v : null;
 }
 
 function check({ data, error }) {
@@ -18,14 +21,15 @@ function check({ data, error }) {
 }
 
 async function fetchPersonal(client, knownFixtureIds) {
-  const [trips, records] = await Promise.all([
+  const [trips, records, visits] = await Promise.all([
     client.from('trips').select('*').then(check),
     client.from('match_records').select('*').then(check),
+    client.from('stadium_visits').select('*').then(check),
   ]);
   // 今のシーズンにない試合だけを ID で読む（D28）
   const missing = [...new Set([...trips, ...records].map((r) => r.fixture_id).filter((id) => id != null && !knownFixtureIds.has(id)))];
   const extraFixtures = await fetchFixturesByIds({ client }, missing);
-  return { trips, records, extraFixtures };
+  return { trips, records, extraFixtures, visits };
 }
 
 export async function refreshPersonal({ client, snapshot, userId, nowMs, knownFixtureIds }) {
