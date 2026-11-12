@@ -2,9 +2,10 @@
 const MESSAGES = {
   not_invited: 'このアカウントは招待されていません。管理者に連絡してください',
   failed: 'ログインできませんでした。もう一度お試しください',
+  expired: 'ログインの有効期限が切れました。もう一度ログインしてください（ログインのあと、元の画面に戻ります）',
 };
 
-// error：'not_invited' | 'failed' | null。user があればログイン中の表示
+// error：'not_invited' | 'failed' | 'expired' | null。user があればログイン中の表示
 export function renderLogin({ error, user, onSignIn, onSignOut }) {
   const sec = document.createElement('section');
   sec.className = 'sec';

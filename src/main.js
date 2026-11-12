@@ -26,7 +26,7 @@ import { createHistory } from './data/history.js';
 import { browserLocal } from './data/local.js';
 import { setReturnTo } from './data/return-to.js';
 import { getLastUser, setLastUser, clearLastUser } from './data/last-user.js';
-import { handleAuthReturn, resolveAuth, onAppUserChange, signInWithGoogle, signOut } from './auth/auth.js';
+import { handleAuthReturn, resolveAuth, onAppUserChange, signInWithGoogle, signOut, dropLocalSession } from './auth/auth.js';
 
 const root = document.getElementById('app');
 const state = createViewState(); // 入力中の値とスクロール位置（メモリ）
@@ -45,6 +45,7 @@ function setUser(next) {
 }
 let signingOut = false; // ログアウトの最中（SIGNED_OUT を期限切れと取り違えないため）
 let loginError = null; // ログインから戻ったときのエラー（'not_invited' | 'failed'）
+let expiredNotice = false; // 期限切れでログイン画面へ移ったとき、ログイン画面にいる間だけ理由を出す
 let welcomeSettings = null; // #/welcome の初期値（5-7 の load の settings）
 let notice = null; // 画面の上に1回だけ出すお知らせ（ログアウトで端末の写しを消せなかったときなど）
 // 何も覚えない Kv（IndexedDB が開けないとき。Safari のプライベートなど）
@@ -108,8 +109,8 @@ function draw(route) {
     },
     navigate: (hash) => { location.hash = hash; },
     redraw,
-    onExpired: () => { setReturnTo(location.hash); location.hash = '#/login'; },
-    auth: { loginError, signIn: () => signInWithGoogle(null), signOut: doSignOut },
+    onExpired,
+    auth: { loginError: loginError ?? (expiredNotice ? 'expired' : null), signIn: () => signInWithGoogle(null), signOut: doSignOut },
     welcome: { settings: welcomeSettings, save: saveWelcome },
   });
   root.replaceChildren(renderFrame({
@@ -159,6 +160,24 @@ async function doSignOut() {
     // ログアウトのあとは検索画面へ。すでに検索画面なら、hashchange が起きないので描き直す
     if (parseRoute(location.hash).name === 'search') renderApp(parseRoute(location.hash));
     else location.hash = '#/search';
+  }
+}
+
+// 保存・読み込みで期限切れ（'expired'）が返ったとき：戻り先を覚え、端末のセッションを捨てて未ログインにし、ログイン画面で理由を出す（9章）
+let expiring = false;
+async function onExpired() {
+  if (expiring) return;
+  expiring = true;
+  try {
+    if (parseRoute(location.hash).name !== 'login') setReturnTo(location.hash);
+    expiredNotice = true;
+    signingOut = true; // 捨てたときの SIGNED_OUT で、もう一度戻り先を書き換えない
+    try { await dropLocalSession(); } finally { signingOut = false; }
+    setUser(null);
+    if (parseRoute(location.hash).name === 'login') redraw();
+    else location.hash = '#/login';
+  } finally {
+    expiring = false;
   }
 }
 
@@ -251,6 +270,7 @@ async function start() {
 addEventListener('hashchange', async () => {
   if (notice && parseRoute(location.hash).name !== 'search') notice = null; // お知らせはログアウト直後の画面だけ
   loginError = null; // ログインから戻ったときのエラーは、そのときの1回だけ出す
+  if (parseRoute(location.hash).name !== 'login') expiredNotice = false; // 期限切れの理由は、ログイン画面を離れたら消す
   const r = parseRoute(location.hash);
   if (r.name === 'welcome' && user && !user.offline && !welcomeSettings) {
     await loadWelcome();

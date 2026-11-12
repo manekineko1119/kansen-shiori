@@ -35,6 +35,12 @@ export async function signOut({ snapshot, userId }) {
   return { cleaned, signedOut };
 }
 
+// 期限切れ（サーバーが JWT を受け付けない）とき、端末のセッションだけを捨てる（サーバーには送らない）。
+// 捨てないと、端末は「ログイン中」のままでログイン画面にログインのボタンが出ない（段6 のまとめのレビュー I-1）
+export async function dropLocalSession() {
+  try { await getClient().auth.signOut({ scope: 'local' }); } catch { /* 捨てられなくても、画面は未ログインとして進める */ }
+}
+
 // ログインの状態を確かめる：{ status: 'signed_in' | 'signed_out' | 'unknown', user }。
 // 期限切れのままオフラインだと getSession は約30秒くり返すので、timeoutMs で打ち切って 'unknown' にする
 export async function resolveAuth({ timeoutMs = 3000 } = {}) {
