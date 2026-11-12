@@ -87,6 +87,7 @@ async function reloadMasters() {
   masters = await refreshMasters({ client: getClient(), snapshot, nowMs: Date.now() });
   personal.sync();
   seasonCache.reset(); // 保存した試合を含むシーズンを読み直す
+  fixtureCache.reset(); // 前のシーズンの試合の1件読みも捨てる（日程の編集・取り込み・削除のあと。M-4）
   redraw();
 }
 

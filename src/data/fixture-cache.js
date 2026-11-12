@@ -5,11 +5,13 @@ import { fetchFixturesByIds } from './masters.js';
 export function createFixtureCache({ client, onChange }) {
   const done = new Map(); // id → 試合 | null
   const pending = new Set();
+  let generation = 0; // reset のたびに増やす。古い読み込みの結果を捨てるため
   return {
     get(id) {
       if (done.has(id)) return done.get(id);
       if (!pending.has(id)) {
         pending.add(id);
+        const gen = generation;
         (async () => {
           let found = null;
           try {
@@ -17,6 +19,7 @@ export function createFixtureCache({ client, onChange }) {
           } catch {
             found = null; // 通信できないときも null を覚える（再読み込みで読み直す）
           }
+          if (gen !== generation) return;
           done.set(id, found);
           pending.delete(id);
           onChange();
@@ -26,5 +29,7 @@ export function createFixtureCache({ client, onChange }) {
     },
     // 試合の情報を保存したあとに、覚えた値を捨てる
     forget(id) { done.delete(id); },
+    // 管理者が日程を変えたあと：覚えた値を全部捨てる（次に開いたとき1件ずつ読み直す。通信中の読み込みの結果は採用しない）
+    reset() { done.clear(); pending.clear(); generation += 1; },
   };
 }
