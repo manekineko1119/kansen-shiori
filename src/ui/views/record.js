@@ -12,19 +12,21 @@ import { routeKey } from '../view-state.js';
 import { mergeFixtures, tripView } from '../../core/trip-view.js';
 import { formatYen, formatDateTimeJst } from '../../core/format.js';
 import { costTotal, COST_KEYS, COST_LABELS, WATCH_LABELS, VIDEO_KINDS, youtubeId, thumbnailUrl, sourceLabel } from '../../core/record-form.js';
+import { safeHttpsUrl } from '../../core/safe-url.js';
 
 const enc = encodeURIComponent;
 
 function videoRow(kind, video) {
   const label = VIDEO_KINDS[kind];
-  if (!video || !/^https:\/\//.test(video.url ?? '')) {
+  const url = safeHttpsUrl(video?.url); // https の URL だけをリンクにする（設計書 11.6）
+  if (!url) {
     return el('div', { class: 'yt off' }, el('div', { class: 'th none' }), el('div', null, el('span', { class: 'muted' }, label), el('b', null, '未登録')));
   }
-  const id = youtubeId(video.url);
+  const id = youtubeId(url);
   const thumb = id
     ? el('div', { class: 'th' }, el('img', { src: thumbnailUrl(id), alt: '', loading: 'lazy' }))
     : el('div', { class: `th${kind === 'inside' ? ' inside' : ''}` }, el('i'));
-  return el('a', { class: 'yt', href: video.url, target: '_blank', rel: 'noopener noreferrer' }, thumb,
+  return el('a', { class: 'yt', href: url, target: '_blank', rel: 'noopener noreferrer' }, thumb,
     el('div', null, el('span', { class: 'muted' }, label), el('b', null, video.title || 'YouTube で見る'), video.channel ? el('div', { class: 'muted' }, video.channel) : null,
       el('span', { class: 'sr-only' }, '（外部サイトを開く）')));
 }

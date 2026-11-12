@@ -75,6 +75,13 @@ test('index.html に CSP と referrer の指定がある（接続先は自分と
   assert.doesNotMatch(html, /<style\b|\sstyle="/, 'インラインのスタイルがある');
 });
 
+test('観戦記録の動画のリンクは safeHttpsUrl を通す', () => {
+  const rec = readFileSync(new URL('../src/ui/views/record.js', import.meta.url), 'utf8');
+  const body = rec.slice(rec.indexOf('function videoRow'));
+  assert.match(body.slice(0, 900), /safeHttpsUrl\(video\?\.url\)/);
+  assert.doesNotMatch(body.slice(0, 900), /href: video\.url/);
+});
+
 test('外部リンクを作る extLink は safeHttpsUrl を通す', () => {
   const parts = readFileSync(new URL('../src/ui/components/parts.js', import.meta.url), 'utf8');
   const body = parts.slice(parts.indexOf('export function extLink'));
