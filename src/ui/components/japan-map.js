@@ -9,7 +9,7 @@ const TAP_RADIUS = 12; // タップした所から、この距離（地図の座
 function svgEl(tag, attrs, ...children) {
   const node = document.createElementNS(NS, tag);
   for (const [k, v] of Object.entries(attrs ?? {})) node.setAttribute(k, String(v));
-  node.append(...children);
+  node.append(...children.flat(Infinity).filter((c) => c != null && c !== false));
   return node;
 }
 

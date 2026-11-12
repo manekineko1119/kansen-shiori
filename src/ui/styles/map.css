@@ -21,7 +21,7 @@
   .mapbtn { transition: background-color 0.15s ease, color 0.15s ease; }
 }
 
-/* 画面：S は縦1列（切り替え・数字・地図・そのほか）。M・L は左に地図、右にそのほか */
+/* 画面：S は縦1列（切り替え・数字・地図・そのほか）。M・L は左に地図だけ、右に切り替え・数字・表・追加 */
 .map-grid { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); align-content: start; }
 .map-grid > * { min-width: 0; }
 .map-b { display: grid; gap: 12px; align-content: start; }
@@ -29,10 +29,12 @@
 @media (min-width: 600px) {
   .map-grid {
     grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
-    grid-template-areas: "c b" "n b" "a b";
+    grid-template-areas: "a c" "a n" "a b";
     grid-template-rows: auto auto 1fr;
+    align-items: start;
     gap: 12px 20px;
   }
+  .map-public { grid-template-areas: "a b"; grid-template-rows: auto; }
   .map-c { grid-area: c; }
   .map-n { grid-area: n; }
   .map-a { grid-area: a; }

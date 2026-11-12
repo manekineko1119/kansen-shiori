@@ -11,9 +11,15 @@ import { JAPAN_SHAPE } from '../../core/map/japan-shape.js';
 const enc = encodeURIComponent;
 const note = (text) => el('p', { class: 'note', role: 'status' }, text);
 
+// シーズンの id の一覧（読めないときは今のシーズンだけ。URL のシーズンが一覧にないときは足す）
+function seasonIds({ scope, seasons, currentId }) {
+  const ids = Array.isArray(seasons) ? seasons.map((s) => s.id) : [currentId].filter(Boolean);
+  if (scope !== 'all' && !ids.includes(scope)) ids.push(scope);
+  return ids;
+}
+
 function controls(ctx, { scope, seasons, currentId }) {
-  const list = Array.isArray(seasons) ? seasons.map((s) => s.id) : [currentId].filter(Boolean);
-  if (scope !== 'all' && !list.includes(scope)) list.push(scope);
+  const list = seasonIds({ scope, seasons, currentId });
   return el('div', { class: 'map-controls' },
     el('select', { class: 'input', name: 'season', 'aria-label': '通算かシーズン', onchange: (e) => ctx.navigate(mapHref({ season: e.target.value || null })) },
       el('option', { value: '', selected: scope === 'all' }, '通算'),
@@ -87,8 +93,7 @@ function stadiumOptions(stadiums) {
 function addForm(ctx, { stadiums, seasons, scope, currentId }) {
   const formKey = `${ctx.key}|visit-add`;
   const saved = ctx.state.getForm(formKey);
-  const ids = Array.isArray(seasons) ? seasons.map((s) => s.id) : [currentId].filter(Boolean);
-  if (scope !== 'all' && !ids.includes(scope)) ids.push(scope);
+  const ids = seasonIds({ scope, seasons, currentId });
   const stadiumVal = saved.stadium_id ?? '';
   const seasonVal = saved.season_id ?? (scope === 'all' ? '' : scope);
   const form = el('form', { class: 'visit-form', novalidate: true },
@@ -142,13 +147,14 @@ export function renderMap(ctx) {
   // 未ログイン：全会場の薄い印と、ログインの案内だけ
   if (!ctx.user) {
     const s = summarizeStadiumMap({ scope: 'all', records: [], fixtures: [], clubs: d.clubs, stadiums: d.stadiums, visits: [], seasonClubs: null, supportClubId: null });
-    root.append(el('div', { class: 'map-grid' }, el('div', { class: 'map-a' }, renderJapanMap({ visitedPrefectures: [], pins: [], baseStadiums: d.stadiums.filter((x) => s.baseIds.includes(x.id)), onPick: null })),
+    root.append(el('div', { class: 'map-grid map-public' }, el('div', { class: 'map-a' }, renderJapanMap({ visitedPrefectures: [], pins: [], baseStadiums: d.stadiums.filter((x) => s.baseIds.includes(x.id)), onPick: null })),
       el('section', { class: 'sec map-b' }, el('p', null, 'ログインすると、行った会場を記録できます。'),
         el('a', { class: 'btn', href: '#/login', onclick: (e) => { e.preventDefault(); ctx.data.goLogin(); } }, 'ログイン'))));
     return root;
   }
   if (!personal || personal.status === 'loading') { root.append(el('p', { class: 'muted' }, '読み込み中です。')); return root; }
   if (personal.status === 'unavailable') { root.append(note(personal.message)); return root; }
+  if (personal.status === 'offline') root.append(note(personal.label));
 
   const currentId = d.season?.id ?? null;
   const online = masters.status !== 'offline' && !ctx.user.offline;
