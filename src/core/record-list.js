@@ -47,4 +47,5 @@ export function pickSeason({ requested, currentId, seasons }) {
   return requested;
 }
 
-export const seasonLabel = (id) => `${id}シーズン`;
+// シーズンの表示名。2026年前半の特別大会だけ別の名前、ほかは「<id>シーズン」
+export const seasonLabel = (id) => (id === '2026-special' ? '2026 特別大会' : `${id}シーズン`);
