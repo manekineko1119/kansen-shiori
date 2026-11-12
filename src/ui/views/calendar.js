@@ -6,6 +6,7 @@ import { parseCalendarQuery, shiftMonth, calendarHref, dayEntries, bandTone } fr
 import { bandLabel } from '../../core/fixture-view.js';
 import { OUTCOME_MARK, recentForm } from '../../core/result.js';
 import { formatDateJa } from '../../core/format.js';
+import { mergeFixtures } from '../../core/trip-view.js';
 
 const WEEK = ['日', '月', '火', '水', '木', '金', '土'];
 
@@ -63,16 +64,15 @@ export function renderCalendar(ctx) {
   const { masters, settings, route, personal, today } = ctx;
   const club = settings?.support_club_id ?? null;
   const sel = parseCalendarQuery(route.query, today);
-  const fixtures = (masters.data?.fixtures ?? []).concat(personal?.data?.extraFixtures ?? []);
   const trips = ctx.user ? (personal?.data?.trips ?? []) : [];
   const records = ctx.user ? (personal?.data?.records ?? []) : [];
   const env = {
-    fixturesById: { ...masters.fixturesById, ...Object.fromEntries((personal?.data?.extraFixtures ?? []).map((f) => [f.id, f])) },
+    fixturesById: mergeFixtures(masters.fixturesById, personal?.data?.extraFixtures ?? []), // 同じ ID は共通データが勝つ（ほかの画面と同じ。M-3）
     clubsById: masters.clubsById,
     tripsById: Object.fromEntries(trips.map((t) => [t.id, t])),
     supportClubId: club,
   };
-  const own = fixtures.filter((f) => f.home_club_id === club || f.away_club_id === club);
+  const own = Object.values(env.fixturesById).filter((f) => f.home_club_id === club || f.away_club_id === club);
   const items = calendarItems({ fixtures: own, trips, records, supportClubId: club, fixturesById: env.fixturesById, today });
   const ctxCell = { items, today, selected: sel.day, env };
 
