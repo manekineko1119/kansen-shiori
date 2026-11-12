@@ -17,6 +17,8 @@
 .ha { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 6px; font-size: 13px; font-weight: 800; flex: none; }
 .ha.a { background: var(--theme-accent); color: var(--on-accent); }
 .ha.h { background: var(--theme-tint); color: var(--theme-primary); }
+/* 選んだ行の背景も --theme-tint なので、H の印は白地にして見分ける（カレンダーの .cal-cell.sel .ev.h と同じ） */
+.item.sel .ha.h { background: var(--paper); }
 .fx-detail .back { display: inline-block; padding: 8px 0; font-weight: 700; color: var(--theme-primary); text-decoration: none; }
 .fx-title { font-size: 20px; font-weight: 800; margin: 2px 0 10px; overflow-wrap: anywhere; }
 .fx-result { display: flex; align-items: center; gap: 8px; margin: 0; }

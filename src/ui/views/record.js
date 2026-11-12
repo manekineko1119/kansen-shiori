@@ -6,7 +6,7 @@ import { renderScoreboard } from '../components/scoreboard.js';
 import { renderRecordForm } from './record-edit.js';
 import { photoView } from './record-photo.js';
 import { renderRecordList } from '../components/record-list.js';
-import { recordsHref } from '../../core/record-list.js';
+import { parseRecordsQuery, recordsHref } from '../../core/record-list.js';
 import { renderFixtureEdit } from './record-fixture-edit.js';
 import { routeKey } from '../view-state.js';
 import { mergeFixtures, tripView } from '../../core/trip-view.js';
@@ -147,10 +147,12 @@ export function renderRecord(ctx) {
     const trip = ctx.personal.data.trips.find((t) => t.fixture_id === fixture.id);
     if (trip) detail.append(tripSection(trip, { fixturesById: mergeFixtures(masters.fixturesById, extra), clubsById: masters.clubsById, supportClubId }));
   }
-  // 左：選んでいる試合のシーズンの一覧（選んでいる行に印）。未ログインは空の枠
+  // 左：選んでいる試合のシーズンの一覧（選んでいる行に印）。シーズンの切り替えと絞り込み（?only=1）も出す。未ログインは空の枠
   const season = fixture.season_id ?? null;
-  const list = ctx.user && season ? renderRecordList(ctx, { seasonId: season, selectedId: id, withControls: false }) : el('div', { class: 'rec-list' });
-  detail.firstChild.setAttribute('href', recordsHref({ season: season === masters.data?.season?.id ? null : season }));
+  const { only } = parseRecordsQuery(ctx.route.query);
+  const seasons = masters.status !== 'offline' && !ctx.user?.offline ? ctx.data.seasons() : null;
+  const list = ctx.user && season ? renderRecordList(ctx, { seasonId: season, seasons, onlyStadium: only, selectedId: id }) : el('div', { class: 'rec-list' });
+  detail.firstChild.setAttribute('href', recordsHref({ season: season === masters.data?.season?.id ? null : season, only }));
   root.append(split({ list, detail }));
   return root;
 }

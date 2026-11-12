@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { recordRows, parseRecordsQuery, recordsHref, pickSeason, seasonLabel } from '../src/core/record-list.js';
+import { recordRows, outcomeCounts, parseRecordsQuery, recordHref, recordsHref, pickSeason, seasonLabel } from '../src/core/record-list.js';
 
 const fx = (id, date, home, away, hs, as, extra = {}) => ({
   id, match_date: date, kickoff: '14:00', status: 'finished', home_club_id: home, away_club_id: away, home_score: hs, away_score: as, ...extra,
@@ -8,7 +8,7 @@ const fx = (id, date, home, away, hs, as, extra = {}) => ({
 const fA = fx('A', '2026-10-04', 'matsumoto', 'gifu', 1, 1);
 const fB = fx('B', '2026-10-18', 'kochi', 'matsumoto', 0, 2);
 const fFuture = fx('F', '2026-11-20', 'matsumoto', 'nara', null, null, { status: 'scheduled' });
-const base = { fixtures: [fA, fB, fFuture], records: [{ fixture_id: 'B', watch_style: 'broadcast' }], supportClubId: 'matsumoto', today: '2026-11-11', onlyWatched: false };
+const base = { fixtures: [fA, fB, fFuture], records: [{ fixture_id: 'B', watch_style: 'broadcast' }], supportClubId: 'matsumoto', today: '2026-11-11', onlyStadium: false };
 
 test('終わった試合すべてを新しい順に。記録のない試合は「記録なし」、予定の試合は出ない', () => {
   const rows = recordRows(base);
@@ -18,8 +18,20 @@ test('終わった試合すべてを新しい順に。記録のない試合は�
   assert.equal(rows[1].record, null);
 });
 
-test('観戦した試合だけ：記録のある行だけ', () => {
-  assert.deepEqual(recordRows({ ...base, onlyWatched: true }).map((r) => r.fixture.id), ['B']);
+test('現地観戦した試合だけ：観戦方法が現地の行だけ（中継・PV・記録なしは出ない）', () => {
+  assert.deepEqual(recordRows({ ...base, onlyStadium: true }).map((r) => r.fixture.id), []);
+  const records = [{ fixture_id: 'A', watch_style: 'stadium' }, { fixture_id: 'B', watch_style: 'broadcast' }];
+  assert.deepEqual(recordRows({ ...base, records, onlyStadium: true }).map((r) => r.fixture.id), ['A']);
+});
+
+test('勝-分-敗：絞り込みなしはシーズンの終わった試合すべて、現地だけなら現地の試合だけ', () => {
+  const fC = fx('C', '2026-10-25', 'matsumoto', 'yamaguchi', 0, 2);
+  const fNoScore = fx('N', '2026-11-01', 'matsumoto', 'tottori', null, null);
+  const fixtures = [fA, fB, fC, fNoScore, fFuture];
+  const records = [{ fixture_id: 'C', watch_style: 'stadium' }, { fixture_id: 'B', watch_style: 'broadcast' }];
+  assert.deepEqual(outcomeCounts(recordRows({ ...base, fixtures, records })), { win: 1, draw: 1, lose: 1 });
+  assert.deepEqual(outcomeCounts(recordRows({ ...base, fixtures, records, onlyStadium: true })), { win: 0, draw: 0, lose: 1 });
+  assert.deepEqual(outcomeCounts([]), { win: 0, draw: 0, lose: 0 });
 });
 
 test('観戦方法の文言：現地・PV・中継', () => {
@@ -76,4 +88,10 @@ test('試合当日に終わった試合（結果登録済み）も一覧に出�
   const todayScheduled = fx('S', '2026-11-11', 'matsumoto', 'nara', null, null, { status: 'scheduled' });
   const rows = recordRows({ ...base, fixtures: [fA, todayDone, todayScheduled] });
   assert.deepEqual(rows.map((r) => r.fixture.id), ['T', 'A']);
+});
+
+test('観戦記録の詳細の URL：現地だけに絞っているときは ?only=1 を付けて、詳細を開いても絞り込みを残す', () => {
+  assert.equal(recordHref('2026-27_J3_16_matsumoto_kanazawa'), '#/records/2026-27_J3_16_matsumoto_kanazawa');
+  assert.equal(recordHref('2026-27_J3_16_matsumoto_kanazawa', { only: true }), '#/records/2026-27_J3_16_matsumoto_kanazawa?only=1');
+  assert.equal(recordHref('a b'), '#/records/a%20b');
 });
