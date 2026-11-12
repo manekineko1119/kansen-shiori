@@ -6,13 +6,14 @@ import { readValues, createRunner } from '../../components/form-util.js';
 import { fixtureFromForm, fixtureToValues, importPlan } from '../../../core/fixture-form.js';
 import { parseFixturesCsv } from '../../../core/import-csv.js';
 import { pendingKickoffCount } from '../../../core/fixtures.js';
+import { compareFixtures } from '../../../core/fixture-order.js';
+import { STATUS_OPTIONS } from '../../../core/record-form.js'; // 状態の言葉は観戦記録の画面とそろえる（M-8）
 import { formatDateJa } from '../../../core/format.js';
 import { jstNow } from '../../../core/time.js';
 import {
   selection, mastersGuard, canEdit, backLink, ctrl, field, textField, listRow, setFlash, flashNote, dropFlashOnInput, matchLabel,
 } from './common.js';
 
-const STATUS_LABEL = { scheduled: '予定', postponed: '延期', cancelled: '中止', finished: '終了' };
 const BLANK = { ...fixtureToValues({}), competition: 'J3', status: 'scheduled' };
 
 // 取り込みのプレビューと結果（描き直しをまたいで覚える。DOM に持たせない）
@@ -24,7 +25,6 @@ let imported = null; // { seasonId, inserted, updated }：一覧に1回知らせ
 export function forgetFixtureImport() { preview = null; imported = null; }
 
 const href = (seasonId, extra = '') => `#/admin/fixtures?s=${encodeURIComponent(seasonId)}${extra}`;
-const byStart = (a, b) => (a.match_date + (a.kickoff ?? '')).localeCompare(b.match_date + (b.kickoff ?? ''));
 
 // 保存・削除・取り込みのあと：覚えた試合を捨て、共通データ（今のシーズン）も読み直す
 async function reloadFixtures(ctx) {
@@ -61,7 +61,7 @@ function fixtureForm(ctx, seasonId, f) {
     textField('Jリーグ公式の試合ページの URL（空なら自動の取り込みが入れます）', 'jleague_match_url', v.jleague_match_url, locked, { inputmode: 'url', autocapitalize: 'none' }),
     finished
       ? el('p', { class: 'muted' }, '試合は終わっています。結果・得点者は ', el('a', { href: `#/records/${encodeURIComponent(f.id)}?edit=fixture` }, '観戦記録の画面'), ' で直します。')
-      : select('状態', 'status', [['scheduled', '予定'], ['postponed', '延期'], ['cancelled', '中止']]),
+      : select('状態', 'status', ['scheduled', 'postponed', 'cancelled'].map((k) => [k, STATUS_OPTIONS[k]])),
     el('p', { class: 'err', 'data-err': '_form', role: 'alert' }),
     flashNote('fixtures', isNew ? '' : f.id),
     editable
@@ -179,7 +179,7 @@ export function renderFixtures(ctx) {
   const fixtures = ctx.data.seasonFixtures(seasonId); // undefined＝読み込み中、null＝読めない
   const season = (ctx.data.seasons() ?? []).find((s) => s.id === seasonId)
     ?? (ctx.masters.data.season?.id === seasonId ? ctx.masters.data.season : null);
-  const list = Array.isArray(fixtures) ? [...fixtures].sort(byStart) : [];
+  const list = Array.isArray(fixtures) ? [...fixtures].sort(compareFixtures) : [];
   const pending = Array.isArray(fixtures) ? pendingKickoffCount(fixtures, jstNow(ctx.nowMs).date) : 0;
   const done = imported?.seasonId === seasonId ? imported : null;
 
@@ -191,7 +191,7 @@ export function renderFixtures(ctx) {
     body = list.map((f) => listRow({
       href: href(seasonId, `&id=${encodeURIComponent(f.id)}`), label: matchLabel(ctx, f),
       sub: `${f.round ? `第${f.round}節　` : ''}${f.kickoff ?? 'キックオフ未定'}`,
-      selected: f.id === sel.id, mark: f.status === 'scheduled' ? null : STATUS_LABEL[f.status],
+      selected: f.id === sel.id, mark: f.status === 'scheduled' ? null : STATUS_OPTIONS[f.status],
     }));
   }
   const listSec = el('section', { class: 'sec' },

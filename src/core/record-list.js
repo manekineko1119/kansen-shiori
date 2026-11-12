@@ -1,24 +1,16 @@
 // 観戦記録の一覧の行の判断（設計書 3.4.2）。純粋な関数だけ
 import { fixtureSide } from './fixture-view.js';
 import { matchOutcome, formatScore } from './result.js';
+import { compareFixturesNewestFirst } from './fixture-order.js';
 
 const STYLE_TEXT = { stadium: '現地', public_viewing: 'PV', broadcast: '中継' };
-
-// 日付の新しい順 → キックオフの遅い順（未定は先に）→ ID
-function newestFirst(a, b) {
-  if (a.match_date !== b.match_date) return a.match_date < b.match_date ? 1 : -1;
-  const ka = a.kickoff ?? '99:99';
-  const kb = b.kickoff ?? '99:99';
-  if (ka !== kb) return ka < kb ? 1 : -1;
-  return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
-}
 
 // そのシーズンの終わった試合（status = 'finished'、今日まで）すべて。記録がなければ record は null・style は「記録なし」
 export function recordRows({ fixtures, records, supportClubId, today, onlyWatched }) {
   const byFixture = new Map((records ?? []).map((r) => [r.fixture_id, r]));
   return (fixtures ?? [])
     .filter((f) => f.status === 'finished' && f.match_date <= today)
-    .sort(newestFirst)
+    .sort(compareFixturesNewestFirst)
     .map((f) => {
       const record = byFixture.get(f.id) ?? null;
       return {
