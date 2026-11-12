@@ -1,0 +1,26 @@
+# Supabase の無料プランが止まらないように、2日おきに clubs を1件読む（設計書 11.2）
+# Secrets（リポジトリの Settings → Secrets and variables → Actions）：SUPABASE_URL・SUPABASE_PUBLISHABLE_KEY
+name: keepalive
+
+on:
+  schedule:
+    - cron: '0 21 */2 * *' # UTC。日本時間の朝6時
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: clubs を1件読む（鍵は apikey ヘッダーだけに付ける。設計書 11.1）
+        env:
+          URL: ${{ secrets.SUPABASE_URL }}
+          KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          set -euo pipefail
+          code=$(curl --fail-with-body -sS --retry 3 --retry-delay 10 --max-time 30 \
+            -o /dev/null -w '%{http_code}' \
+            -H "apikey: $KEY" "$URL/rest/v1/clubs?select=id&limit=1")
+          echo "応答：$code"
