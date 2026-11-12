@@ -11,6 +11,7 @@ import { renderCalendar } from './calendar.js';
 import { renderTrips, renderTrip, renderTripNew } from './trips.js';
 import { renderRecord } from './record.js';
 import { renderRecords } from './records.js';
+import { renderMap } from './map.js';
 import { renderAdmin } from './admin/index.js';
 import { el, section } from '../components/parts.js';
 
@@ -27,6 +28,7 @@ export const VIEWS = {
   'trip-new': renderTripNew,
   records: renderRecords,
   record: renderRecord,
+  map: renderMap,
   settings: renderSettings,
   admin: renderAdmin,
   login: (ctx) => renderLogin({ error: ctx.auth.loginError, user: ctx.user, onSignIn: ctx.auth.signIn, onSignOut: ctx.auth.signOut }),

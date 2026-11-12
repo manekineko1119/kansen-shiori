@@ -1,7 +1,7 @@
 // 観戦のしおりの Service Worker（設計書 8章）。画面のファイルは版ごとに丸ごと入れ替える
 // VERSION・ASSETS_SHA256・ASSETS は npm run sw-version が書き換える（手で直さない）
-const VERSION = '2026-11-13.3';
-const ASSETS_SHA256 = 'd0592a07f1feb5598632511a77a9b86adc552176419742747733c082c84ec833';
+const VERSION = '2026-11-13.4';
+const ASSETS_SHA256 = 'c3406fdf307faa4336c87e9c0ed4a0e2280a68d39ea5eba3ab80c109942e9c0e';
 const ASSETS = [
   "icons/apple-touch-icon-180.png",
   "icons/icon-192.png",
@@ -36,6 +36,8 @@ const ASSETS = [
   "src/core/links/toyoko-inn.js",
   "src/core/links/yahoo-transit.js",
   "src/core/lodging.js",
+  "src/core/map/japan-shape.js",
+  "src/core/map/project.js",
   "src/core/photo.js",
   "src/core/pwa.js",
   "src/core/record-form.js",
@@ -82,6 +84,7 @@ const ASSETS = [
   "src/main.js",
   "src/router.js",
   "src/ui/components/form-util.js",
+  "src/ui/components/japan-map.js",
   "src/ui/components/nav.js",
   "src/ui/components/parts.js",
   "src/ui/components/record-list.js",
@@ -100,6 +103,7 @@ const ASSETS = [
   "src/ui/styles/calendar.css",
   "src/ui/styles/fixtures.css",
   "src/ui/styles/layout.css",
+  "src/ui/styles/map.css",
   "src/ui/styles/parts.css",
   "src/ui/styles/pwa.css",
   "src/ui/styles/record.css",
@@ -123,6 +127,7 @@ const ASSETS = [
   "src/ui/views/fixtures.js",
   "src/ui/views/index.js",
   "src/ui/views/login.js",
+  "src/ui/views/map.js",
   "src/ui/views/placeholder.js",
   "src/ui/views/record-edit.js",
   "src/ui/views/record-fixture-edit.js",

@@ -1,0 +1,74 @@
+/* 行ったスタジアムの地図（#/map。地図の spec 4章）。色は base.css の変数で指定する（設計書 3.6） */
+
+/* 見出しの右の地図のボタン（設定の歯車と同じ形。下に小さく「地図」） */
+.mapbtn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  color: var(--ink-2);
+  font-size: 10px;
+  line-height: 1.1;
+  text-decoration: none;
+}
+.mapbtn .ic { width: 22px; height: 22px; }
+.mapbtn:hover { background: var(--theme-tint); color: var(--theme-primary); }
+@media (prefers-reduced-motion: no-preference) {
+  .mapbtn { transition: background-color 0.15s ease, color 0.15s ease; }
+}
+
+/* 画面：S は縦1列（切り替え・数字・地図・そのほか）。M・L は左に地図、右にそのほか */
+.map-grid { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); align-content: start; }
+.map-grid > * { min-width: 0; }
+.map-b { display: grid; gap: 12px; align-content: start; }
+.map-b > .sec + .sec { margin-top: 0; }
+@media (min-width: 600px) {
+  .map-grid {
+    grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+    grid-template-areas: "c b" "n b" "a b";
+    grid-template-rows: auto auto 1fr;
+    gap: 12px 20px;
+  }
+  .map-c { grid-area: c; }
+  .map-n { grid-area: n; }
+  .map-a { grid-area: a; }
+  .map-b { grid-area: b; }
+}
+
+.map-controls .input { max-width: 100%; }
+.map-figs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); background: var(--paper); border-radius: var(--r-m); padding: 12px 0; text-align: center; }
+.map-figs div + div { border-left: 1px solid var(--rule); }
+.map-figs b { display: block; font-size: 22px; line-height: 1.25; white-space: nowrap; }
+.map-figs span { font-size: 12px; color: var(--ink-2); }
+
+/* 地図 */
+.jmap-wrap { background: var(--paper); border-radius: var(--r-m); padding: 8px; }
+.jmap { display: block; width: 100%; height: auto; max-height: 80vh; cursor: pointer; }
+.jmap .pref { fill: var(--map-land); stroke: var(--map-border); stroke-width: 0.5; }
+.jmap .pref.visited { fill: var(--map-visited); stroke: var(--map-visited-border); }
+.jmap-inset { fill: none; stroke: var(--map-border); stroke-width: 0.8; }
+.jmap-base circle { fill: none; stroke: var(--map-pin-base); stroke-width: 0.9; }
+.jmap-pins circle { fill: var(--map-pin); stroke: var(--paper); stroke-width: 0.8; }
+.jmap-credit { margin-top: 4px; font-size: 11px; }
+.jmap-popup { display: grid; gap: 4px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--rule); }
+.jmap-pick { display: flex; align-items: center; min-height: 48px; padding: 0 12px; border: 1px solid var(--rule); border-radius: var(--r-s); background: var(--paper); color: var(--theme-primary); font-weight: 700; text-align: left; }
+button.jmap-pick:hover { background: var(--theme-tint); }
+p.jmap-pick { color: var(--ink); font-weight: 400; border: 0; }
+
+/* 表・地図に出せない観戦 */
+.map-rows { display: grid; }
+.map-row { display: grid; gap: 2px; padding: 10px 0; border-top: 1px solid var(--rule); color: inherit; text-decoration: none; }
+.map-row:first-child { border-top: 0; }
+.map-row:focus-visible, .map-row:target { outline: 2px solid var(--theme-primary); outline-offset: 2px; }
+.vr-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.vr-count { margin-left: auto; font-weight: 700; }
+.vr-match { font-size: 13px; }
+.vr-hand { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.vr-hand .btn { margin-top: 0; }
+.vr-un { color: var(--theme-primary); }
+.visit-form .field + .field { margin-top: 12px; }
+.visit-form .btn { margin-top: 12px; }

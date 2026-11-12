@@ -21,6 +21,13 @@
   --theme-deep: color-mix(in srgb, var(--theme-primary) 78%, #000);
   --paper-2: color-mix(in srgb, var(--theme-tint) 25%, var(--paper));
   --note-bg: color-mix(in srgb, var(--theme-accent) 16%, var(--paper));
+  /* 行ったスタジアムの地図（テーマの色から作る） */
+  --map-land: color-mix(in srgb, var(--theme-tint) 45%, var(--paper));
+  --map-border: var(--rule);
+  --map-visited: color-mix(in srgb, var(--theme-primary) 40%, var(--paper));
+  --map-visited-border: var(--theme-primary);
+  --map-pin: var(--theme-deep);
+  --map-pin-base: var(--ink-2);
 
   --r-s: 8px;
   --r-m: 12px;
