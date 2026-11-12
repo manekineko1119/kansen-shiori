@@ -11,23 +11,22 @@ export function readValues(form) {
   return values;
 }
 
-const fill = (root, errors) => {
-  for (const [k, msg] of Object.entries(errors ?? {})) {
-    const b = root?.querySelector(`[data-err="${k}"]`) ?? root?.querySelector('[data-err="_form"]');
-    if (b) b.textContent = msg;
-  }
+// 理由の箱：項目名の箱、なければ _form の箱
+const boxOf = (root, k) => root?.querySelector(`[data-err="${k}"]`) ?? root?.querySelector('[data-err="_form"]');
+const setText = (root, errors, text) => {
+  for (const k of Object.keys(errors ?? {})) { const b = boxOf(root, k); if (b) b.textContent = text ?? errors[k]; }
 };
-const wipe = (root) => { for (const p of root?.querySelectorAll('[data-err]') ?? []) p.textContent = ''; };
 
 // 保存の失敗の理由（[data-err] の文）を view-state に覚える。フォームを作るとき出し直し、入力すると消す（開閉・回転で消えない。M-6）
 // live()：今の画面のフォーム（作り直されたあとの出し先）。show/clear はそこに書く
 export function bindErrors(ctx, form, formKey, live = () => form) {
   const k = `${ctx.key}|${formKey}`;
-  fill(form, ctx.state.getErrors(k));
-  form.addEventListener('input', () => { ctx.state.clearErrors(k); wipe(form); });
+  setText(form, ctx.state.getErrors(k));
+  // 消すのは、理由として覚えた箱だけ（写真の失敗・読み込み失敗など、ほかの文は消さない）
+  form.addEventListener('input', () => { setText(form, ctx.state.getErrors(k), ''); ctx.state.clearErrors(k); });
   return {
-    show(errors) { ctx.state.setErrors(k, errors); fill(live(), errors); },
-    clear() { ctx.state.clearErrors(k); wipe(live()); },
+    show(errors) { ctx.state.setErrors(k, errors); setText(live(), errors); },
+    clear() { setText(live(), ctx.state.getErrors(k), ''); ctx.state.clearErrors(k); },
   };
 }
 
