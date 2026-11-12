@@ -43,6 +43,10 @@ test('アイコン：192・512 の any と maskable。ファイルの大きさ�
   assert.equal(pngSize('icons/apple-touch-icon-180.png'), '180x180');
 });
 
+test('GitHub Pages で Jekyll を通さない（_shared のような _ で始まるフォルダも公開する。設計書 11.1）', () => {
+  assert.ok(existsSync(new URL('.nojekyll', root)), '.nojekyll がない');
+});
+
 test('index.html に manifest と iPhone 用の指定がある', () => {
   assert.match(html, /<link rel="manifest" href="\.\/manifest\.webmanifest">/);
   assert.match(html, /<meta name="apple-mobile-web-app-capable" content="yes">/);
