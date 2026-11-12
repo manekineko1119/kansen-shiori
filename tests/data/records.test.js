@@ -44,15 +44,18 @@ test('remove：id で削除する', async () => {
   assert.deepEqual([c.op, c.eq], ['delete', [['id', 'r1']]]);
 });
 
-test('saveFixtureInfo：fixtures は side を club_id にして manual を付ける。inside は upsert、highlight は manual の行だけ delete', async () => {
+const NOW_MS = Date.UTC(2026, 10, 12, 15, 15); // 日本時間 11/13 0:15
+
+test('saveFixtureInfo：fixtures は side を club_id にして manual と手で直した時刻を付ける。inside は upsert、highlight は manual の行だけ delete', async () => {
   const client = fakeClient({ fixtures: [{ id: 'f1' }], fixture_videos: [] });
-  const store = createRecordStore({ client });
+  const store = createRecordStore({ client, now: () => NOW_MS });
   assert.deepEqual(await store.saveFixtureInfo('f1', edit, ids), { ok: true });
   const [fx, ...vids] = client.calls.filter((c) => c.op !== 'select');
   assert.deepEqual([fx.table, fx.op, fx.eq], ['fixtures', 'update', [['id', 'f1']]]);
   assert.deepEqual(fx.values, {
     status: 'finished', home_score: 1, away_score: 3,
     scorers: [{ club_id: 'nara', player: '田中', minute: '64', type: 'goal' }], result_source: 'manual',
+    result_updated_at: '2026-11-12T15:15:00.000Z',
   });
   const up = vids.find((c) => c.op === 'upsert');
   assert.deepEqual([up.table, up.onConflict, up.values], ['fixture_videos', 'fixture_id,kind', { fixture_id: 'f1', kind: 'inside', url: 'https://youtu.be/x', source: 'manual' }]);
@@ -193,4 +196,17 @@ test('remove：記録を消したら写真も消す。写真の削除の失敗�
   const none = setup();
   await none.store.remove('r1', null);
   assert.equal(none.client.calls.some((c) => c.op === 'remove'), false);
+});
+
+test('saveFixtureInfo：今と同じ URL の動画は書き込まない（自動の動画を手入力に変えない）。違う URL だけ upsert', async () => {
+  const client = fakeClient({ fixtures: [{ id: 'f1' }], fixture_videos: [] });
+  const store = createRecordStore({ client, now: () => NOW_MS });
+  const same = { ...edit, videos: { highlight: 'https://www.youtube.com/watch?v=H', inside: 'https://youtu.be/new' } };
+  const currentVideos = [
+    { kind: 'highlight', url: 'https://www.youtube.com/watch?v=H', source: 'api' },
+    { kind: 'inside', url: 'https://www.youtube.com/watch?v=I', source: 'api' },
+  ];
+  assert.deepEqual(await store.saveFixtureInfo('f1', same, { ...ids, currentVideos }), { ok: true });
+  const vids = client.calls.filter((c) => c.table === 'fixture_videos');
+  assert.deepEqual(vids.map((c) => [c.op, c.values?.kind]), [['upsert', 'inside']]);
 });

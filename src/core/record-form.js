@@ -192,3 +192,14 @@ export function sourceLabel(fixture) {
   if (fixture.result_source === 'api') return 'Jリーグ公式から自動';
   return null;
 }
+
+// 試合の情報の編集で、動画を種類ごとにどう保存するか（2026-11-13）。
+// URL が今の動画と同じなら keep（書き込まない。自動で入った動画を「手入力」に変えないため）、違えば upsert（手入力）、空なら remove（手入力の行だけ消す）
+export function videoSaves(videos, currentVideos) {
+  const current = Object.fromEntries((currentVideos ?? []).map((v) => [v.kind, v.url]));
+  return Object.keys(VIDEO_KINDS).map((kind) => {
+    const url = videos?.[kind] ?? null;
+    if (!url) return { kind, action: 'remove', url: null };
+    return { kind, action: url === current[kind] ? 'keep' : 'upsert', url };
+  });
+}

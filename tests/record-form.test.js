@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   recordFromForm, fixtureEditFromForm, validateFixtureEdit, validateMatchRecord, costTotal, recordFormValues,
-  fixtureFormValues, removeScorerRow, scorerRowIndexes, youtubeId, thumbnailUrl, sourceLabel,
+  fixtureFormValues, removeScorerRow, scorerRowIndexes, youtubeId, thumbnailUrl, sourceLabel, videoSaves,
 } from '../src/core/record-form.js';
 import { formatDateTimeJst } from '../src/core/format.js';
 
@@ -118,4 +118,22 @@ test('得点者の行：DB が1件だけでも、削除 → 追加で消した�
   const added = addScorerRow(removeScorerRow(initial, 0));
   assert.deepEqual(scorerRows(initial, added), [{ side: 'home', player: '', minute: '', type: 'goal' }]);
   assert.equal(scorerRows(initial, {}).length, 1);
+});
+
+// ---- 試合の情報の編集で、変えていない動画は書き込まない（6-6 のブラウザ確認で見つけた。2026-11-13）----
+
+test('videoSaves：URL が今と同じ種類は keep（自動の動画を手入力に変えない）。違えば upsert、空なら remove', () => {
+  const current = [
+    { kind: 'highlight', url: 'https://www.youtube.com/watch?v=H', source: 'api' },
+    { kind: 'inside', url: 'https://www.youtube.com/watch?v=I', source: 'api' },
+  ];
+  assert.deepEqual(videoSaves({ highlight: 'https://www.youtube.com/watch?v=H', inside: 'https://www.youtube.com/watch?v=I' }, current),
+    [{ kind: 'highlight', action: 'keep', url: 'https://www.youtube.com/watch?v=H' }, { kind: 'inside', action: 'keep', url: 'https://www.youtube.com/watch?v=I' }]);
+  assert.deepEqual(videoSaves({ highlight: 'https://youtu.be/new', inside: null }, current),
+    [{ kind: 'highlight', action: 'upsert', url: 'https://youtu.be/new' }, { kind: 'inside', action: 'remove', url: null }]);
+});
+
+test('videoSaves：今の動画がない・渡されないときは、URL があれば upsert', () => {
+  assert.deepEqual(videoSaves({ highlight: 'https://youtu.be/a', inside: null }, undefined),
+    [{ kind: 'highlight', action: 'upsert', url: 'https://youtu.be/a' }, { kind: 'inside', action: 'remove', url: null }]);
 });

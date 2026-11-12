@@ -66,7 +66,7 @@ export function renderFixtureEdit(ctx, { fixture, formKey, doneHref, clubsById, 
     el('input', { type: 'hidden', name: 'scorer_count', value: String(scorers.length) }),
     add,
     el('h2', null, '試合動画'),
-    el('p', { class: 'muted' }, '空にすると、手入力の動画だけを消します（自動で登録された動画は残ります）。'),
+    el('p', { class: 'muted' }, 'URL を変えなかった動画は、そのまま残ります。空にすると、手入力の動画だけを消します（自動で登録された動画は残ります）。'),
     Object.entries(VIDEO_KINDS).map(([k, label]) => video(k, label)),
     el('p', { class: 'err', 'data-err': '_form', role: 'alert' }),
     el('div', { class: 'actions' },
@@ -87,7 +87,7 @@ export function renderFixtureEdit(ctx, { fixture, formKey, doneHref, clubsById, 
     }));
     // 動画だけ失敗したとき（partial）は、試合の更新が入っているので共通データを読み直す。入力は消さず、理由を出す
     const save = async () => {
-      const res = await ctx.data.records.saveFixtureInfo(fixture.id, edit, { homeClubId: fixture.home_club_id, awayClubId: fixture.away_club_id });
+      const res = await ctx.data.records.saveFixtureInfo(fixture.id, edit, { homeClubId: fixture.home_club_id, awayClubId: fixture.away_club_id, currentVideos: fixture.fixture_videos ?? [] });
       if (res?.partial) await onSaved();
       return res;
     };
