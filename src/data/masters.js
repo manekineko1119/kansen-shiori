@@ -53,6 +53,14 @@ export async function refreshMasters({ client, snapshot, nowMs }) {
   }
 }
 
+// 保存のあとの読み直し：前が最新（fresh）で、読み直しが通信できなかったら前を残す（'offline' にして管理画面の保存を止めない）。
+// failed は「読み直せなかった」ことのお知らせ用（M-5）
+export async function reloadMasters({ client, snapshot, nowMs, previous }) {
+  const next = await refreshMasters({ client, snapshot, nowMs });
+  if (previous?.status === 'fresh' && next.status !== 'fresh') return { masters: previous, failed: true };
+  return { masters: next, failed: false };
+}
+
 // 今のシーズン以外の試合を ID で読む（D28）
 export async function fetchFixturesByIds({ client }, ids) {
   if (ids.length === 0) return [];

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizeFixtureRow, readMastersSnapshot, refreshMasters, fetchFixturesByIds, fetchSeasonFixtures, fetchSeasons } from '../../src/data/masters.js';
+import { normalizeFixtureRow, readMastersSnapshot, refreshMasters, reloadMasters, fetchFixturesByIds, fetchSeasonFixtures, fetchSeasons } from '../../src/data/masters.js';
 import { createSnapshot } from '../../src/data/snapshot.js';
 import { fakeClient } from '../helpers/fake-supabase.js';
 import { fakeKv } from '../helpers/fake-storage.js';
@@ -103,4 +103,20 @@ test('fetchSeasons：新しい順（starts_on の降順）', async () => {
   assert.deepEqual((await fetchSeasons({ client: c })).map((s) => s.id), ['2026-27', '2025']);
   assert.deepEqual(c.calls[0].order, { col: 'starts_on', ascending: false });
   await assert.rejects(fetchSeasons({ client: fakeClient(t, { throwOn: ['seasons'] }) }));
+});
+
+test('reloadMasters：前が fresh で読み直しが通信できなければ前を残し failed。通信できれば新しいものを採用（M-5）', async () => {
+  const snapshot = createSnapshot(fakeKv());
+  const first = await refreshMasters({ client: fakeClient(tables()), snapshot, nowMs: T });
+  assert.equal(first.status, 'fresh');
+  const failed = await reloadMasters({ client: fakeClient(tables(), { throwOn: ['seasons'] }), snapshot, nowMs: T, previous: first });
+  assert.equal(failed.masters, first);
+  assert.equal(failed.failed, true);
+  const ok = await reloadMasters({ client: fakeClient(tables()), snapshot, nowMs: T, previous: first });
+  assert.equal(ok.masters.status, 'fresh');
+  assert.equal(ok.failed, false);
+  // 前が fresh でなければ、読み直しの結果をそのまま使う
+  const off = await reloadMasters({ client: fakeClient(tables(), { throwOn: ['seasons'] }), snapshot, nowMs: T, previous: { status: 'offline' } });
+  assert.equal(off.masters.status, 'offline');
+  assert.equal(off.failed, false);
 });

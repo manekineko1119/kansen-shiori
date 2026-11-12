@@ -10,7 +10,7 @@ import { rerender } from './ui/mount.js';
 import { openKv } from './data/kv-idb.js';
 import { createSnapshot } from './data/snapshot.js';
 import { loadMasters } from './data/masters-loader.js';
-import { refreshMasters } from './data/masters.js';
+import { reloadMasters as reloadMastersData } from './data/masters.js';
 import { userFromAuth } from './auth/apply.js';
 import { getClient } from './data/client.js';
 import { createSettingsHolder } from './data/settings-holder.js';
@@ -84,10 +84,11 @@ const OFFLINE_NOTICE = 'オフラインのため、最後にログインして�
 
 // 共通データを最新に読み直して、画面を描き直す（管理者が試合の情報を保存したあと）
 async function reloadMasters() {
-  masters = await refreshMasters({ client: getClient(), snapshot, nowMs: Date.now() });
+  const r = await reloadMastersData({ client: getClient(), snapshot, nowMs: Date.now(), previous: masters });
+  masters = r.masters; // 読み直せなかったときは前の最新を残してお知らせ（M-5）
+  if (r.failed) notice = '共通データを読み直せませんでした（通信できません）。保存した内容は反映されています。画面を開き直すと最新になります';
   personal.sync();
-  seasonCache.reset(); // 保存した試合を含むシーズンを読み直す
-  fixtureCache.reset(); // 前のシーズンの試合の1件読みも捨てる（日程の編集・取り込み・削除のあと。M-4）
+  seasonCache.reset(); fixtureCache.reset(); // 保存した試合を含むシーズン・前のシーズンの1件読みを読み直す（M-4）
   redraw();
 }
 
