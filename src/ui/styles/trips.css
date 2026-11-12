@@ -1,0 +1,24 @@
+/* 遠征予定（#/trips）。色は base.css の変数で指定する（設計書 3.6） */
+
+/* 遠征予定（#/trips）：一覧の行・入力・削除 */
+.trips .list .item { display: flex; align-items: center; gap: 12px; min-height: 60px; border-top: 1px solid var(--rule); color: inherit; text-decoration: none; }
+.trips .list .item:first-child { border-top: 0; }
+.trips .item .date { display: flex; flex-direction: column; min-width: 4.6em; font-size: 13px; color: var(--ink-2); }
+.trips .item .date b { color: var(--ink); font-size: 15px; }
+.trips .item .t { flex: 1; min-width: 0; }
+.trips .item .t b, .trips .item .t span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.trips .item .t span { font-size: 13px; color: var(--ink-2); }
+.trips .item.sel { background: var(--theme-tint); box-shadow: inset 4px 0 0 var(--theme-primary); }
+.trips .cta .btn { text-decoration: none; }
+.trips .sec + .sec, .trips .trip-detail > .sec, .trips .trip-detail > .btn { margin-top: 12px; }
+.trips .back { display: inline-block; padding: 8px 0; font-weight: 700; color: var(--theme-primary); text-decoration: none; }
+.trips .grp { min-width: 0; margin: 14px 0 0; padding: 0; border: 0; }
+.trips .grp legend { padding: 0; margin-bottom: 2px; font-size: 13px; font-weight: 700; color: var(--ink-2); }
+.trips .radios { display: flex; flex-wrap: wrap; gap: 0 18px; }
+.trips textarea.input { min-height: 96px; resize: vertical; }
+.btn-danger { color: var(--lose); border-color: var(--lose); }
+.btn-danger:hover { background: var(--bg); }
+@media (min-width: 600px) {
+  .trips .split-detail .back { display: none; }
+}
+

@@ -1,0 +1,29 @@
+/* 観戦記録の一覧（#/records。設計書 3.4.2）。色は base.css の変数で指定する（設計書 3.6） */
+
+/* ---------- 観戦記録の一覧（設計書 3.4.2。#/records と詳細の左の枠）---------- */
+.rec-list { display: grid; gap: 12px; align-content: start; }
+.rec-list > * { margin: 0; }
+.rec-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.rec-controls .input { flex: 1 1 12em; min-width: 12em; max-width: 100%; width: auto; }
+.rec-controls .chip span { min-height: 48px; }
+.rec-season { font-weight: 700; }
+.rec-form { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--ink-2); }
+.rec-form span { margin-right: 4px; }
+.rec-form em { font-style: normal; }
+.stats { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.3fr) minmax(0, 1.7fr); background: var(--paper); border-radius: var(--r-m); padding: 12px 0; text-align: center; }
+.stats div { min-width: 0; padding: 0 2px; }
+.stats div + div { border-left: 1px solid var(--rule); }
+.stats b { display: block; font-size: 20px; line-height: 1.25; white-space: nowrap; }
+.stats span { font-size: 11px; color: var(--ink-2); }
+.rec-list .list .item { display: flex; flex-wrap: wrap; align-items: center; gap: 0 10px; min-height: 60px; padding: 6px 0; border-top: 1px solid var(--rule); color: inherit; text-decoration: none; }
+.rec-list .list .item:first-child { border-top: 0; }
+.rec-list .item .date { display: flex; flex-direction: column; flex: none; min-width: 4.6em; font-size: 13px; color: var(--ink-2); }
+.rec-list .item .date b { color: var(--ink); font-size: 15px; }
+.rec-list .item .date .none { color: var(--ink-2); }
+.rec-list .item .t { flex: 1 1 5em; min-width: 5em; }
+.rec-list .item .t b { display: block; line-height: 1.45; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rec-list .item .res-wrap { display: inline-flex; align-items: center; gap: 6px; flex: none; }
+.rec-list .item .add { flex: none; margin-left: auto; font-size: 12px; font-weight: 700; color: var(--theme-primary); }
+.rec-list .item.sel { background: var(--theme-tint); box-shadow: inset 4px 0 0 var(--theme-primary); }
+.rec-empty { padding: 8px 0; }
+

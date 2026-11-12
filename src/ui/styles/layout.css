@@ -1,0 +1,68 @@
+/* 幅の3段階のうち M・L の骨組み（設計書 3.5）と、押したときの反応。色は base.css の変数で指定する（設計書 3.6） */
+
+/* ---------- M：メイン画面（600〜1023px）：2列。メニューは画面下のまま ---------- */
+@media (min-width: 600px) {
+  .two-col { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: start; gap: 20px; }
+  .two-col.even { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .split { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: start; gap: 20px; }
+  .split[data-detail="1"] > .split-list { display: block; }
+  .short { display: none; }
+  .long { display: inline; }
+  main { padding-left: max(20px, env(safe-area-inset-left)); padding-right: max(20px, env(safe-area-inset-right)); }
+  .top { padding-left: max(20px, env(safe-area-inset-left)); padding-right: 16px; }
+}
+
+/* ---------- L：PC（1024px以上）：左のメニュー＋2列。内容は最大1200pxで中央 ---------- */
+@media (min-width: 1024px) {
+  .app { flex-direction: row; }
+  .menu {
+    position: sticky;
+    top: 0;
+    z-index: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: 232px;
+    flex: none;
+    height: 100vh;
+    height: 100dvh;
+    padding: 20px 12px;
+    border-top: 0;
+    border-right: 1px solid var(--rule);
+  }
+  .menu .menu-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 8px 20px;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+  }
+  .menu-brand img { width: 34px; height: 34px; border-radius: 9px; }
+  .menu a {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 12px;
+    min-height: 48px;
+    padding: 0 12px;
+    border-radius: var(--r-s);
+    font-size: 14px;
+  }
+  .menu a .ic { width: 20px; height: 20px; }
+  .menu a:hover { background: var(--bg); color: var(--ink); }
+  .menu a[aria-current] { background: var(--theme-tint); color: var(--theme-primary); }
+  .menu a[aria-current]::before { display: none; }
+  .menu a.menu-settings { display: flex; }
+  .gearbtn { display: none; }
+  .top { width: 100%; max-width: 1200px; margin: 0 auto; padding: 24px 32px 12px; }
+  .top h1 { font-size: 24px; }
+  main { width: 100%; max-width: 1200px; margin: 0 auto; padding: 8px 32px 48px; }
+  .two-col { gap: 28px; }
+}
+
+/* 押したときの反応（動きを減らす設定では出さない） */
+@media (prefers-reduced-motion: no-preference) {
+  .menu a, .gearbtn { transition: background-color 0.15s ease, color 0.15s ease; }
+}
+

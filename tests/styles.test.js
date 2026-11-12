@@ -8,7 +8,10 @@ import { fileURLToPath } from 'node:url';
 const HEX = /#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{4}|[0-9a-fA-F]{3})\b/g;
 const FUNC = /\b(?:rgb|hsl)a?\(/g;
 
-const css = readFileSync(new URL('../src/ui/styles.css', import.meta.url), 'utf8');
+const stylesDir = fileURLToPath(new URL('../src/ui/styles/', import.meta.url));
+const cssFiles = readdirSync(stylesDir).filter((n) => n.endsWith('.css')).sort();
+const read = (name) => readFileSync(join(stylesDir, name), 'utf8');
+const css = read('base.css');
 const rootMatch = css.match(/:root\s*\{[^}]*\}/);
 
 function walk(dir) {
@@ -18,14 +21,36 @@ function walk(dir) {
   });
 }
 
-test('styles.css に最初の :root がある', () => {
+test('base.css に最初の :root がある', () => {
   assert.ok(rootMatch);
 });
 
-test('styles.css の色の値は最初の :root の中だけ', () => {
+test('base.css の色の値は最初の :root の中だけ', () => {
   const rest = css.replace(rootMatch[0], '');
   assert.deepEqual(rest.match(HEX) ?? [], []);
   assert.deepEqual(rest.match(FUNC) ?? [], []);
+});
+
+test('base.css 以外の CSS には色の値も :root もない（色は変数で指定する）', () => {
+  assert.ok(cssFiles.length > 5);
+  for (const name of cssFiles.filter((n) => n !== 'base.css')) {
+    const text = read(name);
+    assert.deepEqual(text.match(HEX) ?? [], [], `${name} に色の値がある`);
+    assert.deepEqual(text.match(FUNC) ?? [], [], `${name} に色の関数がある`);
+    assert.equal(/:root/.test(text), false, `${name} に :root がある`);
+  }
+});
+
+test('index.html は styles/ の CSS をすべて読み、base.css を最初に読む', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const linked = [...html.matchAll(/<link rel="stylesheet" href="\.\/src\/ui\/styles\/([^"]+)">/g)].map((m) => m[1]);
+  assert.equal(linked[0], 'base.css');
+  assert.deepEqual([...linked].sort(), cssFiles);
+  assert.equal(/styles\.css/.test(html), false);
+});
+
+test('CSS のファイルは 300 行以下', () => {
+  for (const name of cssFiles) assert.ok(read(name).split(/\r?\n/).length <= 300, name);
 });
 
 test('src/ 以下の JS と index.html に色の値がない（theme-color の meta だけは除く）', () => {

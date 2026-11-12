@@ -1,0 +1,36 @@
+/* 結果画面（#/result）。色は base.css の変数で指定する（設計書 3.6） */
+
+/* ---------- 結果画面（#/result）：時刻の流れ・スタジアム情報 ---------- */
+.result-main > .tl:first-child { margin-top: 0; }
+.result-side .side-hist { display: none; } /* 検索履歴は M・L だけ（S は条件を変えるだけ） */
+.tl { background: var(--paper); border-radius: var(--r-m); padding: 14px 12px; margin-top: 12px; }
+.tl .cap { font-size: 13px; color: var(--ink-2); margin: 0 4px 12px; }
+.tl .cap b { color: var(--ink); }
+.tl ol { list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); position: relative; }
+.tl ol::before { content: ""; position: absolute; left: 16.6%; right: 16.6%; top: 9px; border-top: 2px dotted var(--rule); }
+.tl li { text-align: center; position: relative; min-width: 0; }
+.tl li i { display: block; width: 16px; height: 16px; border-radius: 50%; margin: 2px auto 8px; background: var(--paper); border: 3px solid var(--rule); }
+.tl li.key i { border-color: var(--theme-primary); background: var(--theme-primary); box-shadow: 0 0 0 4px var(--theme-tint); }
+.tl li b { display: block; font-size: 26px; line-height: 1.05; color: var(--ink-2); }
+.tl li.key b { color: var(--theme-primary); font-size: 40px; }
+.tl li span { display: block; font-size: 12px; color: var(--ink-2); margin-top: 2px; }
+.tl li.key span { color: var(--ink); font-weight: 700; }
+.tl .foot { font-size: 12px; color: var(--ink-2); margin: 12px 4px 0; padding-top: 10px; border-top: 1px solid var(--rule); }
+.tl .undecided { margin: 4px; font-size: 20px; font-weight: 800; color: var(--ink-2); }
+.tl.one ol { grid-template-columns: 1fr; }
+.tl.one ol::before { display: none; }
+.sec-in { margin-top: 12px; }
+.kv { display: grid; grid-template-columns: 5.5em minmax(0, 1fr); gap: 6px 12px; font-size: 14px; }
+.kv dt { color: var(--ink-2); }
+.stadium-name { font-size: 17px; font-weight: 800; line-height: 1.4; margin-bottom: 8px; }
+.result-main .kv + .row { margin-top: 8px; border-top: 0; }
+.result .cta .btn { text-decoration: none; }
+@media (min-width: 600px) {
+  .result-side .side-hist { display: block; }
+}
+@media (max-width: 599px) {
+  .result-side .sec .kv { display: none; }
+  .result-side .sec { padding-top: 0; padding-bottom: 0; }
+  .result-side h2 { display: none; }
+}
+

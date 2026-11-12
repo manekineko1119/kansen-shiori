@@ -1,0 +1,138 @@
+/* 色の変数（:root）・書体・骨組み・メニュー（設計書 3.5・3.6・3.7）。色の値は、このファイルの最初の :root の中だけに書く */
+:root {
+  /* 応援クラブのチームカラーに切り替える色 */
+  --theme-primary: #0E5A3A;
+  --theme-on-primary: #FFFFFF;
+  --theme-accent: #F2B01E;
+  --theme-tint: #D9E8DF;
+  /* 切り替えない色 */
+  --bg: #E9EEEA;
+  --paper: #FFFFFF;
+  --ink: #16211C;
+  --ink-2: #4B5A52;
+  --rule: #C9D3CC;
+  --on-accent: var(--ink);
+  --danger: #B3261E;
+  --win: #1565C0;
+  --lose: #C62828;
+  --draw: #616161;
+  --on-result: #FFFFFF;
+  /* 派生色（primary・accent から作るので、チームカラーの切り替えに追従する） */
+  --theme-deep: color-mix(in srgb, var(--theme-primary) 78%, #000);
+  --paper-2: color-mix(in srgb, var(--theme-tint) 25%, var(--paper));
+  --note-bg: color-mix(in srgb, var(--theme-accent) 16%, var(--paper));
+
+  --r-s: 8px;
+  --r-m: 12px;
+  --r-l: 16px;
+  --font: "Hiragino Sans", "Noto Sans JP", "Noto Sans CJK JP", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+  /* 時刻・スコアの数字：端末内蔵の細身の書体（発車標のような数字）。なければ本文の書体 */
+  --font-num: "DIN Alternate", "Bahnschrift", "Roboto Condensed", "sans-serif-condensed", var(--font);
+  --tabs-h: 56px;
+  font-family: var(--font);
+  font-feature-settings: "palt";
+  color: var(--ink);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; padding: 0; }
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--bg);
+  font-size: 15px;
+  line-height: 1.65;
+  -webkit-text-size-adjust: 100%;
+  overflow-wrap: anywhere;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: var(--theme-primary); }
+img, svg { max-width: 100%; }
+
+/* 大きい数字だけ細身の書体にする（時刻・スコア・日付・料金・集計） */
+.fig {
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+.ic { width: 22px; height: 22px; flex: none; }
+
+/* ---------- 骨組み（S：カバー画面。1列、画面下にメニュー） ---------- */
+.app { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
+.col { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px 10px 16px;
+  padding-top: max(10px, env(safe-area-inset-top));
+  padding-left: max(16px, env(safe-area-inset-left));
+}
+.top h1 {
+  flex: 1;
+  min-width: 0;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gearbtn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--ink-2);
+}
+.gearbtn:hover { background: var(--theme-tint); color: var(--theme-primary); }
+main {
+  flex: 1;
+  padding: 4px 16px calc(var(--tabs-h) + 24px + env(safe-area-inset-bottom));
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+}
+
+/* メニュー：画面下に固定するのはこれだけ。全画面で常に表示（たたまない） */
+.menu {
+  position: fixed;
+  z-index: 5;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: var(--paper);
+  border-top: 1px solid var(--rule);
+  padding: 0 4px env(safe-area-inset-bottom);
+}
+.menu a {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: var(--tabs-h);
+  min-width: 48px;
+  font-size: 11px;
+  color: var(--ink-2);
+  text-decoration: none;
+}
+.menu a[aria-current] { color: var(--theme-primary); font-weight: 700; }
+.menu a[aria-current]::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 30%;
+  right: 30%;
+  height: 3px;
+  border-radius: 0 0 3px 3px;
+  background: var(--theme-primary);
+}
+.menu .menu-brand, .menu a.menu-settings { display: none; }
+

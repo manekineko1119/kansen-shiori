@@ -1,0 +1,100 @@
+/* 共通の部品（見出し・ボタン・入力・行・一覧＋詳細・勝敗の印）。色は base.css の変数で指定する（設計書 3.6） */
+
+/* ---------- 部品 ---------- */
+/* 見出し：しおりの目次のように、罫線を右へ伸ばす */
+h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  margin: 28px 0 10px;
+}
+h2::after { content: ""; flex: 1; border-top: 1px solid var(--rule); }
+h2:first-child { margin-top: 0; }
+.sec { background: var(--paper); border-radius: var(--r-m); padding: 14px 16px; min-width: 0; }
+.sec + .sec { margin-top: 12px; }
+.muted { color: var(--ink-2); font-size: 13px; }
+.field { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; }
+.field label { font-size: 13px; font-weight: 700; color: var(--ink-2); }
+.input {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 12px;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-s);
+  background: var(--paper);
+}
+.input:hover { border-color: var(--ink-2); }
+
+/* 操作ボタン：ページの流れの中に置く（画面下に固定しない。設計書 3.5） */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 48px; padding: 0 20px; margin-top: 16px;
+  border: 0; border-radius: var(--r-s);
+  background: var(--theme-primary); color: var(--theme-on-primary);
+  font: inherit; font-weight: 700; cursor: pointer;
+}
+.btn:hover { background: var(--theme-deep); }
+.btn-sub { background: var(--paper); color: var(--theme-primary); border: 1px solid var(--rule); }
+.btn-sub:hover { background: var(--theme-tint); }
+.err { color: var(--lose); font-size: 13px; }
+.note { background: var(--note-bg); border-radius: var(--r-s); padding: 10px 12px; margin-top: 12px; }
+.check { display: flex; align-items: center; gap: 8px; min-height: 48px; }
+
+/* 設定：入力欄を横に2つ並べる。出発空港の1行 */
+.row2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.airrow { min-width: 0; margin: 12px 0 0; padding: 4px 12px 12px; border: 1px solid var(--rule); border-radius: var(--r-s); }
+.airrow legend { padding: 0 6px; font-size: 13px; font-weight: 700; color: var(--ink-2); }
+.btn-small { min-height: 40px; padding: 0 14px; font-size: 13px; }
+
+/* 見出しの横の小さなリンク（ログイン・管理） */
+.toplinks { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+.toplink {
+  display: inline-flex; align-items: center; min-height: 48px; padding: 0 10px;
+  border: 0; background: none; color: var(--theme-primary); font: inherit; font-size: 13px; font-weight: 700;
+  text-decoration: none; cursor: pointer;
+}
+
+/* 2列：S は1列、M・L は2列。S の「右の列を別の画面にする」切り替えは 5-3 以降で足す */
+.two-col { display: grid; gap: 16px; }
+.two-col > * { min-width: 0; }
+.two-col > .sec + .sec { margin-top: 0; }
+
+/* 一覧＋詳細（D31）：S は1列で、詳細を選んでいるとき（data-detail="1"）は一覧を隠す。M・L は2列（下の media query） */
+.split { display: grid; gap: 16px; }
+.split > * { min-width: 0; }
+.split[data-detail="1"] > .split-list { display: none; }
+.split:not([data-detail="1"]) > .split-detail:empty { display: none; }
+
+/* 帯の文字：S は短い方、M・L は長い方 */
+.long { display: none; }
+
+/* 行（外部サイト・アプリ内の移動）：行全体がタップ領域 */
+.row {
+  display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 8px 0;
+  border-top: 1px solid var(--rule); color: inherit; text-decoration: none;
+}
+.row:first-of-type { border-top: 0; }
+.row-main { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.row-label { font-weight: 700; color: var(--theme-primary); }
+.row-mark { flex: none; color: var(--ink-2); font-weight: 700; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* 勝ち・負け・引き分けの印 */
+.badge {
+  display: inline-flex; align-items: center; justify-content: center; min-width: 28px; height: 28px; padding: 0 6px;
+  border-radius: 14px; font-weight: 800; color: var(--on-result); background: var(--draw);
+}
+.badge.win { background: var(--win); }
+.badge.lose { background: var(--lose); }
+.badge.draw { background: var(--draw); }
+.badge-none { background: var(--bg); color: var(--ink-2); font-size: 12px; font-weight: 700; }
+
+/* キーボードで移動したときの印 */
+a:focus-visible, button:focus-visible, .input:focus-visible {
+  outline: 3px solid var(--theme-primary);
+  outline-offset: 2px;
+}
+
