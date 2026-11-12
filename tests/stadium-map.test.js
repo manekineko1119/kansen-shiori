@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { venueOf, summarizeStadiumMap } from '../src/core/stadium-map.js';
+import { venueOf, summarizeStadiumMap, parseMapQuery, mapHref, mapEntryHref } from '../src/core/stadium-map.js';
 
 const stadiums = [
   { id: 'A', name: 'アルウィン', prefecture: '長野県' },
@@ -129,4 +129,19 @@ test('試合が見つからない記録は飛ばす。知らない会場の手�
 test('並び順：回数が同じなら stadium.id の順', () => {
   const r = sum({ visits: [{ id: 'v1', stadium_id: 'D', season_id: null }, { id: 'v2', stadium_id: 'B', season_id: null }, { id: 'v3', stadium_id: 'C', season_id: null }, { id: 'v4', stadium_id: 'C', season_id: null }] });
   assert.deepEqual(r.visited.map((v) => v.stadium.id), ['C', 'B', 'D']);
+});
+
+test('mapHref / parseMapQuery：シーズンを URL に出し入れする', () => {
+  assert.equal(mapHref(), '#/map');
+  assert.equal(mapHref({ season: '2026-special' }), '#/map?s=2026-special');
+  assert.deepEqual(parseMapQuery('s=2025'), { season: '2025' });
+  assert.deepEqual(parseMapQuery(''), { season: null });
+});
+
+test('mapEntryHref：記録の画面から地図へ。シーズンを引き継ぐ', () => {
+  assert.equal(mapEntryHref({ name: 'records', query: 's=2025' }), '#/map?s=2025');
+  assert.equal(mapEntryHref({ name: 'records', query: '' }), '#/map');
+  assert.equal(mapEntryHref({ name: 'record', params: { fixtureId: '2026-27_J3_15_sanuki_matsumoto' } }), '#/map?s=2026-27');
+  assert.equal(mapEntryHref({ name: 'record', params: { fixtureId: 'xxx' } }), '#/map');
+  assert.equal(mapEntryHref({ name: 'search' }), null);
 });
