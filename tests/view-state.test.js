@@ -143,3 +143,16 @@ test('保存の失敗の理由：clearForm では消えず、利用者が変わ�
   s.clearAll();
   assert.deepEqual(s.getErrors('k|f'), {});
 });
+
+test('別の画面に移ったら、その画面以外の保存の失敗の理由を捨てる（同じ画面の描き直しでは残る）', () => {
+  const s = createViewState();
+  s.setErrors('A|f', { _form: 'あ' });
+  s.setErrors('A|g', { _form: 'い' });
+  s.setErrors('B|f', { _form: 'う' });
+  s.dropErrorsExcept('A'); // A の画面にいる
+  assert.deepEqual(s.getErrors('A|f'), { _form: 'あ' });
+  assert.deepEqual(s.getErrors('A|g'), { _form: 'い' });
+  assert.deepEqual(s.getErrors('B|f'), {});
+  s.dropErrorsExcept('B');
+  assert.deepEqual(s.getErrors('A|f'), {});
+});

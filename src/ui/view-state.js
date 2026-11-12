@@ -24,6 +24,8 @@ export function createViewState() {
     getErrors: (key) => ({ ...(errors.get(key) ?? {}) }),
     setErrors: (key, v) => { if (Object.keys(v ?? {}).length) errors.set(key, { ...v }); else errors.delete(key); },
     clearErrors: (key) => { errors.delete(key); },
+    // 別の画面に移ったとき：今の画面（routeKey）以外の理由を捨てる。同じ画面の描き直しでは残る
+    dropErrorsExcept: (rk) => { for (const k of [...errors.keys()]) if (!k.startsWith(`${rk}|`)) errors.delete(k); },
     getPhotoRetry: (key) => photoRetries.get(key) ?? null,
     setPhotoRetry: (key, v) => { photoRetries.set(key, v); },
     clearPhotoRetry: (key) => { photoRetries.delete(key); },
