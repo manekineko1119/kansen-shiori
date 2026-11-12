@@ -8,6 +8,7 @@ const FIRST_TIME_MESSAGE = '初回は通信できる場所で開いてくださ�
 export function createPersonalHolder({ client, getSnapshot, getUser, getMasters, now, onChange }) {
   let current = null; // null（未ログイン）| { status: 'loading' } | refreshPersonal の結果 | { status: 'offline', data, label }
   let key; // current がどの利用者・状態のものか
+  let builtSig = null; // 今の current を、どの共通データの試合 ID の集合で読んだか（集合が変わったら読み直す。M-2）
 
   const keyOf = (u) => (u ? `${u.id}:${u.offline ? 'offline' : 'online'}` : null);
   // 今のシーズンの試合の ID。共通データがまだなら null（読むのを待つ）。読めないと分かったら空
@@ -17,8 +18,11 @@ export function createPersonalHolder({ client, getSnapshot, getUser, getMasters,
     return m?.status === 'unavailable' ? new Set() : null;
   }
 
+  const sigOf = (ids) => [...ids].sort().join(',');
+
   // 読んで、読み始めた利用者のままのときだけ採用する
   async function run(user, k, ids) {
+    builtSig = sigOf(ids);
     const r = await refreshPersonal({ client: client(), snapshot: getSnapshot(), userId: user.id, nowMs: now(), knownFixtureIds: ids });
     if (keyOf(getUser()) !== k) return;
     current = r;
@@ -39,7 +43,12 @@ export function createPersonalHolder({ client, getSnapshot, getUser, getMasters,
     sync() {
       const user = getUser();
       const k = keyOf(user);
-      if (k === key) return;
+      if (k === key) {
+        // 同じ利用者でも、共通データの試合 ID の集合が変わっていれば（写し → 最新、現在のシーズンの切り替え）読み直す。画面は読み直すまで今のものを出す
+        const ids = user && !user.offline ? knownIds() : null;
+        if (ids && builtSig !== null && sigOf(ids) !== builtSig) run(user, k, ids);
+        return;
+      }
       if (!user) { key = k; current = null; return; }
       if (user.offline) { key = k; current = { status: 'loading' }; readOffline(user, k); return; }
       const ids = knownIds();

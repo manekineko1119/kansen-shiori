@@ -142,3 +142,20 @@ test('読み込み中に online から offline に替わったら、online の�
   await release('u1');
   assert.equal(holder.current.status, 'unavailable');
 });
+
+test('共通データの試合 ID の集合が変わったら（写し → 最新・現在のシーズンの切り替え）同じ利用者でも読み直す（M-2）', async () => {
+  const { env, holder, client } = setup({ user: { id: 'u1' } });
+  holder.sync();
+  await tick();
+  const n = client.calls.length;
+  holder.sync();
+  assert.equal(client.calls.length, n); // 同じ集合なら読まない
+  env.masters = { status: 'fresh', data: { fixtures: [{ id: 'b' }] } };
+  holder.sync();
+  await tick();
+  assert.ok(client.calls.length > n);
+  assert.equal(holder.current.status, 'fresh'); // 読み直すあいだも loading に戻さない
+  const n2 = client.calls.length;
+  holder.sync();
+  assert.equal(client.calls.length, n2);
+});
