@@ -16,8 +16,12 @@ const STATUS_LABEL = { scheduled: '予定', postponed: '延期', cancelled: '中
 const BLANK = { ...fixtureToValues({}), competition: 'J3', status: 'scheduled' };
 
 // 取り込みのプレビューと結果（描き直しをまたいで覚える。DOM に持たせない）
-let preview = null; // { seasonId, plan }
-let imported = null; // { seasonId, inserted, updated }
+// preview は解析したときの試合の配列（fixtures）も持ち、試合を読み直したら（保存・削除・取り込みのあと）古いものとして捨てる
+let preview = null; // { seasonId, fixtures, plan }
+let imported = null; // { seasonId, inserted, updated }：一覧に1回知らせる。一覧から離れたら消す
+
+// 管理のメニューに戻ったとき（index.js）に、覚えたプレビュー・取り込みの知らせを捨てる
+export function forgetFixtureImport() { preview = null; imported = null; }
 
 const href = (seasonId, extra = '') => `#/admin/fixtures?s=${encodeURIComponent(seasonId)}${extra}`;
 const byStart = (a, b) => (a.match_date + (a.kickoff ?? '')).localeCompare(b.match_date + (b.kickoff ?? ''));
@@ -111,7 +115,7 @@ function importPanel(ctx, season, fixtures) {
   const { state, key } = ctx;
   const editable = canEdit(ctx);
   const ready = Array.isArray(fixtures) && season;
-  const mine = preview?.seasonId === season?.id ? preview.plan : null;
+  const mine = preview && preview.seasonId === season?.id && preview.fixtures === fixtures ? preview.plan : null;
 
   const form = el('form', { class: 'sec admin-form', novalidate: true },
     backLink(href(season?.id ?? ''), '‹ 日程の一覧'),
@@ -121,12 +125,13 @@ function importPanel(ctx, season, fixtures) {
     editable ? el('button', { class: 'btn btn-sub', type: 'submit', disabled: ready ? null : true }, '解析する') : el('p', { class: 'muted' }, 'オフラインのため、取り込めません。'),
     el('p', { class: 'err', 'data-err': '_form', role: 'alert' }));
   bindForm(form, state, key);
-  form.addEventListener('input', () => { if (preview) { preview = null; ctx.redraw(); } }); // 書き換えたら解析し直す
+  // 書き換えたら解析し直す。画面は作り直さず、プレビューだけ消す（入力中のフォーカス・キーボードを保つ）
+  form.addEventListener('input', () => { if (preview) { preview = null; form.querySelector('[data-preview]')?.remove(); } });
   form.addEventListener('submit', (ev) => {
     ev.preventDefault();
     if (!ready) return;
     const parsed = parseFixturesCsv(readValues(form).paste, { season, clubs: ctx.masters.data.clubs, stadiums: ctx.masters.data.stadiums });
-    preview = { seasonId: season.id, plan: importPlan(parsed, new Set(fixtures.map((x) => x.id))) };
+    preview = { seasonId: season.id, fixtures, plan: importPlan(parsed, new Set(fixtures.map((x) => x.id))) };
     ctx.redraw();
   });
   if (!mine) return form;
@@ -135,7 +140,7 @@ function importPanel(ctx, season, fixtures) {
   const total = mine.insert.length + mine.update.length;
   const go = el('button', { class: 'btn', type: 'button', disabled: total ? null : true }, hasErrors ? 'エラー行を除いて取り込む' : '取り込む');
   const cancel = el('button', { class: 'btn btn-sub', type: 'button' }, hasErrors ? 'すべて取り消す' : '取り消す');
-  const box = el('div', null,
+  const box = el('div', { 'data-preview': '' },
     el('h2', null, 'プレビュー'),
     el('p', { role: 'status' }, `新規 ${mine.insert.length} 件・上書き ${mine.update.length} 件・エラー ${mine.errors.length} 件`),
     mine.errors.map((e) => el('p', { class: 'err' }, `${e.line} 行目：${e.reason}`)),
@@ -199,6 +204,7 @@ export function renderFixtures(ctx) {
       el('a', { class: 'btn btn-sub', href: href(seasonId, '&new=1') }, '試合を追加')) : null,
     body);
 
+  if (q.get('import') === '1' || sel.isNew || sel.id) imported = null; // 一覧から離れたら、取り込みの知らせは消す
   let detail = null;
   if (q.get('import') === '1') detail = importPanel(ctx, season, fixtures);
   else if (sel.isNew) detail = fixtureForm(ctx, seasonId, null);

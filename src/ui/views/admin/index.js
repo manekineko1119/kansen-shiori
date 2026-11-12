@@ -4,7 +4,7 @@ import { el, section, innerLink } from '../../components/parts.js';
 import { renderClubs } from './clubs.js';
 import { renderStadiums } from './stadiums.js';
 import { renderSeasons } from './seasons.js';
-import { renderFixtures } from './fixtures.js';
+import { renderFixtures, forgetFixtureImport } from './fixtures.js';
 import { renderTesters } from './testers.js';
 import { renderSync } from './sync.js';
 import { renderUnresulted } from './unresulted.js';
@@ -33,5 +33,6 @@ export function renderAdmin(ctx) {
   const found = ADMIN_SECTIONS.find((s) => s.id === ctx.route.params?.section);
   if (found?.view) return found.view(ctx);
   ctx.data.adminCache?.reset(); // メニューに戻ったら、次に開く項目は読み直す（テスター・取り込みの状況・写真の使用量）
+  forgetFixtureImport(); // 日程の取り込みのプレビュー・知らせも捨てる
   return menu();
 }
