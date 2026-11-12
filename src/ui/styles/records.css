@@ -17,7 +17,7 @@
 .stats span { font-size: 11px; color: var(--ink-2); }
 .rec-list .list .item { display: flex; flex-wrap: wrap; align-items: center; gap: 0 10px; min-height: 60px; padding: 6px 0; border-top: 1px solid var(--rule); color: inherit; text-decoration: none; }
 .rec-list .list .item:first-child { border-top: 0; }
-.rec-list .item .date { display: flex; flex-direction: column; flex: none; min-width: 4.6em; font-size: 13px; color: var(--ink-2); }
+.rec-list .item .date { display: flex; flex-direction: column; flex: none; width: 6em; font-size: 13px; color: var(--ink-2); }
 .rec-list .item .date b { color: var(--ink); font-size: 15px; }
 .rec-list .item .date .none { color: var(--ink-2); }
 .rec-list .item .t { flex: 1 1 5em; min-width: 5em; }

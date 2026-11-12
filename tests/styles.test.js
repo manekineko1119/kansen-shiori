@@ -53,6 +53,14 @@ test('base.css で [hidden] を display: none !important にする（.btn など
   assert.match(css, /\[hidden\]\s*\{\s*display\s*:\s*none\s*!important\s*;?\s*\}/);
 });
 
+test('日程・観戦記録の一覧の日付の欄は幅を固定する（日付の長さで H・A の印や相手の名前の位置がずれないように）', () => {
+  for (const [name, selector] of [['fixtures.css', '.fixtures .item .date'], ['records.css', '.rec-list .item .date']]) {
+    const rule = read(name).match(new RegExp(`${selector.replace(/\./g, '\\.')}\\s*\\{([^}]*)\\}`))?.[1] ?? '';
+    assert.match(rule, /(?:^|;)\s*flex\s*:\s*none/, `${name} の ${selector} に flex: none がない`);
+    assert.match(rule, /(?:^|;)\s*width\s*:\s*6em/, `${name} の ${selector} の幅が 6em でない`);
+  }
+});
+
 test('CSS のファイルは 300 行以下', () => {
   for (const name of cssFiles) assert.ok(read(name).split(/\r?\n/).length <= 300, name);
 });

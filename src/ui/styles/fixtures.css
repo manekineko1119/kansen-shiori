@@ -4,7 +4,7 @@
 .fixtures .list .item { display: flex; flex-wrap: wrap; align-items: center; gap: 0 8px; min-height: 60px; border-top: 1px solid var(--rule); }
 .fixtures .list .item:first-child { border-top: 0; }
 .fixtures .item-main { display: flex; align-items: center; gap: 12px; flex: 1 1 14em; min-width: 0; min-height: 60px; color: inherit; text-decoration: none; }
-.fixtures .item .date { display: flex; flex-direction: column; min-width: 4.6em; font-size: 13px; color: var(--ink-2); }
+.fixtures .item .date { display: flex; flex-direction: column; flex: none; width: 6em; font-size: 13px; color: var(--ink-2); }
 .fixtures .item .date b { color: var(--ink); font-size: 15px; }
 .fixtures .item .t { flex: 1; min-width: 5em; }
 .fixtures .item .t b { display: block; line-height: 1.45; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
