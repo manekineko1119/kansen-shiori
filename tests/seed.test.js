@@ -154,8 +154,9 @@ test('J3 の20クラブ・ホームスタジアム・所属は、J1・J2 を足�
     stadiums: data.stadiums.filter((s) => st.has(s.id)).sort(by),
     season_clubs: [...ids].sort(),
   });
-  // 2026-11-12 の J3 のデータ（d949fd1 の時点）の SHA-256。J3 の行を直したときは、この値も直す
-  assert.equal(createHash('sha256').update(snap).digest('hex'), 'b24fc4568c9416edd92658320eed7c2965ab89a818c2565c2ece1946a885e8f0');
+  // J3 のデータの SHA-256。J3 の行を直したときは、この値も直す
+  // 2026-11-12：d949fd1 の時点 → 白波スタジアムのアクセス先・駐車場・バス停を直した（research 奈良・鹿児島のスタジアムの確認）
+  assert.equal(createHash('sha256').update(snap).digest('hex'), '65353418e51eb9d009ed6e0b1df4e05e93530a8cd645ae65ff4730e739be3ebc');
 });
 
 test('J1・J2 のクラブには theme_colors と試合動画の取得元を入れない（応援クラブにしたときに足す）', () => {

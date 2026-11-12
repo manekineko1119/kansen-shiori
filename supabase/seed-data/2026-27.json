@@ -137,7 +137,7 @@
           "name": "鹿児島中央",
           "kind": "bus",
           "walk_min": null,
-          "note": "市営バス16番（鴨池港行）・27番（与次郎一丁目行）で約20〜30分、「KKB前」か「市民文化ホール前」下車すぐ",
+          "note": "市営バス16番（鴨池港行）・27番（与次郎一丁目行）で約20〜30分、「KKB前」か「市民文化ホール前」（27番は「水産学部前」も）下車すぐ",
           "toyoko": [
             {
               "hotel": "00220",
@@ -168,15 +168,15 @@
           "note": "リムジンバスで鹿児島中央駅まで約40分、そこから市営バス"
         }
       ],
-      "access_url": "https://www.jleague.jp/club/kagoshima/stadium/",
+      "access_url": "https://kufc.co.jp/stadium_access/",
       "shuttle_note": "2026-27 の無料シャトルバスは未確認",
-      "parking_note": null,
+      "parking_note": "一般向けの駐車場の公式案内はない。車いす席などの優先駐車場は鴨池公園南側（各試合の1週間前の正午までに予約）。鴨池公園北側の駐車場は先着順（有料）",
       "agoda_area": {
         "type": "city",
         "id": 6263,
         "name": "鹿児島"
       },
-      "verified_at": "2026-11-07"
+      "verified_at": "2026-11-12"
     },
     {
       "id": "hanazono-rugby",
