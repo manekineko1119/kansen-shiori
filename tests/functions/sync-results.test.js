@@ -63,7 +63,7 @@ test('正常：一覧1回・試合ページ1回、結果と得点者を書き、
   const { db, calls } = makeDb();
   const io = makeIo(pageOk);
   const r = await runSyncResults({ db, fetchText: io.fetchText, sleep: io.sleep, nowMs: NOW, clubId: 'matsumoto' });
-  assert.deepEqual(io.urls, [listUrl, 'https://www.jleague.jp/match/j3/2026/102517/live/']);
+  assert.deepEqual(io.urls, [listUrl, 'https://www.jleague.jp/match/j3/2026/102517/lineup/']);
   assert.deepEqual(io.sleeps, [[2000, 1]]); // 試合ページを読む前（それまでの取得は1回）
   assert.deepEqual(calls.applyResult, [['f1', { jleague_match_url: 'https://www.jleague.jp/match/j3/2026/102517/', status: 'finished', home_score: 0, away_score: 2, result_source: 'api' }]]);
   assert.equal(calls.applyScorers.length, 1);

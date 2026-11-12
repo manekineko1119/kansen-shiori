@@ -53,7 +53,8 @@ export function planSync({ items, fixtures, clubs, quota }) {
         if (!scores) {
           plan.unknownStates.push({ fixtureId: id, state: item.state, reason: 'score missing' });
         } else if (scores[0] + scores[1] >= 1 && !fixture.scorers_fetched_at && !fixture.scorers_failed_at) {
-          candidates.push({ fixture, url: item.matchUrl + 'live/' });
+          // 試合後の live/ は lineup/ へ 301 で転送される（2026-11-12 に確認）。転送はたどらないので lineup/ を直接読む
+          candidates.push({ fixture, url: item.matchUrl + 'lineup/' });
         }
       } else if (item.state !== 'ticket') {
         plan.unknownStates.push({ fixtureId: id, state: item.state });

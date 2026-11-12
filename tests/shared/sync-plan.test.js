@@ -17,7 +17,7 @@ test('アクセスの上限の値', () => {
 test('試合終了は照合してURL・状態・スコアを書き、試合ページを読む', () => {
   const p = planSync({ items: [item], fixtures: [base], clubs, quota });
   assert.deepEqual(p.updates, [{ id: 'f1', patch: { jleague_match_url: item.matchUrl, status: 'finished', home_score: 0, away_score: 2, result_source: 'api' } }]);
-  assert.deepEqual(p.matchPagesToRead, [{ fixtureId: 'f1', url: item.matchUrl + 'live/' }]);
+  assert.deepEqual(p.matchPagesToRead, [{ fixtureId: 'f1', url: item.matchUrl + 'lineup/' }]);
   assert.deepEqual(p.unmatched, []);
   assert.deepEqual(p.unknownStates, []);
 });
@@ -112,7 +112,7 @@ test('scorers_failed_at が入っている試合は試合ページを読まな�
   assert.deepEqual(p.matchPagesToRead, []);
   assert.equal(p.updates[0].patch.status, 'finished');
   const ok = planSync({ items: [item], fixtures: [{ ...base, scorers_failed_at: null }], clubs, quota });
-  assert.deepEqual(ok.matchPagesToRead, [{ fixtureId: 'f1', url: item.matchUrl + 'live/' }]);
+  assert.deepEqual(ok.matchPagesToRead, [{ fixtureId: 'f1', url: item.matchUrl + 'lineup/' }]);
 });
 
 test('同じ試合に当たる item が2つなら最初の1つだけ使い、あとは duplicates に入る', () => {
