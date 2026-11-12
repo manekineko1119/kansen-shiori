@@ -1,4 +1,5 @@
 // 画面の共通の部品。色は CSS の変数だけ（クラスで指定する）
+import { safeHttpsUrl } from '../../core/safe-url.js';
 
 // el('a', { class: 'row', href: '#/x', onclick: fn }, '文字', 子の要素, [配列も可])
 export function el(tag, attrs, ...children) {
@@ -18,8 +19,11 @@ function rowBody(label, sub) {
 }
 
 // 外部サイトの行。行全体がタップ領域で、右端に外部リンクの印
+// href は safeHttpsUrl を通す。https でないもの（javascript: など）はリンクにせず、文字だけの行にする（設計書 11.6）
 export function extLink({ href, label, sub }) {
-  return el('a', { class: 'row row-ext', href, target: '_blank', rel: 'noopener noreferrer' },
+  const safe = safeHttpsUrl(href);
+  if (!safe) return el('div', { class: 'row' }, rowBody(label, sub));
+  return el('a', { class: 'row row-ext', href: safe, target: '_blank', rel: 'noopener noreferrer' },
     rowBody(label, sub), el('span', { class: 'row-mark', 'aria-hidden': 'true' }, '↗'), el('span', { class: 'sr-only' }, '（外部サイトを開く）'));
 }
 
