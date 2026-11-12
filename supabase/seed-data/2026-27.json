@@ -813,6 +813,1480 @@
         "name": "高知"
       },
       "verified_at": "2026-11-08"
+    },
+    {
+      "id": "ajinomoto-stadium",
+      "name": "味の素スタジアム",
+      "prefecture": "東京都",
+      "address": "東京都調布市西町376-3",
+      "lat": 35.66417,
+      "lng": 139.52722,
+      "stations": [
+        {
+          "name": "飛田給",
+          "kind": "nearest",
+          "walk_min": 5,
+          "note": "京王線の飛田給駅から徒歩。新宿からは特急が試合日に臨時停車する場合がある（約20分）",
+          "toyoko": []
+        }
+      ],
+      "airports": [],
+      "access_url": "https://www.fctokyo.co.jp/stadium/access/",
+      "shuttle_note": null,
+      "parking_note": "FC東京は近隣の駐車場を控え公共交通機関での来場を案内。バス駐車場は事前申込制（1台6,000円）。Jリーグ開催時はスタジアムの一般駐車場は使えないとされる",
+      "agoda_area": {
+        "type": "city",
+        "id": 108498,
+        "name": "調布"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "sankyo-frontier-kashiwa",
+      "name": "三協フロンテア柏スタジアム",
+      "prefecture": "千葉県",
+      "address": "千葉県柏市日立台1-2-50",
+      "lat": 35.84848,
+      "lng": 139.97517,
+      "stations": [
+        {
+          "name": "柏",
+          "kind": "nearest",
+          "walk_min": 20,
+          "note": "東口から約1.5kmを徒歩約20分。東武バス5番のりばから「名戸ヶ谷／新柏駅行（常盤台経由）」で、ビジター側は「日立台」下車（運賃は大人220円、公式）",
+          "toyoko": [
+            {
+              "hotel": "00253",
+              "name": "東横INN柏駅西口",
+              "walk_min": 2
+            },
+            {
+              "hotel": "00333",
+              "name": "東横INN柏駅東口",
+              "walk_min": 4
+            }
+          ]
+        }
+      ],
+      "airports": [],
+      "access_url": "https://www.reysol.co.jp/game/stadium/",
+      "shuttle_note": null,
+      "parking_note": "スタジアムに駐車場はなく、車での来場は控えるよう案内されている",
+      "agoda_area": {
+        "type": "city",
+        "id": 106335,
+        "name": "柏"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "edion-peace-wing-hiroshima",
+      "name": "エディオンピースウイング広島",
+      "prefecture": "広島県",
+      "address": "広島県広島市中区基町15番2-1号",
+      "lat": 34.40167,
+      "lng": 132.45389,
+      "stations": [
+        {
+          "name": "県庁前",
+          "kind": "nearest",
+          "walk_min": 10,
+          "note": "アストラムライン。徒歩約10分",
+          "toyoko": []
+        },
+        {
+          "name": "新白島",
+          "kind": "nearest",
+          "walk_min": 15,
+          "note": "JR・アストラムライン。徒歩約15分",
+          "toyoko": []
+        },
+        {
+          "name": "広島",
+          "kind": "nearest",
+          "walk_min": 30,
+          "note": "JR広島駅から徒歩約30分。路面電車なら紙屋町西・原爆ドーム前から徒歩約10分",
+          "toyoko": [
+            {
+              "hotel": "00104",
+              "name": "東横INN広島駅新幹線口1",
+              "walk_min": 4
+            },
+            {
+              "hotel": "00327",
+              "name": "東横INN広島駅新幹線口2",
+              "walk_min": 4
+            },
+            {
+              "hotel": "00224",
+              "name": "東横INN広島駅前大橋南",
+              "walk_min": 5
+            }
+          ]
+        }
+      ],
+      "airports": [
+        {
+          "iata": "HIJ",
+          "name": "広島空港",
+          "station": null,
+          "access_min": 65,
+          "note": "リムジンバスで広島バスセンターまで約55分、そこから徒歩約10分（合計は目安）"
+        }
+      ],
+      "access_url": "https://www.sanfrecce.co.jp/games/stadium/access",
+      "shuttle_note": null,
+      "parking_note": "試合日は来場者向けの駐車場は使えず、公共交通をすすめている。周辺の民間駐車場を使う案内",
+      "agoda_area": {
+        "type": "city",
+        "id": 10554,
+        "name": "広島"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "machida-gion-stadium",
+      "name": "町田GIONスタジアム",
+      "prefecture": "東京都",
+      "address": "東京都町田市野津田町2035",
+      "lat": 35.5925,
+      "lng": 139.43903,
+      "stations": [
+        {
+          "name": "町田",
+          "kind": "shuttle",
+          "walk_min": null,
+          "note": "試合日は町田駅から野津田公園へスタジアム直行バスが出る（クラブが推奨）。のりば・所要時間・運行は試合ごとの告知で確かめる。通常の路線バスは「野津田車庫」が最寄りの停留所",
+          "toyoko": [
+            {
+              "hotel": "00216",
+              "name": "東横INN町田駅小田急線東口",
+              "walk_min": 4
+            }
+          ]
+        }
+      ],
+      "airports": [],
+      "access_url": "https://www.zelvia.co.jp/stadium/access/",
+      "shuttle_note": "スタジアム直行バスは試合ごとに運行が変わるため、各試合のイベント情報で確かめる。別に、多摩ニュータウン市場の駐車場（多摩市永山）から無料シャトルがある（往路は3時間前から約40分間隔で5便、復路は試合終了10分後から3便）",
+      "parking_note": "駐車場は少なく（有料30台ずつなど）、利用は申し込み制。無料の第3駐車場（約30台）から無料シャトルで向かう方式",
+      "agoda_area": {
+        "type": "city",
+        "id": 108559,
+        "name": "町田"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "noevir-stadium-kobe",
+      "name": "ノエビアスタジアム神戸",
+      "prefecture": "兵庫県",
+      "address": "兵庫県神戸市兵庫区御崎町1-2-2",
+      "lat": 34.65671,
+      "lng": 135.16896,
+      "stations": [
+        {
+          "name": "御崎公園",
+          "kind": "nearest",
+          "walk_min": 5,
+          "note": "神戸市営地下鉄海岸線の駅から徒歩",
+          "toyoko": []
+        },
+        {
+          "name": "兵庫",
+          "kind": "nearest",
+          "walk_min": 20,
+          "note": "JR神戸線の駅から徒歩。湊川・新開地・大開方面からは市バス3系統で「吉田町1丁目」下車すぐ",
+          "toyoko": []
+        }
+      ],
+      "airports": [],
+      "access_url": "https://www.vissel-kobe.co.jp/stadium/?tab2",
+      "shuttle_note": null,
+      "parking_note": "駐車場は運営会社の管理で詳細はスタジアム公式で確かめる。週末・祝日は周辺がとても混むため公共交通をすすめている",
+      "agoda_area": {
+        "type": "city",
+        "id": 5235,
+        "name": "神戸"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "mercari-stadium",
+      "name": "メルカリスタジアム",
+      "prefecture": "茨城県",
+      "address": "茨城県鹿嶋市神向寺後山26-2",
+      "lat": 35.99174,
+      "lng": 140.64053,
+      "stations": [
+        {
+          "name": "鹿島神宮",
+          "kind": "shuttle",
+          "walk_min": null,
+          "note": "駅前ロータリーからピストンバスで約15分（大人290円）。試合日のみの運行で、帰りは試合終了の約20分後に出る",
+          "toyoko": []
+        },
+        {
+          "name": "鹿島サッカースタジアム",
+          "kind": "nearest",
+          "walk_min": null,
+          "note": "試合日だけ臨時に営業する駅（鹿島臨海鉄道・JR）。スタジアムのすぐ近く（徒歩数分）。水戸方面からは交通系ICカードが使えない",
+          "toyoko": []
+        }
+      ],
+      "airports": [],
+      "access_url": "https://www.antlers.co.jp/pages/guide-stadium-access",
+      "shuttle_note": "鹿島神宮駅からピストンバス（試合日のみ、約15分、大人290円）。時刻はキックオフ時刻ごとに決まる。東京駅から高速バス・予約制の直行バスもある",
+      "parking_note": "B駐車場は最大約500台の予約制（鹿チケで購入）。民間駐車場もあるが、試合前後は周辺道路が大変混む（試合後の退場に1時間以上かかることがある）",
+      "agoda_area": {
+        "type": "city",
+        "id": 107019,
+        "name": "鹿嶋"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "nissan-stadium",
+      "name": "日産スタジアム",
+      "prefecture": "神奈川県",
+      "address": "神奈川県横浜市港北区小机町3300",
+      "lat": 35.51028,
+      "lng": 139.60616,
+      "stations": [
+        {
+          "name": "新横浜",
+          "kind": "nearest",
+          "walk_min": 10,
+          "note": "徒歩約10分。市営バス96系統（約6分）や東急バス72系統（約4分）で「日産スタジアム前」へも行ける",
+          "toyoko": [
+            {
+              "hotel": "00061",
+              "name": "東横INN新横浜駅前新館",
+              "walk_min": 4
+            },
+            {
+              "hotel": "00051",
+              "name": "東横INN新横浜駅前本館",
+              "walk_min": 5
+            }
+          ]
+        },
+        {
+          "name": "小机",
+          "kind": "nearest",
+          "walk_min": 11,
+          "note": "JR横浜線の駅から徒歩約11分",
+          "toyoko": []
+        }
+      ],
+      "airports": [],
+      "access_url": "https://www.f-marinos.com/stadium_nissan",
+      "shuttle_note": null,
+      "parking_note": "ホームゲームの日は一般来場者用の駐車場はない。公共交通機関の利用がすすめられている",
+      "agoda_area": {
+        "type": "city",
+        "id": 4590,
+        "name": "横浜"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "u-todoroki-stadium",
+      "name": "Uvanceとどろきスタジアム by Fujitsu",
+      "prefecture": "神奈川県",
+      "address": "神奈川県川崎市中原区等々力1-1",
+      "lat": 35.58554,
+      "lng": 139.6527,
+      "stations": [
+        {
+          "name": "武蔵小杉",
+          "kind": "shuttle",
+          "walk_min": null,
+          "note": "帰りは試合終了後に臨時直行バスが約30分間出る。行きは東急バスで等々力グラウンド前などへ約8分＋徒歩数分、または徒歩約20分",
+          "toyoko": []
+        }
+      ],
+      "airports": [],
+      "access_url": "https://www.frontale.co.jp/tickets/access_stadium.html",
+      "shuttle_note": "帰りのみ武蔵小杉駅行きの臨時直行バスが試合終了後に約30分間運行。本数は事業者ごとに少ないので事前に確かめる",
+      "parking_note": "主管試合の日は東駐車場（10番ゲート裏）が関係者用になり、周辺の駐車台数が大きく減る。公共交通機関の利用が求められている",
+      "agoda_area": {
+        "type": "region",
+        "id": 1457,
+        "name": "川崎"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "saitama-stadium-2002",
+      "name": "埼玉スタジアム2002",
+      "prefecture": "埼玉県",
+      "address": "埼玉県さいたま市緑区美園二丁目1番地",
+      "lat": 35.90311,
+      "lng": 139.7176,
+      "stations": [
+        {
+          "name": "浦和美園",
+          "kind": "shuttle",
+          "walk_min": null,
+          "note": "3番のりばから試合日の行きだけシャトルバス（約10分、大人240円）。徒歩なら歩行者専用道を約20分（クラブ公式。県の案内は15分）",
+          "toyoko": [
+            {
+              "hotel": "00283",
+              "name": "東横INN浦和美園駅東口",
+              "walk_min": 2
+            }
+          ]
+        },
+        {
+          "name": "北越谷",
+          "kind": "shuttle",
+          "walk_min": null,
+          "note": "1番のりばからシャトルバス（約25分、大人400円）。J1・カップ戦の土日祝の試合のみ、往復の運行",
+          "toyoko": []
+        }
+      ],
+      "airports": [],
+      "access_url": "https://www.urawa-reds.co.jp/ticket/guide/saisuta2002/",
+      "shuttle_note": "浦和美園駅（行きのみ・約10分・240円）と北越谷駅（往復・約25分・400円）から有料のシャトルバス。県の案内では大規模な試合の日に浦和駅・東浦和駅からも出る",
+      "parking_note": "試合の日はスタジアム敷地内に一般の駐車場がなく、公共交通をすすめている。周辺の民間駐車場はクラブは案内しない。試合によっては数量限定の駐車券を売ることがある",
+      "agoda_area": {
+        "type": "city",
+        "id": 18827,
+        "name": "さいたま"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "jfe-harenokuni-stadium",
+      "name": "JFE晴れの国スタジアム",
+      "prefecture": "岡山県",
+      "address": "岡山県岡山市北区いずみ町2-1-11",
+      "lat": 34.68066,
+      "lng": 133.91964,
+      "stations": [
+        {
+          "name": "岡山",
+          "kind": "nearest",
+          "walk_min": 20,
+          "note": "運動公園口（西口）から北へ約1.5km、徒歩約20分。東口7番のりば等の路線バスで約6分、「スポーツセンター前」下車（西口からは岡山大学方面行きで約3分）",
+          "toyoko": [
+            {
+              "hotel": "00167",
+              "name": "東横INN岡山駅西口広場",
+              "walk_min": 2
+            },
+            {
+              "hotel": "00232",
+              "name": "東横INN岡山駅東口",
+              "walk_min": 3
+            },
+            {
+              "hotel": "00143",
+              "name": "東横INN岡山駅西口右",
+              "walk_min": 6
+            }
+          ]
+        }
+      ],
+      "airports": [
+        {
+          "iata": "OKJ",
+          "name": "岡山桃太郎空港",
+          "station": null,
+          "access_min": 23,
+          "note": "岡山方面行きのリムジンバスで「スポーツセンター前」下車（約23分）。駅までのノンストップ便は停まらない"
+        }
+      ],
+      "access_url": "https://www.fagiano-okayama.com/stadium/car.html",
+      "shuttle_note": null,
+      "parking_note": "事前予約制の駐車場（約50〜200台ずつ、800〜1,000円）が複数あり、販売は試合の約1か月前からネット。予約なしの岡山西口パーキング（400台、1,000円）は満車の場合あり",
+      "agoda_area": {
+        "type": "city",
+        "id": 4280,
+        "name": "岡山"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "yanmar-hanasaka-stadium",
+      "name": "YANMAR HANASAKA STADIUM",
+      "prefecture": "大阪府",
+      "address": "大阪府大阪市東住吉区長居公園1-1",
+      "lat": 34.61538,
+      "lng": 135.51666,
+      "stations": [
+        {
+          "name": "長居",
+          "kind": "nearest",
+          "walk_min": 7,
+          "note": "Osaka Metro御堂筋線の駅から徒歩。JR阪和線の長居駅（徒歩約8分）も使える",
+          "toyoko": []
+        },
+        {
+          "name": "鶴ケ丘",
+          "kind": "nearest",
+          "walk_min": 5,
+          "note": "JR阪和線の駅から徒歩",
+          "toyoko": []
+        },
+        {
+          "name": "西田辺",
+          "kind": "nearest",
+          "walk_min": 7,
+          "note": "Osaka Metro御堂筋線の駅から徒歩",
+          "toyoko": []
+        }
+      ],
+      "airports": [],
+      "access_url": "https://www.cerezo.jp/stadium/",
+      "shuttle_note": null,
+      "parking_note": "クラブのページには駐車場の説明がなく、駐車場予約サービス（akippa）の案内があるのみ",
+      "agoda_area": {
+        "type": "city",
+        "id": 9590,
+        "name": "大阪"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "sanga-stadium-kyocera",
+      "name": "サンガスタジアム by KYOCERA",
+      "prefecture": "京都府",
+      "address": "京都府亀岡市亀岡駅北1丁目8番地2",
+      "lat": 35.01694,
+      "lng": 135.58472,
+      "stations": [
+        {
+          "name": "亀岡",
+          "kind": "nearest",
+          "walk_min": 3,
+          "note": "JR嵯峨野線の駅から徒歩。京都駅・桂川・桂方面から直行バスが出る試合もあり、亀岡駅北口バス停で降りてすぐ",
+          "toyoko": []
+        }
+      ],
+      "airports": [],
+      "access_url": "https://www.sanga-fc.jp/guide/homestadium",
+      "shuttle_note": "京阪京都交通の直行シャトルバスが桂川・桂駅東口経由で亀岡駅北口に着く。運行は試合ごとに変わるので、試合ページで確かめる",
+      "parking_note": "スタジアムに駐車場はなく、公共交通での来場をすすめている",
+      "agoda_area": {
+        "type": "region",
+        "id": 1418,
+        "name": "亀岡"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "toyota-stadium",
+      "name": "豊田スタジアム",
+      "prefecture": "愛知県",
+      "address": "愛知県豊田市千石町7-2",
+      "lat": 35.08452,
+      "lng": 137.17095,
+      "stations": [
+        {
+          "name": "豊田市",
+          "kind": "nearest",
+          "walk_min": 20,
+          "note": "東口から徒歩。おいでんバス（豊田・渋谷線）で「豊田スタジアム東」下車、そこから徒歩約5分の方法もある",
+          "toyoko": [
+            {
+              "hotel": "00279",
+              "name": "東横INN豊田市駅前",
+              "walk_min": 2
+            }
+          ]
+        },
+        {
+          "name": "新豊田",
+          "kind": "nearest",
+          "walk_min": 25,
+          "note": "東口から徒歩。豊田市駅と徒歩の距離はあまり変わらない",
+          "toyoko": [
+            {
+              "hotel": "00279",
+              "name": "東横INN豊田市駅前",
+              "walk_min": 2
+            }
+          ]
+        }
+      ],
+      "airports": [],
+      "access_url": null,
+      "shuttle_note": "一般向けの直通シャトルバスは確認できず（予約制の無料アクセシブルシャトルは障害のある方向け）。試合ごとの告知で確かめる",
+      "parking_note": "併設駐車場の情報はあるが、試合・イベントの日は使えないことがあり、県の案内は公共交通をすすめている",
+      "agoda_area": {
+        "type": "city",
+        "id": 106239,
+        "name": "豊田"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "iai-stadium-nihondaira",
+      "name": "IAIスタジアム日本平",
+      "prefecture": "静岡県",
+      "address": "静岡県静岡市清水区村松3880-1",
+      "lat": 34.9847,
+      "lng": 138.48139,
+      "stations": [
+        {
+          "name": "清水",
+          "kind": "shuttle",
+          "walk_min": null,
+          "note": "東口から有料シャトルバス（キックオフ3時間前から随時）。西口2番のりばの路線バスなら「日本平運動公園入口」下車、徒歩約10分。タクシーは約15分",
+          "toyoko": [
+            {
+              "hotel": "00293",
+              "name": "東横INN静岡清水駅前",
+              "walk_min": 5
+            }
+          ]
+        },
+        {
+          "name": "草薙",
+          "kind": "nearest",
+          "walk_min": null,
+          "note": "南口から路線バスで「日本平運動公園入口」下車、徒歩約10分。タクシーは約17分",
+          "toyoko": []
+        }
+      ],
+      "airports": [],
+      "access_url": "https://www.s-pulse.co.jp/guides/stadium",
+      "shuttle_note": "清水駅東口から有料シャトルバス（大人片道500円・小人250円）。キックオフ3時間前から随時運行、帰りは試合終了後約45分後まで。ほかに波止場フェルケール博物館・宮加三橋発もある。時刻は試合ごとの告知で確かめる",
+      "parking_note": "周辺に7か所の有料駐車場（500〜2,500円、事前にチケットサイトで購入）。パーク&ライドのエスパルスドリームプラザは開催日に普通車の上限1,200円で予約不要",
+      "agoda_area": {
+        "type": "city",
+        "id": 57,
+        "name": "静岡"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "peace-stadium-nagasaki",
+      "name": "PEACE STADIUM Connected by SoftBank",
+      "prefecture": "長崎県",
+      "address": "長崎県長崎市幸町7-1",
+      "lat": 32.75878,
+      "lng": 129.86497,
+      "stations": [
+        {
+          "name": "長崎",
+          "kind": "nearest",
+          "walk_min": 10,
+          "note": "徒歩約10分。市電（1・3系統）で約3分、スタジアムシティ ノース電停から徒歩約3分の行き方もある",
+          "toyoko": [
+            {
+              "hotel": "00079",
+              "name": "東横INN長崎駅前",
+              "walk_min": 8
+            }
+          ]
+        },
+        {
+          "name": "浦上",
+          "kind": "nearest",
+          "walk_min": 8,
+          "note": "徒歩約8分。市電（1・3系統）で約4分、スタジアムシティ ノース電停から徒歩約3分の行き方もある",
+          "toyoko": []
+        }
+      ],
+      "airports": [
+        {
+          "iata": "NGS",
+          "name": "長崎空港",
+          "station": "長崎",
+          "access_min": 48,
+          "note": "空港5番のりばから長崎バス（県営バス）で約45分、「銭座町 長崎スタジアムシティ」下車、徒歩約3分"
+        }
+      ],
+      "access_url": "https://www.nagasakistadiumcity.com/access/",
+      "shuttle_note": null,
+      "parking_note": "立体駐車場など車934台分。大規模イベント日は30分300円（上限なし）で、通常日の倍。公式は公共交通の利用を案内し、試合日のパークアンドライドはV・ファーレン長崎公式で確かめる",
+      "agoda_area": {
+        "type": "city",
+        "id": 193,
+        "name": "長崎"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "fukuda-denshi-arena",
+      "name": "フクダ電子アリーナ",
+      "prefecture": "千葉県",
+      "address": "千葉県千葉市中央区川崎町1-20",
+      "lat": 35.57749,
+      "lng": 140.12287,
+      "stations": [
+        {
+          "name": "蘇我",
+          "kind": "nearest",
+          "walk_min": 8,
+          "note": "JR京葉線・外房線・内房線の蘇我駅から徒歩で向かう",
+          "toyoko": []
+        }
+      ],
+      "airports": [],
+      "access_url": "https://jefunited.co.jp/stadium/access/",
+      "shuttle_note": null,
+      "parking_note": "台数に限りがあり、試合日は周辺道路が渋滞し出庫に時間がかかるため公共交通機関が勧められている。隣接の商業施設の駐車場や路上駐車は禁止",
+      "agoda_area": {
+        "type": "city",
+        "id": 5375,
+        "name": "千葉"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "panasonic-stadium-suita",
+      "name": "パナソニック スタジアム 吹田",
+      "prefecture": "大阪府",
+      "address": "大阪府吹田市千里万博公園3-3",
+      "lat": 34.80271,
+      "lng": 135.5381,
+      "stations": [
+        {
+          "name": "茨木",
+          "kind": "shuttle",
+          "walk_min": null,
+          "note": "JR茨木駅西口の4番のりばからシャトルバスで約10分、「万博記念競技場（日本庭園前）」下車。開始の4時間前から運行",
+          "toyoko": []
+        },
+        {
+          "name": "万博記念公園",
+          "kind": "nearest",
+          "walk_min": 15,
+          "note": "大阪モノレールの駅から徒歩",
+          "toyoko": []
+        }
+      ],
+      "airports": [],
+      "access_url": "https://www.gamba-osaka.net/c/stadium/access.html",
+      "shuttle_note": "ホームゲームでJR茨木駅から有料シャトル（大人250円）。淀屋橋・難波発と新大阪・梅田発の事前予約制バスもある（約30〜50分、1,700〜1,800円、当日の予約なし乗車は不可）。運行は試合ごとに確かめる",
+      "parking_note": "駐車場の券の販売はあるが台数は不明。公共交通かパーク&ライドをすすめ、車での送迎は控えるよう案内されている",
+      "agoda_area": {
+        "type": "city",
+        "id": 88748,
+        "name": "吹田"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "mito-shinkin-stadium",
+      "name": "水戸信用金庫スタジアム",
+      "prefecture": "茨城県",
+      "address": "茨城県那珂市向山1282-1",
+      "lat": 36.45721,
+      "lng": 140.53819,
+      "stations": [
+        {
+          "name": "東海",
+          "kind": "shuttle",
+          "walk_min": null,
+          "note": "西口（東口ではない）から無料シャトルバスで約10分。試合開始の6時間前から運行",
+          "toyoko": []
+        }
+      ],
+      "airports": [],
+      "access_url": "https://www.mito-hollyhock.net/match/stadium/mito",
+      "shuttle_note": "東海駅西口・東海村役場・那珂市役所前から無料シャトルバス（約10〜20分）。帰りは笠松運動公園の第4駐車場から、満員になり次第出発",
+      "parking_note": "駐車場は試合ごとに使える場所が変わり、予約制（akippa）が中心。公園付属の先着の駐車場もある。有料・無料が混在",
+      "agoda_area": {
+        "type": "city",
+        "id": 107030,
+        "name": "水戸"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "best-denki-stadium",
+      "name": "ベスト電器スタジアム",
+      "prefecture": "福岡県",
+      "address": "福岡県福岡市博多区東平尾公園2丁目1-1",
+      "lat": 33.58589,
+      "lng": 130.46078,
+      "stations": [
+        {
+          "name": "福岡空港",
+          "kind": "nearest",
+          "walk_min": 30,
+          "note": "地下鉄空港線。徒歩約30分、またはバスで約10分の「東平尾公園入口」から徒歩約8分（2021年掲載の値。要確認）",
+          "toyoko": []
+        }
+      ],
+      "airports": [
+        {
+          "iata": "FUK",
+          "name": "福岡空港",
+          "station": "福岡空港",
+          "access_min": 20,
+          "note": "地下鉄福岡空港駅の周辺からバスまたは徒歩（バス約10分＋徒歩約8分が目安）"
+        }
+      ],
+      "access_url": "https://www.avispa.co.jp/match/stadiumaccess",
+      "shuttle_note": "帰りのシャトルバスののりばは正面玄関前（運行の詳細は試合ごとの告知で確かめる）",
+      "parking_note": "試合日は東平尾公園内の臨時駐車場（計約830台）を有料予約で使える。2,000円、Jリーグチケットから予約",
+      "agoda_area": {
+        "type": "city",
+        "id": 16527,
+        "name": "福岡"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "denka-big-swan",
+      "name": "デンカビッグスワンスタジアム",
+      "prefecture": "新潟県",
+      "address": "新潟県新潟市中央区清五郎67-12",
+      "lat": 37.88261,
+      "lng": 139.05917,
+      "stations": [
+        {
+          "name": "新潟",
+          "kind": "shuttle",
+          "walk_min": null,
+          "note": "南口の臨時バスのりば（プラーカ2前）から直行バス約20分（片道300円）。路線バスなら16番線のりばの「スポーツ公園線」で「ビッグスワン前」などへ約20分",
+          "toyoko": [
+            {
+              "hotel": "00060",
+              "name": "東横INN新潟駅前",
+              "walk_min": 1
+            }
+          ]
+        }
+      ],
+      "airports": [
+        {
+          "iata": "KIJ",
+          "name": "新潟空港",
+          "station": "新潟",
+          "access_min": 60,
+          "note": "リムジンバスで新潟駅まで約25分、そこからシャトルバス約20分。乗り継ぎを含めた合計の目安"
+        }
+      ],
+      "access_url": "https://www.albirex.co.jp/guide/access/",
+      "shuttle_note": "ホームゲーム時のみ。往路は試合開始3時間30分前から、復路は試合終了後に約45分間随時（状況により変わる）。片道300円、小人150円。ICカード可。クラブは原則このバスをすすめている",
+      "parking_note": "事前購入の駐車券が必要（前売り1,300〜1,700円、当日は500円高い。現地精算不可）。利用は試合開始5時間前〜終了後1時間30分後、再入場不可",
+      "agoda_area": {
+        "type": "city",
+        "id": 9732,
+        "name": "新潟"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "nippatsu-mitsuzawa",
+      "name": "ニッパツ三ツ沢球技場",
+      "prefecture": "神奈川県",
+      "address": "神奈川県横浜市神奈川区三ツ沢西町3-1",
+      "lat": 35.46916,
+      "lng": 139.60374,
+      "stations": [
+        {
+          "name": "横浜",
+          "kind": "shuttle",
+          "walk_min": null,
+          "note": "西口バスターミナルの6〜11番のりばから路線バスで約10分、「三ツ沢総合グランド入口」か「市民病院」下車、徒歩約2分。試合日は西口第3ターミナル32番のりばから臨時直行バス（台数に限りあり）",
+          "toyoko": [
+            {
+              "hotel": "00357",
+              "name": "東横INN横浜駅西口",
+              "walk_min": 7
+            }
+          ]
+        },
+        {
+          "name": "三ツ沢上町",
+          "kind": "nearest",
+          "walk_min": 15,
+          "note": "市営地下鉄ブルーライン。横浜から2駅（約4分）、駅から徒歩約15分",
+          "toyoko": []
+        }
+      ],
+      "airports": [],
+      "access_url": "https://www.yokohamafc.com/guide/access-map/",
+      "shuttle_note": "横浜駅西口第3ターミナル32番のりばから臨時直行バス（キックオフ約2時間前〜約40分前）。帰りの直行便は運行が確約されていないので、市民病院バス停で確かめる",
+      "parking_note": "専用駐車場の案内はなく、試合日は公共交通機関の利用が求められている。近隣施設への駐車は控えるよう呼びかけがある",
+      "agoda_area": {
+        "type": "city",
+        "id": 4590,
+        "name": "横浜"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "toyama-sogo-stadium",
+      "name": "富山県総合運動公園陸上競技場",
+      "prefecture": "富山県",
+      "address": "富山県富山市南中田368",
+      "lat": 36.62506,
+      "lng": 137.19569,
+      "stations": [
+        {
+          "name": "富山",
+          "kind": "shuttle",
+          "walk_min": null,
+          "note": "ホームゲームの日だけ富山駅から臨時の直行バスが出る。通常の路線バスは2系統あり、栗山・栗山南口方面の系統は本数が多め、総合運動公園行きは本数が少ない。時刻は試合ごとに確かめる",
+          "toyoko": [
+            {
+              "hotel": "00004",
+              "name": "東横INN富山駅新幹線口2",
+              "walk_min": 2
+            },
+            {
+              "hotel": "00201",
+              "name": "東横INN富山駅新幹線口1",
+              "walk_min": 5
+            }
+          ]
+        }
+      ],
+      "airports": [
+        {
+          "iata": "TOY",
+          "name": "富山きときと空港",
+          "station": null,
+          "access_min": 8,
+          "note": "空港からスタジアムまでタクシーで約8分、徒歩だと約35分（クラブ公式の案内）。路線バスもあるが本数は少ない"
+        }
+      ],
+      "access_url": "https://www.kataller.co.jp/game/stadium/",
+      "shuttle_note": "ホームゲームの日に富山駅から臨時直行バスが運行される。運行の有無・時刻・料金は試合ごとの告知で確かめる",
+      "parking_note": "駐車場は台数が限られ周辺は大変混雑する。通常は無料だが、混雑が見込まれる試合は有料になることがある。路上駐車は禁止。公共交通での来場をすすめている",
+      "agoda_area": {
+        "type": "city",
+        "id": 3492,
+        "name": "富山"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "yurtec-stadium-sendai",
+      "name": "ユアテックスタジアム仙台",
+      "prefecture": "宮城県",
+      "address": "宮城県仙台市泉区七北田字柳78",
+      "lat": 38.31917,
+      "lng": 140.88181,
+      "stations": [
+        {
+          "name": "泉中央",
+          "kind": "nearest",
+          "walk_min": 4,
+          "note": "仙台市地下鉄南北線の泉中央駅から徒歩約4分。仙台駅から地下鉄で約16分",
+          "toyoko": []
+        }
+      ],
+      "airports": [
+        {
+          "iata": "SDJ",
+          "name": "仙台空港",
+          "station": "仙台",
+          "access_min": 37,
+          "note": "仙台空港アクセス線の快速で仙台駅まで約17分、地下鉄南北線で泉中央まで約16分、徒歩約4分の合計（乗換時間は含まない）"
+        }
+      ],
+      "access_url": "https://www.vegalta.co.jp/game/stadium.html",
+      "shuttle_note": null,
+      "parking_note": "来場者用の駐車場はない。泉中央駅周辺のコインパーキングは数に限りがあり、満車なら八乙女駅周辺（徒歩約10分）を使う。地下鉄の利用をすすめている",
+      "agoda_area": {
+        "type": "city",
+        "id": 10345,
+        "name": "仙台"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "nack5-stadium-omiya",
+      "name": "NACK5スタジアム大宮",
+      "prefecture": "埼玉県",
+      "address": "埼玉県さいたま市大宮区高鼻町4",
+      "lat": 35.91613,
+      "lng": 139.63338,
+      "stations": [
+        {
+          "name": "大宮公園",
+          "kind": "nearest",
+          "walk_min": 10,
+          "note": "東武アーバンパークラインの大宮公園駅から徒歩で向かう（目安）",
+          "toyoko": []
+        },
+        {
+          "name": "大宮",
+          "kind": "nearest",
+          "walk_min": null,
+          "note": "大宮駅東口から国際興行バスで「大宮サッカー場前」下車、徒歩約1分。本数が少ないので時刻を事前に確認。徒歩なら約20分",
+          "toyoko": [
+            {
+              "hotel": "00334",
+              "name": "東横INN大宮駅東口",
+              "walk_min": 5
+            }
+          ]
+        }
+      ],
+      "airports": [],
+      "access_url": null,
+      "shuttle_note": null,
+      "parking_note": "スタジアム専用の駐車場はなく、試合日は周辺の予約制駐車場やパークアンドライドが勧められている",
+      "agoda_area": {
+        "type": "city",
+        "id": 18827,
+        "name": "さいたま"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "ichigo-miyazaki-shintomi",
+      "name": "いちご宮崎新富サッカー場",
+      "prefecture": "宮崎県",
+      "address": "宮崎県児湯郡新富町大字三納代1586",
+      "lat": 32.07313,
+      "lng": 131.49184,
+      "stations": [
+        {
+          "name": "日向新富",
+          "kind": "shuttle",
+          "walk_min": 12,
+          "note": "徒歩約12分。試合によっては駅とスタジアムを結ぶシャトルバスが出て、所要は15〜20分ほど",
+          "toyoko": []
+        }
+      ],
+      "airports": [],
+      "access_url": "https://www.tegevajaro.com/club/stadium",
+      "shuttle_note": "過去の試合では日向新富駅とスタジアムの間にシャトルバス（大人200円・小学生以下100円）が出た。運行の有無は試合ごとの告知で確かめる",
+      "parking_note": "スタジアム横に有料駐車場（約200〜400台、1台300円、駐車券は事前購入）。日向新富駅前の無料駐車場は約50台で、スタジアムまで徒歩約15分。使える駐車場は試合ごとに変わる",
+      "agoda_area": {
+        "type": "city",
+        "id": 13561,
+        "name": "宮崎"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "premist-dome",
+      "name": "大和ハウス プレミストドーム",
+      "prefecture": "北海道",
+      "address": "北海道札幌市豊平区羊ケ丘1",
+      "lat": 43.01513,
+      "lng": 141.40977,
+      "stations": [
+        {
+          "name": "福住",
+          "kind": "nearest",
+          "walk_min": 10,
+          "note": "地下鉄東豊線の福住駅から徒歩約10分。札幌都心からの路線バスなら「札幌ドーム」バス停で下車",
+          "toyoko": []
+        }
+      ],
+      "airports": [
+        {
+          "iata": "CTS",
+          "name": "新千歳空港",
+          "station": null,
+          "access_min": 45,
+          "note": "空港連絡バスで約45分（ドーム公式の記載。降りるバス停は未確認）"
+        }
+      ],
+      "access_url": "https://www.consadole-sapporo.jp/guide/stadium-access/",
+      "shuttle_note": "コンサドーレ戦のシャトルバスは2023年9月16日から当面の間、全路線運休（クラブ公式）。再開の有無は告知で確かめる",
+      "parking_note": "有料で台数に限りがある。大規模イベントは前売駐車券が必要（コンサドーレ戦は普通車の前売が3,000円の区分あり）。券がない車は駐車できない",
+      "agoda_area": {
+        "type": "city",
+        "id": 3435,
+        "name": "札幌"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "hawaiians-stadium-iwaki",
+      "name": "ハワイアンズスタジアムいわき",
+      "prefecture": "福島県",
+      "address": "福島県いわき市常磐水野谷町竜ケ沢308",
+      "lat": 37.01731,
+      "lng": 140.86436,
+      "stations": [
+        {
+          "name": "湯本",
+          "kind": "shuttle",
+          "walk_min": null,
+          "note": "湯本駅からシャトルバスが出る（試合ごとに運行を確かめる）。歩くと約30分、タクシーなら約5分",
+          "toyoko": []
+        },
+        {
+          "name": "いわき",
+          "kind": "shuttle",
+          "walk_min": null,
+          "note": "いわき駅からもシャトルバス。いわき駅からの徒歩や路線バスの案内は公式にない",
+          "toyoko": [
+            {
+              "hotel": "00137",
+              "name": "東横INNいわき駅前",
+              "walk_min": 3
+            }
+          ]
+        }
+      ],
+      "airports": [],
+      "access_url": "https://iwakifc.com/hawaiians-stadium/",
+      "shuttle_note": "湯本駅・いわき駅・ハニーズ物流センターからシャトルバス（浜通り交通）。運行と時刻は試合ごとの試合情報で確かめる",
+      "parking_note": "場内駐車場（P1〜P6のうちP4を除く）は合計約1,000台。別に有料駐車場（2,000円・1試合約100台・事前購入の先着）と臨時駐車場（試合ごとに変わる）がある",
+      "agoda_area": {
+        "type": "city",
+        "id": 106528,
+        "name": "いわき"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "yamaha-stadium",
+      "name": "ヤマハスタジアム",
+      "prefecture": "静岡県",
+      "address": "静岡県磐田市新貝2500",
+      "lat": 34.72522,
+      "lng": 137.87501,
+      "stations": [
+        {
+          "name": "磐田",
+          "kind": "nearest",
+          "walk_min": null,
+          "note": "北口から路線バスで「ヤマハ発動機」バス停まで約10分、そこから徒歩約2分（クラブ公式）。タクシーは平常時で10〜15分",
+          "toyoko": []
+        },
+        {
+          "name": "御厨",
+          "kind": "nearest",
+          "walk_min": null,
+          "note": "タクシーで5〜10分。徒歩は約20分とする案内があるが公式では未確認",
+          "toyoko": []
+        }
+      ],
+      "airports": [],
+      "access_url": "https://jubilo-iwata.co.jp/stadium/yamaha/guide",
+      "shuttle_note": null,
+      "parking_note": "有料駐車場は一律1,500円（事前・当日とも）で、台数に限りがあり再入場は不可。開場はキックオフの4時間30分前。周辺の商業施設の駐車場は観戦目的では使えない。公共交通での来場をすすめている",
+      "agoda_area": {
+        "type": "region",
+        "id": 1381,
+        "name": "磐田・袋井"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "lemon-gas-hiratsuka",
+      "name": "レモンガススタジアム平塚",
+      "prefecture": "神奈川県",
+      "address": "神奈川県平塚市大原1-1",
+      "lat": 35.34354,
+      "lng": 139.34122,
+      "stations": [
+        {
+          "name": "平塚",
+          "kind": "shuttle",
+          "walk_min": null,
+          "note": "北口11番のりばからシャトルバス約7分（大人230円、キックオフ2時間前から随時）。北口4番のりばの路線バスなら「総合公園」下車、約7分＋徒歩3分。西口から徒歩なら約25分",
+          "toyoko": [
+            {
+              "hotel": "00211",
+              "name": "東横INN湘南平塚駅北口2",
+              "walk_min": 3
+            },
+            {
+              "hotel": "00204",
+              "name": "東横INN湘南平塚駅北口1",
+              "walk_min": 4
+            }
+          ]
+        },
+        {
+          "name": "伊勢原",
+          "kind": "shuttle",
+          "walk_min": null,
+          "note": "小田急線の南口1番のりばからシャトルバス約20分（大人430円）。キックオフ1時間半前の1便のみ",
+          "toyoko": []
+        }
+      ],
+      "airports": [],
+      "access_url": "https://www.bellmare.co.jp/stadium/access/",
+      "shuttle_note": "ホームゲーム時のみ。平塚駅北口11番のりばから（約7分、230円）、伊勢原駅南口1番のりばから（1便のみ、約20分、430円）",
+      "parking_note": "総合公園内に927台分あるが限りがある。2時間まで無料、以降は有料。混雑時は平塚駅周辺に停めてバスを使うようすすめられている",
+      "agoda_area": {
+        "type": "city",
+        "id": 107273,
+        "name": "平塚"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "crasus-dome-oita",
+      "name": "クラサスドーム大分",
+      "prefecture": "大分県",
+      "address": "大分県大分市大字横尾1351",
+      "lat": 33.20089,
+      "lng": 131.65839,
+      "stations": [
+        {
+          "name": "大分",
+          "kind": "shuttle",
+          "walk_min": null,
+          "note": "府内中央口（北口）の要町高速バス乗り場から試合日のシャトルバスで約25分（大人480円）。路線バス（3・6番のりば、パークプレイス大分行き）で「大分スポーツ公園東」下車なら約35〜40分＋徒歩約5分",
+          "toyoko": [
+            {
+              "hotel": "00141",
+              "name": "東横INN大分駅前",
+              "walk_min": 5
+            }
+          ]
+        }
+      ],
+      "airports": [
+        {
+          "iata": "OIT",
+          "name": "大分空港",
+          "station": "大分",
+          "access_min": 85,
+          "note": "空港バス（サウスライナー）でパークプレイス大分まで約70分、そこから徒歩約15分（タクシーなら約5分）。エアライナーで大分駅（約60分）に出て、シャトルバスに乗る方法もある（合計は目安）"
+        }
+      ],
+      "access_url": "https://www.oita-trinita.co.jp/access/",
+      "shuttle_note": "大分駅からの有料シャトルバス（大人片道480円）。往路はキックオフ3時間前〜15分前に約15分間隔、復路は試合終了後に約5分間隔で、最終は終了の約20分後。試合ごとの告知で確かめる",
+      "parking_note": "一般用の駐車場は合計4,000台超。一般の事前予約は記載なし。最寄りのIC（約5分）はETC専用。地下・南駐車場は駐車証の所持者のみ。団体バス用のD駐車場は事前申込が必要（無料）",
+      "agoda_area": {
+        "type": "city",
+        "id": 107890,
+        "name": "大分"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "soyu-stadium",
+      "name": "ソユースタジアム",
+      "prefecture": "秋田県",
+      "address": "秋田県秋田市八橋運動公園1番10号",
+      "lat": 39.72163,
+      "lng": 140.09571,
+      "stations": [
+        {
+          "name": "秋田",
+          "kind": "nearest",
+          "walk_min": null,
+          "note": "西口の路線バス（秋田中央交通）で「八橋球場前」まで約15分、徒歩約5分。のりばは西口2・3・5番線",
+          "toyoko": [
+            {
+              "hotel": "00087",
+              "name": "東横INN秋田駅東口",
+              "walk_min": 1
+            }
+          ]
+        }
+      ],
+      "airports": [
+        {
+          "iata": "AXT",
+          "name": "秋田空港",
+          "station": null,
+          "access_min": 60,
+          "note": "リムジンバスで「県庁市役所」まで約50分、下車後徒歩約10分の合計"
+        }
+      ],
+      "access_url": "https://blaublitz.jp/guide/yabase",
+      "shuttle_note": null,
+      "parking_note": "専用の駐車場はなく近隣を使う。土日祝は秋田市役所と秋田県庁の駐車場が一般開放。使える場所は試合ごとに変わるので試合ページで確かめる。周辺は車両通行止めあり",
+      "agoda_area": {
+        "type": "city",
+        "id": 9190,
+        "name": "秋田"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "ekimae-fudosan-stadium",
+      "name": "駅前不動産スタジアム",
+      "prefecture": "佐賀県",
+      "address": "佐賀県鳥栖市京町812",
+      "lat": 33.37172,
+      "lng": 130.52006,
+      "stations": [
+        {
+          "name": "鳥栖",
+          "kind": "nearest",
+          "walk_min": 3,
+          "note": "JR鳥栖駅に隣接し、徒歩約3分。シャトルバスは確認できず、駅から歩くのが基本",
+          "toyoko": []
+        }
+      ],
+      "airports": [],
+      "access_url": "https://www.sagan-tosu.net/match/stadium/",
+      "shuttle_note": null,
+      "parking_note": "鳥栖市は渋滞回避のため電車・バスの利用を呼びかけている。車は鳥栖市役所新庁舎の駐車場などから歩く案内がある（駐車場の運用は変わることがあるので、試合ごとの告知で確かめる）",
+      "agoda_area": {
+        "type": "region",
+        "id": 1052,
+        "name": "鳥栖"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "nd-soft-stadium-yamagata",
+      "name": "NDソフトスタジアム山形",
+      "prefecture": "山形県",
+      "address": "山形県天童市山王1-1",
+      "lat": 38.33562,
+      "lng": 140.37856,
+      "stations": [
+        {
+          "name": "山形",
+          "kind": "shuttle",
+          "walk_min": null,
+          "note": "ホーム試合は山形駅から有料シャトルバス（片道750〜900円、乗車券は日付指定・片道ごとの販売）。所要時間は未確認",
+          "toyoko": [
+            {
+              "hotel": "00097",
+              "name": "東横INN山形駅西口",
+              "walk_min": 4
+            }
+          ]
+        },
+        {
+          "name": "天童南",
+          "kind": "nearest",
+          "walk_min": 15,
+          "note": "天童南駅から徒歩約15分（JR東日本の記事の記載）。山形駅から電車で約20分",
+          "toyoko": []
+        }
+      ],
+      "airports": [],
+      "access_url": "https://www.montedioyamagata.jp/match/access/",
+      "shuttle_note": "山形駅とスタジアムを結ぶ有料シャトルバス（JTBで乗車券を販売）。運行時刻は試合ごとに確かめる",
+      "parking_note": null,
+      "agoda_area": {
+        "type": "city",
+        "id": 3143,
+        "name": "山形"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "pocari-sweat-stadium",
+      "name": "鳴門・大塚スポーツパーク ポカリスエットスタジアム",
+      "prefecture": "徳島県",
+      "address": "徳島県鳴門市撫養町立岩字四枚61",
+      "lat": 34.16821,
+      "lng": 134.61784,
+      "stations": [
+        {
+          "name": "鳴門",
+          "kind": "shuttle",
+          "walk_min": null,
+          "note": "ホームゲームの日はJRの時刻に合わせたシャトルバスが出る。徒歩だと約25分、タクシーで約5分。徳島駅からJR鳴門線・高徳線で約40分",
+          "toyoko": []
+        }
+      ],
+      "airports": [
+        {
+          "iata": "TKS",
+          "name": "徳島阿波おどり空港",
+          "station": null,
+          "access_min": 27,
+          "note": "鳴門方面行きのバスで鳴門市役所バス停まで約12分、そこから徒歩約15分（合計は目安）。タクシーなら約20分"
+        }
+      ],
+      "access_url": "https://www.vortis.jp/stadium/access/",
+      "shuttle_note": "鳴門駅からJRの時刻に合わせたシャトルバス。時刻・料金は試合ごとの告知で確かめる",
+      "parking_note": "台数に限りがあり、公共交通・自転車・徒歩をすすめている。車は乗り合わせと早めの来場を求めている",
+      "agoda_area": {
+        "type": "city",
+        "id": 108477,
+        "name": "鳴門"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "fujieda-soccer-stadium",
+      "name": "藤枝総合運動公園サッカー場",
+      "prefecture": "静岡県",
+      "address": "静岡県藤枝市原100",
+      "lat": 34.88147,
+      "lng": 138.23276,
+      "stations": [
+        {
+          "name": "藤枝",
+          "kind": "shuttle",
+          "walk_min": null,
+          "note": "北口から有料シャトルバスで20〜30分（混雑で変わる）。タクシーは約15分",
+          "toyoko": [
+            {
+              "hotel": "00188",
+              "name": "東横INN静岡藤枝駅北口",
+              "walk_min": 1
+            }
+          ]
+        }
+      ],
+      "airports": [],
+      "access_url": "https://myfc.co.jp/stadium/",
+      "shuttle_note": "藤枝駅北口から有料シャトルバス（大人500円・小学生以下250円、2026年から完全キャッシュレス）。随時運行、天皇杯は対象外。帰りはスタジアム側の乗り場から。時刻は試合ごとの告知で確かめる",
+      "parking_note": "周辺の駐車場はすべて有料の予約制（公式チケットサイトまたは駐車場予約サイト）。第1駐車場1,500円、第5駐車場1,200円など。路上の乗降・駐停車は不可",
+      "agoda_area": {
+        "type": "region",
+        "id": 732,
+        "name": "焼津・藤枝"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "plife-foods-stadium",
+      "name": "プライフーズスタジアム",
+      "prefecture": "青森県",
+      "address": "青森県八戸市大字市川町字市川後55-1",
+      "lat": 40.59047,
+      "lng": 141.45611,
+      "stations": [
+        {
+          "name": "八戸",
+          "kind": "shuttle",
+          "walk_min": null,
+          "note": "ホーム開催日は事前予約の「応援タクシー定額運行」で約30分、片道3,740円。電車の最寄り駅はなく、八戸駅からタクシーで約25分",
+          "toyoko": [
+            {
+              "hotel": "00106",
+              "name": "東横INN八戸駅前",
+              "walk_min": 1
+            }
+          ]
+        },
+        {
+          "name": "陸奥市川",
+          "kind": "nearest",
+          "walk_min": null,
+          "note": "駅前から市営バスで約20分、「市川」バス停下車、徒歩約5分",
+          "toyoko": []
+        },
+        {
+          "name": "本八戸",
+          "kind": "nearest",
+          "walk_min": null,
+          "note": "駅前バス停から市営バス「多賀台団地行き」で約30分、「市川」下車、徒歩約5分",
+          "toyoko": []
+        }
+      ],
+      "airports": [
+        {
+          "iata": "MSJ",
+          "name": "三沢空港",
+          "station": null,
+          "access_min": 40,
+          "note": "ホーム開催日の応援タクシー定額運行（事前予約、片道4,990円）で約40分"
+        }
+      ],
+      "access_url": "https://vanraure.net/stadium",
+      "shuttle_note": "シャトルバスではなく、ホーム開催日に事前予約制の応援タクシー定額運行（八戸駅・中心街・三沢空港から直通、1台4名まで）。予約は三八五交通",
+      "parking_note": "合計約1,494台（常設約396台、多目的広場の臨時約1,000台など）。有料か・予約制かは未確認",
+      "agoda_area": {
+        "type": "city",
+        "id": 21378,
+        "name": "八戸"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "city-football-station",
+      "name": "CITY FOOTBALL STATION",
+      "prefecture": "栃木県",
+      "address": "栃木県栃木市岩舟町三谷1038-1",
+      "lat": 36.3375,
+      "lng": 139.64528,
+      "stations": [
+        {
+          "name": "岩舟",
+          "kind": "nearest",
+          "walk_min": 30,
+          "note": "JR両毛線の岩舟駅から徒歩30〜40分、タクシーなら約5分（駅前にタクシー会社）。ふれあいバス（岩舟駅・栃木駅から）が隣の遊楽々館に停まるが、夜の試合の後は運行がない",
+          "toyoko": []
+        }
+      ],
+      "airports": [],
+      "access_url": "https://tochigi-city.com/watching/stadium/",
+      "shuttle_note": "臨時駐車場とスタジアムの間をシャトルバスが走る。時刻は試合ごとの試合情報で確かめる。駅からのシャトルは公式にない",
+      "parking_note": "公園内の駐車場は無料だが台数が限られ、試合日は7:30から。近くの駐車場は akippa で予約できる",
+      "agoda_area": {
+        "type": "city",
+        "id": 108449,
+        "name": "佐野"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "asics-satoyama-stadium",
+      "name": "アシックス里山スタジアム",
+      "prefecture": "愛媛県",
+      "address": "愛媛県今治市高橋ふれあいの丘1-3",
+      "lat": 34.04056,
+      "lng": 132.95867,
+      "stations": [
+        {
+          "name": "今治",
+          "kind": "shuttle",
+          "walk_min": null,
+          "note": "試合日は今治駅前からイオンモール今治新都市への無料シャトル（約20分、先着順）。路線バスはせとうちバスで約15分、「イオンモール今治新都市」から徒歩約10分。徒歩は約5kmで非推奨",
+          "toyoko": []
+        }
+      ],
+      "airports": [
+        {
+          "iata": "MYJ",
+          "name": "松山空港",
+          "station": "今治",
+          "access_min": 110,
+          "note": "空港リムジンバスで今治駅まで約90分、そこからシャトル約20分（合計は目安）"
+        }
+      ],
+      "access_url": "https://www.fcimabari.com/access",
+      "shuttle_note": "今治駅前〜イオンモール今治新都市の無料シャトル（2026/27シーズン）。往路はチケット提示が必要で、復路は満席で終了。このほか駐車場Bとスタジアムを結ぶ無料の循環シャトルもある。運行は試合ごとに変わるので告知で確かめる。路線バスの終バスに注意（夜は20時台）",
+      "parking_note": "一般駐車場（約1,300台）などがあり、3人以上の乗り合いをすすめている。指定外への駐車は控える案内",
+      "agoda_area": {
+        "type": "city",
+        "id": 106392,
+        "name": "今治"
+      },
+      "verified_at": "2026-11-12"
+    },
+    {
+      "id": "jit-recycle-ink-stadium",
+      "name": "JITリサイクルインクスタジアム",
+      "prefecture": "山梨県",
+      "address": "山梨県甲府市小瀬町840",
+      "lat": 35.62228,
+      "lng": 138.5897,
+      "stations": [
+        {
+          "name": "甲府",
+          "kind": "shuttle",
+          "walk_min": null,
+          "note": "南口の2番のりばから山梨交通の直行バスで約30分。南口3番のりばの路線バス（小瀬スポーツ公園行き）も約30分。タクシーは約20分",
+          "toyoko": [
+            {
+              "hotel": "00132",
+              "name": "東横INN甲府駅南口2",
+              "walk_min": 1
+            },
+            {
+              "hotel": "00072",
+              "name": "東横INN甲府駅南口1",
+              "walk_min": 10
+            }
+          ]
+        }
+      ],
+      "airports": [],
+      "access_url": "https://www.ventforet.jp/guide/stadium_access.html",
+      "shuttle_note": "甲府駅南口から山梨交通の直行バス（約15分間隔、試合の3時間30分前から運行、終了後も約1時間運行）。片道は大人440円・往復700円。時刻は試合ごとの告知で確かめる",
+      "parking_note": "小瀬スポーツ公園内に第1〜第5駐車場（普通車で合計約2,088台）がある。近隣は混雑するため公共交通をすすめている。臨時駐車場（約800台）は不定期で、試合の3日前のお知らせで確かめる",
+      "agoda_area": {
+        "type": "city",
+        "id": 108843,
+        "name": "甲府"
+      },
+      "verified_at": "2026-11-12"
     }
   ],
   "clubs": [
@@ -1076,6 +2550,493 @@
       "jleague_url": "https://www.jleague.jp/club/kochi/",
       "home_stadium_id": "giken-stadium",
       "video_sources": []
+    },
+    {
+      "id": "ftokyo",
+      "name": "FC東京",
+      "short_name": "FC東京",
+      "aliases": [
+        "FC TOKYO"
+      ],
+      "official_url": "https://www.fctokyo.co.jp/",
+      "jleague_url": "https://www.jleague.jp/club/ftokyo/",
+      "home_stadium_id": "ajinomoto-stadium",
+      "video_sources": []
+    },
+    {
+      "id": "kashiwa",
+      "name": "柏レイソル",
+      "short_name": "柏",
+      "aliases": [
+        "KASHIWA REYSOL"
+      ],
+      "official_url": "https://www.reysol.co.jp/",
+      "jleague_url": "https://www.jleague.jp/club/kashiwa/",
+      "home_stadium_id": "sankyo-frontier-kashiwa",
+      "video_sources": []
+    },
+    {
+      "id": "hiroshima",
+      "name": "サンフレッチェ広島",
+      "short_name": "広島",
+      "aliases": [
+        "SANFRECCE HIROSHIMA"
+      ],
+      "official_url": "https://www.sanfrecce.co.jp/",
+      "jleague_url": "https://www.jleague.jp/club/hiroshima/",
+      "home_stadium_id": "edion-peace-wing-hiroshima",
+      "video_sources": []
+    },
+    {
+      "id": "machida",
+      "name": "FC町田ゼルビア",
+      "short_name": "町田",
+      "aliases": [
+        "町田ゼルビア",
+        "FC MACHIDA ZELVIA"
+      ],
+      "official_url": "https://www.zelvia.co.jp/",
+      "jleague_url": "https://www.jleague.jp/club/machida/",
+      "home_stadium_id": "machida-gion-stadium",
+      "video_sources": []
+    },
+    {
+      "id": "kobe",
+      "name": "ヴィッセル神戸",
+      "short_name": "神戸",
+      "aliases": [
+        "VISSEL KOBE"
+      ],
+      "official_url": "https://www.vissel-kobe.co.jp/",
+      "jleague_url": "https://www.jleague.jp/club/kobe/",
+      "home_stadium_id": "noevir-stadium-kobe",
+      "video_sources": []
+    },
+    {
+      "id": "kashima",
+      "name": "鹿島アントラーズ",
+      "short_name": "鹿島",
+      "aliases": [
+        "KASHIMA ANTLERS"
+      ],
+      "official_url": "https://www.antlers.co.jp/",
+      "jleague_url": "https://www.jleague.jp/club/kashima/",
+      "home_stadium_id": "mercari-stadium",
+      "video_sources": []
+    },
+    {
+      "id": "yokohamafm",
+      "name": "横浜F・マリノス",
+      "short_name": "横浜FM",
+      "aliases": [
+        "横浜Fマリノス",
+        "YOKOHAMA F・MARINOS"
+      ],
+      "official_url": "https://www.f-marinos.com/",
+      "jleague_url": "https://www.jleague.jp/club/yokohamafm/",
+      "home_stadium_id": "nissan-stadium",
+      "video_sources": []
+    },
+    {
+      "id": "kawasakif",
+      "name": "川崎フロンターレ",
+      "short_name": "川崎F",
+      "aliases": [
+        "KAWASAKI FRONTALE"
+      ],
+      "official_url": "https://www.frontale.co.jp/",
+      "jleague_url": "https://www.jleague.jp/club/kawasakif/",
+      "home_stadium_id": "u-todoroki-stadium",
+      "video_sources": []
+    },
+    {
+      "id": "urawa",
+      "name": "浦和レッズ",
+      "short_name": "浦和",
+      "aliases": [
+        "浦和レッドダイヤモンズ",
+        "URAWA REDS"
+      ],
+      "official_url": "https://www.urawa-reds.co.jp/",
+      "jleague_url": "https://www.jleague.jp/club/urawa/",
+      "home_stadium_id": "saitama-stadium-2002",
+      "video_sources": []
+    },
+    {
+      "id": "okayama",
+      "name": "ファジアーノ岡山",
+      "short_name": "岡山",
+      "aliases": [
+        "FAGIANO OKAYAMA"
+      ],
+      "official_url": "https://www.fagiano-okayama.com/",
+      "jleague_url": "https://www.jleague.jp/club/okayama/",
+      "home_stadium_id": "jfe-harenokuni-stadium",
+      "video_sources": []
+    },
+    {
+      "id": "cosaka",
+      "name": "セレッソ大阪",
+      "short_name": "C大阪",
+      "aliases": [
+        "CEREZO OSAKA"
+      ],
+      "official_url": "https://www.cerezo.jp/",
+      "jleague_url": "https://www.jleague.jp/club/cosaka/",
+      "home_stadium_id": "yanmar-hanasaka-stadium",
+      "video_sources": []
+    },
+    {
+      "id": "kyoto",
+      "name": "京都サンガF.C.",
+      "short_name": "京都",
+      "aliases": [
+        "京都サンガ",
+        "KYOTO SANGA F.C."
+      ],
+      "official_url": "https://www.sanga-fc.jp/",
+      "jleague_url": "https://www.jleague.jp/club/kyoto/",
+      "home_stadium_id": "sanga-stadium-kyocera",
+      "video_sources": []
+    },
+    {
+      "id": "nagoya",
+      "name": "名古屋グランパス",
+      "short_name": "名古屋",
+      "aliases": [
+        "NAGOYA GRAMPUS"
+      ],
+      "official_url": "https://nagoya-grampus.jp/",
+      "jleague_url": "https://www.jleague.jp/club/nagoya/",
+      "home_stadium_id": "toyota-stadium",
+      "video_sources": []
+    },
+    {
+      "id": "tokyov",
+      "name": "東京ヴェルディ",
+      "short_name": "東京V",
+      "aliases": [
+        "TOKYO VERDY"
+      ],
+      "official_url": "https://www.verdy.co.jp/",
+      "jleague_url": "https://www.jleague.jp/club/tokyov/",
+      "home_stadium_id": "ajinomoto-stadium",
+      "video_sources": []
+    },
+    {
+      "id": "shimizu",
+      "name": "清水エスパルス",
+      "short_name": "清水",
+      "aliases": [
+        "SHIMIZU S-PULSE"
+      ],
+      "official_url": "https://www.s-pulse.co.jp/",
+      "jleague_url": "https://www.jleague.jp/club/shimizu/",
+      "home_stadium_id": "iai-stadium-nihondaira",
+      "video_sources": []
+    },
+    {
+      "id": "nagasaki",
+      "name": "V・ファーレン長崎",
+      "short_name": "長崎",
+      "aliases": [
+        "V-VAREN NAGASAKI"
+      ],
+      "official_url": "https://www.v-varen.com/",
+      "jleague_url": "https://www.jleague.jp/club/nagasaki/",
+      "home_stadium_id": "peace-stadium-nagasaki",
+      "video_sources": []
+    },
+    {
+      "id": "chiba",
+      "name": "ジェフユナイテッド千葉",
+      "short_name": "千葉",
+      "aliases": [
+        "ジェフ千葉",
+        "JEF UNITED CHIBA"
+      ],
+      "official_url": "https://jefunited.co.jp/",
+      "jleague_url": "https://www.jleague.jp/club/chiba/",
+      "home_stadium_id": "fukuda-denshi-arena",
+      "video_sources": []
+    },
+    {
+      "id": "gosaka",
+      "name": "ガンバ大阪",
+      "short_name": "G大阪",
+      "aliases": [
+        "GAMBA OSAKA"
+      ],
+      "official_url": "https://www.gamba-osaka.net/",
+      "jleague_url": "https://www.jleague.jp/club/gosaka/",
+      "home_stadium_id": "panasonic-stadium-suita",
+      "video_sources": []
+    },
+    {
+      "id": "mito",
+      "name": "水戸ホーリーホック",
+      "short_name": "水戸",
+      "aliases": [
+        "MITO HOLLYHOCK"
+      ],
+      "official_url": "https://www.mito-hollyhock.net/",
+      "jleague_url": "https://www.jleague.jp/club/mito/",
+      "home_stadium_id": "mito-shinkin-stadium",
+      "video_sources": []
+    },
+    {
+      "id": "fukuoka",
+      "name": "アビスパ福岡",
+      "short_name": "福岡",
+      "aliases": [
+        "AVISPA FUKUOKA"
+      ],
+      "official_url": "https://www.avispa.co.jp/",
+      "jleague_url": "https://www.jleague.jp/club/fukuoka/",
+      "home_stadium_id": "best-denki-stadium",
+      "video_sources": []
+    },
+    {
+      "id": "niigata",
+      "name": "アルビレックス新潟",
+      "short_name": "新潟",
+      "aliases": [
+        "ALBIREX NIIGATA"
+      ],
+      "official_url": "https://www.albirex.co.jp/",
+      "jleague_url": "https://www.jleague.jp/club/niigata/",
+      "home_stadium_id": "denka-big-swan",
+      "video_sources": []
+    },
+    {
+      "id": "yokohamafc",
+      "name": "横浜FC",
+      "short_name": "横浜FC",
+      "aliases": [
+        "YOKOHAMA FC"
+      ],
+      "official_url": "https://www.yokohamafc.com/",
+      "jleague_url": "https://www.jleague.jp/club/yokohamafc/",
+      "home_stadium_id": "nippatsu-mitsuzawa",
+      "video_sources": []
+    },
+    {
+      "id": "toyama",
+      "name": "カターレ富山",
+      "short_name": "富山",
+      "aliases": [
+        "KATALLER TOYAMA"
+      ],
+      "official_url": "https://www.kataller.co.jp/",
+      "jleague_url": "https://www.jleague.jp/club/toyama/",
+      "home_stadium_id": "toyama-sogo-stadium",
+      "video_sources": []
+    },
+    {
+      "id": "sendai",
+      "name": "ベガルタ仙台",
+      "short_name": "仙台",
+      "aliases": [
+        "VEGALTA SENDAI"
+      ],
+      "official_url": "https://www.vegalta.co.jp/",
+      "jleague_url": "https://www.jleague.jp/club/sendai/",
+      "home_stadium_id": "yurtec-stadium-sendai",
+      "video_sources": []
+    },
+    {
+      "id": "omiya",
+      "name": "RB大宮アルディージャ",
+      "short_name": "大宮",
+      "aliases": [
+        "大宮アルディージャ",
+        "RB OMIYA ARDIJA"
+      ],
+      "official_url": "https://www.rbomiya.com/",
+      "jleague_url": "https://www.jleague.jp/club/omiya/",
+      "home_stadium_id": "nack5-stadium-omiya",
+      "video_sources": []
+    },
+    {
+      "id": "miyazaki",
+      "name": "テゲバジャーロ宮崎",
+      "short_name": "宮崎",
+      "aliases": [
+        "TEGEVAJARO MIYAZAKI"
+      ],
+      "official_url": "https://www.tegevajaro.com/",
+      "jleague_url": "https://www.jleague.jp/club/miyazaki/",
+      "home_stadium_id": "ichigo-miyazaki-shintomi",
+      "video_sources": []
+    },
+    {
+      "id": "sapporo",
+      "name": "北海道コンサドーレ札幌",
+      "short_name": "札幌",
+      "aliases": [
+        "コンサドーレ札幌",
+        "HOKKAIDO CONSADOLE SAPPORO"
+      ],
+      "official_url": "https://www.consadole-sapporo.jp/",
+      "jleague_url": "https://www.jleague.jp/club/sapporo/",
+      "home_stadium_id": "premist-dome",
+      "video_sources": []
+    },
+    {
+      "id": "iwaki",
+      "name": "いわきFC",
+      "short_name": "いわき",
+      "aliases": [
+        "IWAKI FC"
+      ],
+      "official_url": "https://iwakifc.com/",
+      "jleague_url": "https://www.jleague.jp/club/iwaki/",
+      "home_stadium_id": "hawaiians-stadium-iwaki",
+      "video_sources": []
+    },
+    {
+      "id": "iwata",
+      "name": "ジュビロ磐田",
+      "short_name": "磐田",
+      "aliases": [
+        "JUBILO IWATA"
+      ],
+      "official_url": "https://www.jubilo-iwata.co.jp/",
+      "jleague_url": "https://www.jleague.jp/club/iwata/",
+      "home_stadium_id": "yamaha-stadium",
+      "video_sources": []
+    },
+    {
+      "id": "shonan",
+      "name": "湘南ベルマーレ",
+      "short_name": "湘南",
+      "aliases": [
+        "SHONAN BELLMARE"
+      ],
+      "official_url": "https://www.bellmare.co.jp/",
+      "jleague_url": "https://www.jleague.jp/club/shonan/",
+      "home_stadium_id": "lemon-gas-hiratsuka",
+      "video_sources": []
+    },
+    {
+      "id": "oita",
+      "name": "大分トリニータ",
+      "short_name": "大分",
+      "aliases": [
+        "OITA TRINITA"
+      ],
+      "official_url": "https://www.oita-trinita.co.jp/",
+      "jleague_url": "https://www.jleague.jp/club/oita/",
+      "home_stadium_id": "crasus-dome-oita",
+      "video_sources": []
+    },
+    {
+      "id": "akita",
+      "name": "ブラウブリッツ秋田",
+      "short_name": "秋田",
+      "aliases": [
+        "BLAUBLITZ AKITA"
+      ],
+      "official_url": "https://blaublitz.jp/",
+      "jleague_url": "https://www.jleague.jp/club/akita/",
+      "home_stadium_id": "soyu-stadium",
+      "video_sources": []
+    },
+    {
+      "id": "tosu",
+      "name": "サガン鳥栖",
+      "short_name": "鳥栖",
+      "aliases": [
+        "SAGAN TOSU"
+      ],
+      "official_url": "https://www.sagan-tosu.net/",
+      "jleague_url": "https://www.jleague.jp/club/tosu/",
+      "home_stadium_id": "ekimae-fudosan-stadium",
+      "video_sources": []
+    },
+    {
+      "id": "yamagata",
+      "name": "モンテディオ山形",
+      "short_name": "山形",
+      "aliases": [
+        "MONTEDIO YAMAGATA"
+      ],
+      "official_url": "https://www.montedioyamagata.jp/",
+      "jleague_url": "https://www.jleague.jp/club/yamagata/",
+      "home_stadium_id": "nd-soft-stadium-yamagata",
+      "video_sources": []
+    },
+    {
+      "id": "tokushima",
+      "name": "徳島ヴォルティス",
+      "short_name": "徳島",
+      "aliases": [
+        "TOKUSHIMA VORTIS"
+      ],
+      "official_url": "https://www.vortis.jp/",
+      "jleague_url": "https://www.jleague.jp/club/tokushima/",
+      "home_stadium_id": "pocari-sweat-stadium",
+      "video_sources": []
+    },
+    {
+      "id": "fujieda",
+      "name": "藤枝MYFC",
+      "short_name": "藤枝",
+      "aliases": [
+        "FUJIEDA MYFC"
+      ],
+      "official_url": "https://myfc.co.jp/",
+      "jleague_url": "https://www.jleague.jp/club/fujieda/",
+      "home_stadium_id": "fujieda-soccer-stadium",
+      "video_sources": []
+    },
+    {
+      "id": "hachinohe",
+      "name": "ヴァンラーレ八戸",
+      "short_name": "八戸",
+      "aliases": [
+        "VANRAURE HACHINOHE"
+      ],
+      "official_url": "https://vanraure.net/",
+      "jleague_url": "https://www.jleague.jp/club/hachinohe/",
+      "home_stadium_id": "plife-foods-stadium",
+      "video_sources": []
+    },
+    {
+      "id": "tochigic",
+      "name": "栃木シティ",
+      "short_name": "栃木C",
+      "aliases": [
+        "TOCHIGI CITY"
+      ],
+      "official_url": "https://tochigi-city.com/",
+      "jleague_url": "https://www.jleague.jp/club/tochigic/",
+      "home_stadium_id": "city-football-station",
+      "video_sources": []
+    },
+    {
+      "id": "imabari",
+      "name": "FC今治",
+      "short_name": "今治",
+      "aliases": [
+        "FC IMABARI"
+      ],
+      "official_url": "https://www.fcimabari.com/",
+      "jleague_url": "https://www.jleague.jp/club/imabari/",
+      "home_stadium_id": "asics-satoyama-stadium",
+      "video_sources": []
+    },
+    {
+      "id": "kofu",
+      "name": "ヴァンフォーレ甲府",
+      "short_name": "甲府",
+      "aliases": [
+        "VENTFORET KOFU"
+      ],
+      "official_url": "https://www.ventforet.jp/",
+      "jleague_url": "https://www.jleague.jp/club/kofu/",
+      "home_stadium_id": "jit-recycle-ink-stadium",
+      "video_sources": []
     }
   ],
   "seasons": [
@@ -1186,6 +3147,206 @@
       "season_id": "2026-27",
       "competition": "J3",
       "club_id": "kochi"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J1",
+      "club_id": "ftokyo"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J1",
+      "club_id": "kashiwa"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J1",
+      "club_id": "hiroshima"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J1",
+      "club_id": "machida"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J1",
+      "club_id": "kobe"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J1",
+      "club_id": "kashima"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J1",
+      "club_id": "yokohamafm"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J1",
+      "club_id": "kawasakif"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J1",
+      "club_id": "urawa"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J1",
+      "club_id": "okayama"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J1",
+      "club_id": "cosaka"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J1",
+      "club_id": "kyoto"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J1",
+      "club_id": "nagoya"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J1",
+      "club_id": "tokyov"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J1",
+      "club_id": "shimizu"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J1",
+      "club_id": "nagasaki"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J1",
+      "club_id": "chiba"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J1",
+      "club_id": "gosaka"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J1",
+      "club_id": "mito"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J1",
+      "club_id": "fukuoka"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J2",
+      "club_id": "niigata"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J2",
+      "club_id": "yokohamafc"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J2",
+      "club_id": "toyama"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J2",
+      "club_id": "sendai"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J2",
+      "club_id": "omiya"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J2",
+      "club_id": "miyazaki"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J2",
+      "club_id": "sapporo"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J2",
+      "club_id": "iwaki"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J2",
+      "club_id": "iwata"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J2",
+      "club_id": "shonan"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J2",
+      "club_id": "oita"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J2",
+      "club_id": "akita"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J2",
+      "club_id": "tosu"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J2",
+      "club_id": "yamagata"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J2",
+      "club_id": "tokushima"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J2",
+      "club_id": "fujieda"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J2",
+      "club_id": "hachinohe"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J2",
+      "club_id": "tochigic"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J2",
+      "club_id": "imabari"
+    },
+    {
+      "season_id": "2026-27",
+      "competition": "J2",
+      "club_id": "kofu"
     }
   ]
 }
