@@ -14,27 +14,39 @@ function clubRowsFor(ctx, id) {
   return ctx.data.seasonClubs(id);
 }
 
-// 所属クラブ：クラブごとに「なし・J1・J2・J3」を選ぶ（設計書 3.4）。見出しは保存してある所属の大会ごと。
-// 選び直しても行は動かさず（入力を残すため）、上の数だけ変える
+// 所属クラブ：クラブごとに「なし・J1・J2・J3」を選ぶ（設計書 3.4）。選び直すと、保存の前でも、その行を選んだ大会の見出しへ移す。
+// 行は作り直さずに移すだけ（選んだ値・bindForm の入力を残すため）。まとめ方は seasonClubSections（純粋な関数）で決める
 function clubCompetitionList(ctx, rows, locked, form) {
   const clubs = ctx.masters.data.clubs;
   const current = currentCompetitions(rows);
   const count = el('p', { class: 'muted', 'data-count': '' });
-  const update = () => {
-    const f = form();
-    const n = (comp) => clubs.filter((c) => (f?.elements[`comp_${c.id}`]?.value ?? '') === comp).length;
-    count.textContent = [...COMPETITIONS.map((c) => `${c} ${n(c)}`), `所属なし ${n('')}`].join('・');
-  };
   const select = (c) => {
     const sel = el('select', { name: `comp_${c.id}`, class: 'input', 'aria-label': `${c.name}の大会`, disabled: locked || null });
     for (const v of ['', ...COMPETITIONS]) sel.append(new Option(v || 'なし', v));
     sel.value = COMPETITIONS.includes(current.get(c.id)) ? current.get(c.id) : '';
     return sel;
   };
-  const sections = seasonClubSections(clubs, rows).map((s) => el('div', { class: 'season-clubs' },
-    el('h3', null, `${s.label}（${s.clubs.length}）`),
-    s.clubs.map((c) => el('div', { class: 'season-club' }, el('span', null, c.name), select(c)))));
-  return { node: el('div', null, count, sections), update };
+  const rowOf = new Map(clubs.map((c) => [c.id, el('div', { class: 'season-club' }, el('span', null, c.name), select(c))]));
+  const sections = new Map([...COMPETITIONS, ''].map((comp) => {
+    const head = el('h3');
+    const body = el('div');
+    return [comp, { node: el('div', { class: 'season-clubs' }, head, body), head, body, label: comp || '所属なし' }];
+  }));
+  const valueOf = (c) => form()?.elements[`comp_${c.id}`]?.value ?? rowOf.get(c.id).querySelector('select').value;
+  const update = () => {
+    const focused = document.activeElement;
+    const groups = new Map(seasonClubSections(clubs, clubs.map((c) => ({ competition: valueOf(c), club_id: c.id })))
+      .map((g) => [g.competition, g.clubs]));
+    for (const [comp, sec] of sections) {
+      const list = groups.get(comp) ?? [];
+      sec.head.textContent = `${sec.label}（${list.length}）`;
+      sec.node.hidden = list.length === 0;
+      for (const c of list) sec.body.append(rowOf.get(c.id)); // 同じ行を移す（選んだ値は残る）
+    }
+    count.textContent = [...COMPETITIONS, ''].map((comp) => `${sections.get(comp).label} ${(groups.get(comp) ?? []).length}`).join('・');
+    if (focused instanceof HTMLElement && focused !== document.activeElement && focused.isConnected) focused.focus({ preventScroll: true });
+  };
+  return { node: el('div', null, count, [...sections.values()].map((sec) => sec.node)), update };
 }
 
 function seasonForm(ctx, season) {
@@ -65,8 +77,9 @@ function seasonForm(ctx, season) {
     editable ? el('button', { class: 'btn', type: 'submit', disabled: ready ? null : true }, isNew ? 'シーズンを追加' : '変更を保存') : el('p', { class: 'muted' }, 'オフラインのため、保存できません。'),
     !isNew && editable ? currentSection(season) : null);
 
-  bindForm(form, state, key); // 開閉・回転で入力・チェックを残す
-  list?.update();
+  list?.update(); // 行をフォームに入れてから bindForm（プルダウンの値も開閉・回転で残すため）
+  bindForm(form, state, key); // 開閉・回転で入力を残す
+  list?.update(); // 戻した値に合わせて、行を選んだ大会の見出しへ移す
   form.addEventListener('change', () => list?.update());
   dropFlashOnInput(form);
   const run = createRunner(ctx, form, 'admin-form');
