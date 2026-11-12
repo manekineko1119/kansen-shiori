@@ -2,7 +2,7 @@
 // 月と選んだ日は URL（?m=・?d=）が持つ（D32）。S は縦に並べ、M・L は2列（CSS だけ）
 import { el, innerLink } from '../components/parts.js';
 import { monthGrid, calendarItems } from '../../core/calendar.js';
-import { parseCalendarQuery, shiftMonth, calendarHref, dayEntries, bandTone } from '../../core/calendar-view.js';
+import { parseCalendarQuery, shiftMonth, calendarHref, dayEntries, bandTone, FIXTURES_LINK } from '../../core/calendar-view.js';
 import { bandLabel } from '../../core/fixture-view.js';
 import { OUTCOME_MARK, recentForm } from '../../core/result.js';
 import { formatDateJa } from '../../core/format.js';
@@ -85,6 +85,7 @@ export function renderCalendar(ctx) {
     el('tbody', null, monthGrid(sel.year, sel.month).map((week) => el('tr', null, week.map((date) => cell(date, sel, ctxCell))))));
   const monthPane = el('div', null,
     el('section', { class: 'sec cal' }, head(sel, recentForm(own, club, today)), table),
+    el('section', { class: 'sec cal-fixtures' }, innerLink(FIXTURES_LINK)),
     el('div', { class: 'cal-legend muted' },
       el('span', null, el('i', { class: 'res a' }, 'A'), ' アウェイ'), el('span', null, el('i', { class: 'res h' }, 'H'), ' ホーム'),
       el('span', null, el('i', { class: 'res trip' }, '遠'), ' 遠征予定'), el('span', null, el('i', { class: 'res rec' }, '⚑'), ' 観戦記録（現地）')),

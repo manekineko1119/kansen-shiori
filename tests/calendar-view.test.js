@@ -110,3 +110,13 @@ test('parseCalendarQuery: m が壊れていれば今日の月。d はその月�
   assert.deepEqual(parseCalendarQuery('m=2026-13&d=2026-11-14', '2026-11-02'), { year: 2026, month: 11, day: '2026-11-14' });
   assert.deepEqual(parseCalendarQuery('m=2026-11&d=2026-12-05', '2026-11-02'), { year: 2026, month: 11, day: '2026-12-05' });
 });
+
+test('FIXTURES_LINK: カレンダーから日程の一覧（公開の画面）へ行く入口', async () => {
+  const { FIXTURES_LINK } = await import('../src/core/calendar-view.js');
+  const { parseRoute, routeAccess } = await import('../src/core/route.js');
+  assert.equal(FIXTURES_LINK.href, '#/fixtures');
+  assert.equal(parseRoute(FIXTURES_LINK.href).name, 'fixtures');
+  assert.equal(routeAccess('fixtures', null), 'ok');
+  assert.equal(FIXTURES_LINK.label, '日程の一覧');
+  assert.equal(FIXTURES_LINK.sub, '今シーズンの全試合と結果');
+});

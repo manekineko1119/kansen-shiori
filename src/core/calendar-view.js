@@ -6,6 +6,9 @@ import { bandLabel, competitionLabel, opponentOf } from './fixture-view.js';
 const inRange = (s) => Number(s.slice(0, 4)) >= 2000 && Number(s.slice(0, 4)) <= 2099;
 const pad = (n, w = 2) => String(n).padStart(w, '0');
 
+// 月の表の下に置く、日程の一覧への入口（メニューは4つのまま。設計書 3.3）
+export const FIXTURES_LINK = Object.freeze({ href: '#/fixtures', label: '日程の一覧', sub: '今シーズンの全試合と結果' });
+
 export function monthParam(year, month) {
   return `${pad(year, 4)}-${pad(month)}`;
 }
