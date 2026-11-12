@@ -38,14 +38,16 @@ function polygonsOf(geometry) {
 
 /** 多角形（外側の輪）を捨てるか。 */
 function dropPolygon(code, outer) {
-  const lats = outer.map((p) => p[1]);
-  const lngs = outer.map((p) => p[0]);
   if (code === 47) {
-    // 沖縄県：東経126.5度より西だけ（先島）、東経131度以東（大東）は捨てる（枠に入らない）
-    return Math.max(...lngs) < 126.5 || Math.min(...lngs) >= 131;
+    // 沖縄県：投影後のすべての点が挿入枠に入る多角形だけを残す（先島・大東・北寄りの島は捨てる）
+    const x0 = INSET.x, y0 = INSET.y, x1 = INSET.x + INSET.w, y1 = INSET.y + INSET.h;
+    return !outer.every(([lng, lat]) => {
+      const [x, y] = project(lat, lng);
+      return x >= x0 && x <= x1 && y >= y0 && y <= y1;
+    });
   }
   // 沖縄県以外：北緯30度より南だけの多角形（小笠原・奄美など）を捨てる
-  return Math.max(...lats) < 30;
+  return Math.max(...outer.map((p) => p[1])) < 30;
 }
 
 function area(ring) {
@@ -91,7 +93,15 @@ function buildRing(ring, tol) {
   // 閉じた輪の最後の点（始点と同じ）を外す
   if (pts.length > 1 && pts[0][0] === pts[pts.length - 1][0] && pts[0][1] === pts[pts.length - 1][1]) pts.pop();
   if (area(pts) < MIN_AREA) return null;
-  pts = dp(pts, tol);
+  // 閉じた輪は始点・終点が隣り合うので、始点から一番遠い点で2つに分けてそれぞれ単純化する
+  let far = 0, fd = -1;
+  for (let i = 1; i < pts.length; i++) {
+    const d = Math.hypot(pts[i][0] - pts[0][0], pts[i][1] - pts[0][1]);
+    if (d > fd) { fd = d; far = i; }
+  }
+  const first = dp(pts.slice(0, far + 1), tol);
+  const second = dp([...pts.slice(far), pts[0]], tol);
+  pts = [...first, ...second.slice(1, -1)];
   if (pts.length < 3 || area(pts) < MIN_AREA) return null;
   const f = (v) => String(Math.round(v * 10) / 10);
   return 'M' + pts.map((p) => `${f(p[0])},${f(p[1])}`).join('L') + 'Z';

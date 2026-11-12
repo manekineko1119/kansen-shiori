@@ -52,3 +52,22 @@ test('会場の点が、その都道府県の外接する四角の中に入る',
 test('出典の表記', () => {
   assert.equal(ATTRIBUTION, 'Made with Natural Earth.');
 });
+function points(d) {
+  const n = d.match(/-?\d+(?:\.\d+)?/g).map(Number);
+  const out = [];
+  for (let i = 0; i + 1 < n.length; i += 2) out.push([n[i], n[i + 1]]);
+  return out;
+}
+
+test('沖縄県のすべての点が挿入枠の中、ほかの都道府県のすべての点が viewBox の中', () => {
+  const { x, y, w, h } = JAPAN_SHAPE.inset;
+  for (const p of JAPAN_SHAPE.prefectures) {
+    for (const [px, py] of points(p.d)) {
+      if (p.name === '沖縄県') {
+        assert.ok(px >= x && px <= x + w && py >= y && py <= y + h, `沖縄県 (${px},${py})`);
+      } else {
+        assert.ok(px >= 0 && px <= 300 && py >= 0 && py <= 330, `${p.name} (${px},${py})`);
+      }
+    }
+  }
+});
