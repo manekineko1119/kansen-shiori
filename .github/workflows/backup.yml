@@ -1,0 +1,50 @@
+# 月1回、データベースを書き出し、暗号化してから成果物（90日）に置く（設計書 11.3）
+# 公開リポジトリの成果物は他人もダウンロードできるので、暗号化していないファイルは置かない
+# Secrets：SUPABASE_DB_URL（Session pooler の接続文字列）・BACKUP_PASSPHRASE
+name: backup
+
+on:
+  schedule:
+    - cron: '0 18 1 * *' # UTC。日本時間の毎月2日 3:00
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: データベースを書き出して暗号化する
+        env:
+          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          umask 077
+          work="$RUNNER_TEMP/backup"
+          mkdir -p "$work/sql" out
+          cli="npx --yes supabase@2.122.0"
+          $cli db dump --db-url "$DB_URL" -f "$work/sql/roles.sql" --role-only
+          $cli db dump --db-url "$DB_URL" -f "$work/sql/schema.sql"
+          $cli db dump --db-url "$DB_URL" -f "$work/sql/data.sql" --use-copy --data-only \
+            -x "storage.buckets_vectors" -x "storage.vector_indexes" # 公式ガイドどおり（戻すときの権限エラーを避ける）
+          tar -C "$work" -czf "$work/backup.tar.gz" sql
+          printf '%s' "$PASSPHRASE" > "$work/pass"
+          stamp=$(TZ=Asia/Tokyo date +%Y-%m-%d)
+          gpg --batch --yes --pinentry-mode loopback --passphrase-file "$work/pass" --symmetric --cipher-algo AES256 \
+            -o "out/kansen-shiori-$stamp.tar.gz.gpg" "$work/backup.tar.gz"
+          rm -rf "$work"
+          ls -l out
+
+      - name: 暗号化したファイルだけを成果物に置く
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: backup
+          path: out/*.gpg
+          retention-days: 90
+          if-no-files-found: error
