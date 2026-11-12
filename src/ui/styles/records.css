@@ -24,6 +24,6 @@
 .rec-list .item .t b { display: block; line-height: 1.45; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rec-list .item .res-wrap { display: inline-flex; align-items: center; gap: 6px; flex: none; }
 .rec-list .item .add { flex: none; margin-left: auto; font-size: 12px; font-weight: 700; color: var(--theme-primary); }
-.rec-list .item.sel { background: var(--theme-tint); box-shadow: inset 4px 0 0 var(--theme-primary); }
+.rec-list .item.sel { background: var(--theme-tint); box-shadow: inset 4px 0 0 var(--theme-primary); padding-left: 12px; padding-right: 8px; }
 .rec-empty { padding: 8px 0; }
 

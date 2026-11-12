@@ -10,7 +10,7 @@
 .fixtures .item .t b { display: block; line-height: 1.45; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fixtures .item .mark { font-size: 13px; font-weight: 700; color: var(--lose); }
 .fixtures .item.off .t b { color: var(--ink-2); }
-.fixtures .item.sel { background: var(--theme-tint); box-shadow: inset 4px 0 0 var(--theme-primary); }
+.fixtures .item.sel { background: var(--theme-tint); box-shadow: inset 4px 0 0 var(--theme-primary); padding-left: 12px; padding-right: 8px; }
 .fixtures .res-wrap { display: inline-flex; align-items: center; gap: 6px; flex: none; }
 .fixtures .score { font-weight: 800; }
 .fixtures .item-rec { flex: none; margin-left: auto; font-size: 13px; font-weight: 700; color: var(--theme-primary); padding: 12px 4px; text-decoration: none; }

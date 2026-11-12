@@ -61,6 +61,15 @@ test('日程・観戦記録の一覧の日付の欄は幅を固定する（日�
   }
 });
 
+test('日程・観戦記録の一覧で選んだ行は、左の帯（inset 4px）より広い左の余白を取る（帯が日付や結果の印に重ならないように）', () => {
+  for (const [name, selector] of [['fixtures.css', '.fixtures .item.sel'], ['records.css', '.rec-list .item.sel']]) {
+    const rule = read(name).match(new RegExp(`${selector.replace(/\./g, '\\.')}\\s*\\{([^}]*)\\}`))?.[1] ?? '';
+    assert.match(rule, /inset\s+4px/, `${name} の ${selector} に左の帯がない`);
+    const pad = Number(/(?:^|;)\s*padding-left\s*:\s*(\d+)px/.exec(rule)?.[1] ?? 0);
+    assert.ok(pad >= 8, `${name} の ${selector} の padding-left が 8px より小さい（${pad}px）`);
+  }
+});
+
 test('CSS のファイルは 300 行以下', () => {
   for (const name of cssFiles) assert.ok(read(name).split(/\r?\n/).length <= 300, name);
 });
