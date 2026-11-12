@@ -131,7 +131,7 @@ function importPanel(ctx, season, fixtures) {
     ev.preventDefault();
     if (!ready) return;
     const parsed = parseFixturesCsv(readValues(form).paste, { season, clubs: ctx.masters.data.clubs, stadiums: ctx.masters.data.stadiums });
-    preview = { seasonId: season.id, fixtures, plan: importPlan(parsed, new Set(fixtures.map((x) => x.id))) };
+    preview = { seasonId: season.id, fixtures, plan: importPlan(parsed, fixtures) };
     ctx.redraw();
   });
   if (!mine) return form;
@@ -143,7 +143,7 @@ function importPanel(ctx, season, fixtures) {
   const box = el('div', { 'data-preview': '' },
     el('h2', null, 'プレビュー'),
     el('p', { role: 'status' }, `新規 ${mine.insert.length} 件・上書き ${mine.update.length} 件・エラー ${mine.errors.length} 件`),
-    mine.errors.map((e) => el('p', { class: 'err' }, `${e.line} 行目：${e.reason}`)),
+    mine.errors.map((e) => el('p', { class: 'err' }, e.line ? `${e.line} 行目：${e.reason}` : `要確認：${e.reason}`)),
     el('div', { class: 'actions' }, go, cancel),
     mine.update.map((r) => previewRow(ctx, r, '上書き')),
     mine.insert.map((r) => previewRow(ctx, r, '新規')));

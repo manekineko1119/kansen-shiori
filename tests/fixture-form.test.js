@@ -74,23 +74,38 @@ const row = (id, extra = {}) => ({
 test('取り込みの振り分け：新しい試合と上書きする試合に分け、エラー行はそのまま', () => {
   const rowA = row('A');
   const rowB = row('B');
-  assert.deepEqual(importPlan({ ok: [rowA, rowB], errors: [{ line: 3, reason: 'x' }] }, new Set(['A'])),
+  assert.deepEqual(importPlan({ ok: [rowA, rowB], errors: [{ line: 3, reason: 'x' }] }, [row('A')]),
     { insert: [rowB], update: [rowA], errors: [{ line: 3, reason: 'x' }] });
 });
 
 test('取り込みの振り分け：上書きでは結果の列を送らない（取り込んだ結果を消さない）', () => {
   const r = row('A', { status: 'finished', home_score: 1, away_score: 0, scorers: [], result_source: 'api', scorers_fetched_at: 'x', scorers_failed_at: 'y', result_updated_at: 'z' });
-  const up = importPlan({ ok: [r], errors: [] }, new Set(['A'])).update[0];
+  const up = importPlan({ ok: [r], errors: [] }, [row('A')]).update[0];
   for (const k of ['status', 'home_score', 'away_score', 'scorers', 'result_source', 'scorers_fetched_at', 'scorers_failed_at', 'result_updated_at']) {
     assert.equal(k in up, false, k);
   }
 });
 
 test('取り込みの振り分け：上書きで試合ページの URL が空なら送らない（自動の取り込みが入れた URL を消さない）', () => {
-  const up = importPlan({ ok: [row('A', { jleague_match_url: null })], errors: [] }, new Set(['A'])).update[0];
+  const up = importPlan({ ok: [row('A', { jleague_match_url: null })], errors: [] }, [row('A')]).update[0];
   assert.equal('jleague_match_url' in up, false);
-  const ins = importPlan({ ok: [row('B', { jleague_match_url: null })], errors: [] }, new Set()).insert[0];
+  const ins = importPlan({ ok: [row('B', { jleague_match_url: null })], errors: [] }, []).insert[0];
   assert.equal(ins.jleague_match_url, null);
+});
+
+test('取り込みの振り分け：節のない試合の日付が変わったら、新しい試合にせず要確認のエラーにする（重複を作らない）', () => {
+  const cup = (id, match_date) => row(id, { competition: 'EMPEROR', round: null, match_date });
+  const before = cup('2026-27_EMPEROR_20260815_a_b', '2026-08-15');
+  const moved = cup('2026-27_EMPEROR_20260822_a_b', '2026-08-22');
+  const plan = importPlan({ ok: [moved], errors: [] }, [before]);
+  assert.deepEqual([plan.insert.length, plan.update.length, plan.errors.length], [0, 0, 1]);
+  assert.equal(plan.errors[0].line, null);
+  assert.match(plan.errors[0].reason, /2026-27_EMPEROR_20260815_a_b/);
+  // 節のある試合・別の大会の節のない試合は、今までどおり新規
+  const other = row('B', { round: '2' });
+  const league = cup('2026-27_LEVAIN_20260822_a_b', '2026-08-22');
+  league.competition = 'LEVAIN';
+  assert.deepEqual(importPlan({ ok: [other, league], errors: [] }, [before]).insert, [other, league]);
 });
 
 const fx = (match_date, kickoff, status = 'scheduled') => ({ match_date, kickoff, status });

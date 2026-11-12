@@ -93,14 +93,25 @@ function forUpdate(row) {
 
 /**
  * parseFixturesCsv の結果 → 新しい試合（insert）と上書きする試合（update）。errors はそのまま。
- * existingIds：そのシーズンの登録済みの試合 ID
+ * existing：そのシーズンの登録済みの試合（id・competition・round・match_date・home_club_id・away_club_id）。
+ * 節のない試合は ID に日付が入る（4.4）ので、日付が変わると別の ID になる。同じ大会・対戦の節のない試合が
+ * 別の日付で登録済みなら、新しい試合にせず理由つきのエラーにする（重複を作らず、観戦記録のつながりを保つ）
  */
-export function importPlan(parsed, existingIds) {
+export function importPlan(parsed, existing) {
+  const ids = new Set(existing.map((f) => f.id));
+  const roundless = (f) => f.round == null || f.round === '';
+  const sameCard = (a, b) => a.competition === b.competition && a.home_club_id === b.home_club_id && a.away_club_id === b.away_club_id;
   const insert = [];
   const update = [];
+  const errors = [...parsed.errors];
   for (const row of parsed.ok) {
-    if (existingIds.has(row.id)) update.push(forUpdate(row));
-    else insert.push(row);
+    if (ids.has(row.id)) { update.push(forUpdate(row)); continue; }
+    const moved = roundless(row) ? existing.find((f) => roundless(f) && sameCard(f, row) && f.match_date !== row.match_date) : undefined;
+    if (moved) {
+      errors.push({ line: null, reason: `${row.match_date} ${row.home_club_id} vs ${row.away_club_id}：同じ大会・対戦の節のない試合が ${moved.match_date} に登録済みです。日付が変わったときは、その試合を1件の編集で直してください（試合ID ${moved.id} はそのまま）` });
+      continue;
+    }
+    insert.push(row);
   }
-  return { insert, update, errors: parsed.errors };
+  return { insert, update, errors };
 }
