@@ -159,3 +159,35 @@ test('共通データの試合 ID の集合が変わったら（写し → 最�
   holder.sync();
   assert.equal(client.calls.length, n2);
 });
+
+test('読み込みが重なっても、最後に始めた読み込みの結果だけ採用する（古いものが遅れて終わっても上書きしない）', async () => {
+  const tables = { trips: [{ id: 't1', fixture_id: 'a' }], match_records: [] };
+  const base = fakeClient(tables);
+  let release;
+  const gate = new Promise((r) => { release = r; });
+  let n = 0;
+  const client = {
+    ...base,
+    from(t) {
+      const q = base.from(t);
+      if (t !== 'trips' || (n += 1) !== 1) return q;
+      const w = { select() { q.select(); return w; }, then(res, rej) { return new Promise((ok, no) => q.then(ok, no)).then((v) => gate.then(() => v)).then(res, rej); } };
+      return w;
+    },
+  };
+  const env = { user: { id: 'u1' }, masters };
+  const holder = createPersonalHolder({
+    client: () => client, getSnapshot: () => createSnapshot(fakeKv()), getUser: () => env.user, getMasters: () => env.masters, now: () => T, onChange: () => {},
+  });
+  holder.sync(); // 1つ目：t1 だけ読んだ結果を、わざと遅らせる
+  await tick();
+  tables.trips.push({ id: 't2', fixture_id: 'a' });
+  env.masters = { status: 'fresh', data: { fixtures: [{ id: 'b' }] } };
+  holder.sync(); // 2つ目：t1・t2
+  await tick();
+  assert.deepEqual(holder.current.data.trips.map((t) => t.id), ['t1', 't2']);
+  release();
+  await tick();
+  await tick();
+  assert.deepEqual(holder.current.data.trips.map((t) => t.id), ['t1', 't2']);
+});

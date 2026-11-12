@@ -8,6 +8,7 @@ const FIRST_TIME_MESSAGE = '初回は通信できる場所で開いてくださ�
 export function createPersonalHolder({ client, getSnapshot, getUser, getMasters, now, onChange }) {
   let current = null; // null（未ログイン）| { status: 'loading' } | refreshPersonal の結果 | { status: 'offline', data, label }
   let key; // current がどの利用者・状態のものか
+  let seq = 0; // 読み込みの通し番号。最後に始めた読み込みの結果だけ採用する（重なったとき古い結果で上書きしない）
   let builtSig = null; // 今の current を、どの共通データの試合 ID の集合で読んだか（集合が変わったら読み直す。M-2）
 
   const keyOf = (u) => (u ? `${u.id}:${u.offline ? 'offline' : 'online'}` : null);
@@ -23,8 +24,9 @@ export function createPersonalHolder({ client, getSnapshot, getUser, getMasters,
   // 読んで、読み始めた利用者のままのときだけ採用する
   async function run(user, k, ids) {
     builtSig = sigOf(ids);
+    const mine = (seq += 1);
     const r = await refreshPersonal({ client: client(), snapshot: getSnapshot(), userId: user.id, nowMs: now(), knownFixtureIds: ids });
-    if (keyOf(getUser()) !== k) return;
+    if (keyOf(getUser()) !== k || mine !== seq) return;
     current = r;
     onChange();
   }
