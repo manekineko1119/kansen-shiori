@@ -3,6 +3,9 @@ import { matchFixture } from './jleague-parse.js';
 
 // アクセスの約束（設計書 6.2）
 export const ACCESS_LIMITS = { listPerRun: 1, matchPagesPerRun: 5, listPerDay: 2, matchPagesPerDay: 10, intervalMs: 2000 };
+// 一度だけの取り込み（取り込みを始めたときの、たまった試合の得点者。2026-11-13 に決定）。1回の試合ページは15件まで。
+// 一覧の回数・ページの間隔はふだんと同じ。1日の試合ページは、ふだんの10件にこの15件を足した数まで
+export const BACKFILL_LIMITS = { matchPagesPerRun: 15 };
 
 // sync_runs の今日の分から、残りの回数を出す（試合結果の取り込み＝job が results の行だけ）
 export function remainingQuota(runsToday) {
@@ -31,7 +34,8 @@ function resultPatch(item, fixture) {
 
 // 戻り値：updates（書き換える列だけの patch）、matchPagesToRead、unmatched、duplicates（同じ試合に当たった2つ目以降の item）、unknownStates
 // scorers_failed_at が入っている試合（得点者の取り込みに失敗した試合）は試合ページを読まない。結果の更新は許す
-export function planSync({ items, fixtures, clubs, quota }) {
+// perRun：1回に読む試合ページの上限（ふだんは ACCESS_LIMITS.matchPagesPerRun。一度だけの取り込みは BACKFILL_LIMITS）
+export function planSync({ items, fixtures, clubs, quota, perRun = ACCESS_LIMITS.matchPagesPerRun }) {
   const plan = { updates: [], matchPagesToRead: [], unmatched: [], duplicates: [], unknownStates: [] };
   const seen = new Set();
   if (quota.list <= 0) return plan; // 一覧ページを読めない日は何もしない
@@ -62,7 +66,7 @@ export function planSync({ items, fixtures, clubs, quota }) {
     }
     if (Object.keys(patch).length > 0) plan.updates.push({ id, patch });
   }
-  const max = Math.max(0, Math.min(ACCESS_LIMITS.matchPagesPerRun, quota.matchPages));
+  const max = Math.max(0, Math.min(perRun, quota.matchPages));
   plan.matchPagesToRead = candidates
     .sort((a, b) => a.fixture.match_date.localeCompare(b.fixture.match_date))
     .slice(0, max)

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { ACCESS_LIMITS, remainingQuota, planSync, scheduleListUrl, formatResultsMessage } from '../../supabase/functions/_shared/sync-plan.js';
+import { ACCESS_LIMITS, BACKFILL_LIMITS, remainingQuota, planSync, scheduleListUrl, formatResultsMessage } from '../../supabase/functions/_shared/sync-plan.js';
 
 const clubs = [
   { id: 'matsumoto', name: '松本山雅FC', short_name: '松本', aliases: [] },
@@ -154,4 +154,16 @@ test('sync_runs の message：何もなければ null、あれば行ごと', () 
   assert.match(m, /試合ページの形でない URL 2件/);
   assert.match(m, /得点者を取り込めなかった試合：f1（ホームの得点者の数がスコアと合いません）/);
   assert.match(m, /書き換えなかった試合（手入力など）：f3/);
+});
+
+// ---- 一度だけの取り込み（設計書 6.2、2026-11-13）----
+
+test('一度だけの取り込みの上限：1回の試合ページは15件まで（ふだんの約束 ACCESS_LIMITS は変えない）', () => {
+  assert.deepEqual(BACKFILL_LIMITS, { matchPagesPerRun: 15 });
+});
+
+test('perRun を渡すと1回の上限をその値にする（残りの回数の上限は効く）', () => {
+  const { fixtures, items } = sevenFixtures();
+  assert.equal(planSync({ items, fixtures, clubs, quota: { list: 1, matchPages: 15 }, perRun: 15 }).matchPagesToRead.length, 7);
+  assert.equal(planSync({ items, fixtures, clubs, quota: { list: 1, matchPages: 6 }, perRun: 15 }).matchPagesToRead.length, 6);
 });

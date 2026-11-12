@@ -86,7 +86,9 @@ Deno.serve(async (req: Request) => {
   if (!isClubId(clubId)) return json(req, { ok: false, message: 'club_id の形が正しくありません' }, 400);
 
   try {
-    const result = await runSyncResults({ db: makeDb(supabase), fetchText, sleep: (ms: number) => new Promise((r) => setTimeout(r, ms)), nowMs: Date.now(), clubId });
+    // 一度だけの取り込み（設計書 6.2）。true のときだけ。管理画面のボタンは送らない
+    const backfill = body?.backfill === true;
+    const result = await runSyncResults({ db: makeDb(supabase), fetchText, sleep: (ms: number) => new Promise((r) => setTimeout(r, ms)), nowMs: Date.now(), clubId, backfill });
     return json(req, { ok: result.ok, message: result.message, skipped_reason: result.skipped_reason });
   } catch (e) {
     return json(req, { ok: false, message: `記録できませんでした：${(e as Error).message}` }, 500);

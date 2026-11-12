@@ -269,3 +269,24 @@ test('例外のとき finishRun に list_read: 1 が渡る。Error 以外の値�
   assert.equal(r.ok, false);
   assert.match(r.message, /ただの文字列/);
 });
+
+// ---- 一度だけの取り込み（backfill。設計書 6.2、2026-11-13）----
+
+test('backfill: true：予約は1回15件・1日はふだんの10件＋15件。message の先頭に一度だけの取り込みと書く', async () => {
+  const { db, calls } = makeDb();
+  const io = makeIo(pageOk);
+  const r = await runSyncResults({ db, fetchText: io.fetchText, sleep: io.sleep, nowMs: NOW, clubId: 'matsumoto', backfill: true });
+  assert.deepEqual(calls.reserveRun, [{ dayStartIso: '2026-11-09T15:00:00.000Z', listLimit: 2, pagesLimit: 25, pagesPerRun: 15 }]);
+  assert.match(r.message, /^一度だけの取り込み（試合ページは最大15件）/);
+  assert.deepEqual(io.sleeps, [[2000, 1]]); // 間隔の2秒は変えない
+});
+
+test('backfill が true でない値（"true"・1）なら、ふだんの取り込み', async () => {
+  for (const backfill of ['true', 1, undefined]) {
+    const { db, calls } = makeDb();
+    const io = makeIo(pageOk);
+    const r = await runSyncResults({ db, fetchText: io.fetchText, sleep: io.sleep, nowMs: NOW, clubId: 'matsumoto', backfill });
+    assert.deepEqual(calls.reserveRun[0], { dayStartIso: '2026-11-09T15:00:00.000Z', listLimit: 2, pagesLimit: 10, pagesPerRun: 5 }, String(backfill));
+    assert.doesNotMatch(r.message ?? '', /一度だけ/);
+  }
+});
