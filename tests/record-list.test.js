@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { recordRows, outcomeCounts, parseRecordsQuery, recordHref, recordsHref, pickSeason, seasonLabel } from '../src/core/record-list.js';
+import { recordRows, outcomeCounts, controlsHref, parseRecordsQuery, recordHref, recordsHref, pickSeason, seasonLabel } from '../src/core/record-list.js';
 
 const fx = (id, date, home, away, hs, as, extra = {}) => ({
   id, match_date: date, kickoff: '14:00', status: 'finished', home_club_id: home, away_club_id: away, home_score: hs, away_score: as, ...extra,
@@ -94,4 +94,22 @@ test('観戦記録の詳細の URL：現地だけに絞っているときは ?on
   assert.equal(recordHref('2026-27_J3_16_matsumoto_kanazawa'), '#/records/2026-27_J3_16_matsumoto_kanazawa');
   assert.equal(recordHref('2026-27_J3_16_matsumoto_kanazawa', { only: true }), '#/records/2026-27_J3_16_matsumoto_kanazawa?only=1');
   assert.equal(recordHref('a b'), '#/records/a%20b');
+});
+
+test('切り替えの行き先：選んだ試合が絞り込み後の一覧に残れば詳細のまま、消えるなら一覧に戻す', () => {
+  const records = [{ fixture_id: 'A', watch_style: 'stadium' }, { fixture_id: 'B', watch_style: 'broadcast' }];
+  const rows = recordRows({ ...base, records });
+  const env = { seasonId: '2026-27', currentSeasonId: '2026-27', rows };
+  // 現地の試合を選んで現地だけに絞る → 詳細のまま
+  assert.equal(controlsHref({ ...env, selectedId: 'A', season: '2026-27', only: true }), '#/records/A?only=1');
+  // 中継の試合を選んで現地だけに絞る → 一覧に戻る
+  assert.equal(controlsHref({ ...env, selectedId: 'B', season: '2026-27', only: true }), '#/records?only=1');
+  // 絞り込みを外す → 詳細のまま
+  assert.equal(controlsHref({ ...env, selectedId: 'B', season: '2026-27', only: false }), '#/records/B');
+  // シーズンを替える → 一覧に戻る
+  assert.equal(controlsHref({ ...env, selectedId: 'A', season: '2025', only: false }), '#/records?s=2025');
+  // 選んでいない（一覧の画面）→ 一覧。今のシーズンは s を書かない
+  assert.equal(controlsHref({ ...env, selectedId: null, season: '2026-27', only: true }), '#/records?only=1');
+  // 行がまだ読めていない → 詳細のまま
+  assert.equal(controlsHref({ ...env, rows: null, selectedId: 'B', season: '2026-27', only: true }), '#/records/B?only=1');
 });

@@ -53,6 +53,18 @@ export function recordHref(id, { only = false } = {}) {
   return `#/records/${encodeURIComponent(id)}${only ? '?only=1' : ''}`;
 }
 
+// シーズンの切り替え・絞り込みを変えたときの行き先（2026-11-13）
+// 選んでいる試合が、変えたあとの一覧に残るなら詳細のまま。消えるなら（シーズンを替えた・現地以外の試合で現地だけに絞った）一覧に戻す
+// rows：今のシーズンの絞り込みなしの行（recordRows）。まだ読めていない（null）なら詳細のまま
+export function controlsHref({ season, only, seasonId, currentSeasonId, selectedId, rows }) {
+  const list = recordsHref({ season: season === currentSeasonId ? null : season, only });
+  if (!selectedId || season !== seasonId) return list;
+  if (!rows) return recordHref(selectedId, { only });
+  const row = rows.find((r) => r.fixture.id === selectedId);
+  const stays = row && (!only || row.record?.watch_style === 'stadium');
+  return stays ? recordHref(selectedId, { only }) : list;
+}
+
 // 見ているシーズン。指定がない・今のシーズン・知らない値は今のシーズン。選択肢を読み込み中・読めないときは指定どおり
 export function pickSeason({ requested, currentId, seasons }) {
   if (!requested || requested === currentId) return currentId;
