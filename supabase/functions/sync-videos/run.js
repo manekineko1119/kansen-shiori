@@ -40,7 +40,8 @@ export function isValidSince(since, nowMs) {
   return since <= jstToday(nowMs) && since >= jstToday(nowMs - MAX_SINCE_DAYS * DAY_MS);
 }
 
-async function syncSource({ db, getJson, nowMs, clubId, apiKey, since }, sources, index) {
+// budget：さかのぼり（since）のときに、1回の実行全体で残っている再生リストのページ数（取得元どうしで分け合う。Codex の指摘、2026-11-13）
+async function syncSource({ db, getJson, nowMs, clubId, apiKey, since }, sources, index, budget) {
   let source = sources[index];
   if (!source.uploads_playlist_id) {
     const res = await getJson(channelsUrl(source.channel, apiKey));
@@ -51,11 +52,12 @@ async function syncSource({ db, getJson, nowMs, clubId, apiKey, since }, sources
     sources[index] = source;
     await db.saveVideoSources(clubId, sources);
   }
-  // ふだんは新着1ページ（50本）だけ。since があれば、since より古い動画が出るページまで（最大 MAX_BACKFILL_PAGES）
-  const maxPages = since ? MAX_BACKFILL_PAGES : 1;
+  // ふだんは取得元ごとに新着1ページ（50本）だけ。since があれば、since より古い動画が出るページまで（1回の実行全体で最大 MAX_BACKFILL_PAGES）
+  const maxPages = since ? budget.pages : 1;
   const videos = [];
   let pageToken;
   for (let page = 0; page < maxPages; page++) {
+    if (since) budget.pages -= 1;
     const playlist = await getJson(playlistItemsUrl(source.uploads_playlist_id, apiKey, pageToken));
     const items = playlist?.items ?? [];
     const ids = items.map((i) => i?.contentDetails?.videoId ?? i?.snippet?.resourceId?.videoId).filter(Boolean);
@@ -97,8 +99,9 @@ async function sync(args, report) {
     return;
   }
   const parts = args.since ? [`${args.since} からさかのぼり`] : [];
+  const budget = { pages: MAX_BACKFILL_PAGES };
   for (const i of targets) {
-    const r = await syncSource(args, sources, i);
+    const r = await syncSource(args, sources, i, budget);
     parts.push(`${sources[i].channel}：動画 ${r.read} 本を調べ、${r.saved} 本を登録しました`);
     if (r.notApplied > 0) parts.push(`書き換えなかった動画（手入力）${r.notApplied} 本`);
   }
