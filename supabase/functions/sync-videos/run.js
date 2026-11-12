@@ -6,11 +6,15 @@ import { jstToday, isClubId } from '../_shared/edge-auth.js';
 const API = 'https://www.googleapis.com/youtube/v3';
 const DAY_MS = 86400000;
 const LOOKBACK_DAYS = 30;
+// 一度だけのさかのぼり（since）で読む再生リストの最大ページ数（50本×10＝500本。YouTube は1ページ2単位）
+export const MAX_BACKFILL_PAGES = 10;
+// since に指定できるのは、今日から1年前まで
+const MAX_SINCE_DAYS = 365;
 const enc = encodeURIComponent;
 
 // YouTube の URL（キーが入るので、ログ・message には出さない）
 export const channelsUrl = (handle, key) => `${API}/channels?part=id,contentDetails&forHandle=${enc(handle)}&key=${enc(key)}`;
-export const playlistItemsUrl = (playlistId, key) => `${API}/playlistItems?part=snippet,contentDetails,status&maxResults=50&playlistId=${enc(playlistId)}&key=${enc(key)}`;
+export const playlistItemsUrl = (playlistId, key, pageToken) => `${API}/playlistItems?part=snippet,contentDetails,status&maxResults=50&playlistId=${enc(playlistId)}&key=${enc(key)}${pageToken ? `&pageToken=${enc(pageToken)}` : ''}`;
 export const videosUrl = (ids, key) => `${API}/videos?part=snippet,liveStreamingDetails,status&id=${enc(ids.join(','))}&key=${enc(key)}`;
 
 // YouTube が 200 以外を返したときの文。本文の error.errors[0].reason（quotaExceeded など）だけを入れる。
@@ -22,7 +26,21 @@ export function youtubeErrorMessage(status, body) {
 }
 
 // 取得元を1つ処理して、{ read, saved, notApplied } を返す。例外は呼び出し側で記録する
-async function syncSource({ db, getJson, nowMs, clubId, apiKey }, sources, index) {
+// 再生リストの項目の公開日（日本時間の 'YYYY-MM-DD'）。読めなければ null
+function publishedDate(item) {
+  const ms = Date.parse(item?.contentDetails?.videoPublishedAt ?? item?.snippet?.publishedAt ?? '');
+  return Number.isNaN(ms) ? null : jstToday(ms);
+}
+
+// since（'YYYY-MM-DD'）が使える値か：形が正しく、実在する日付で、今日から1年前〜今日
+export function isValidSince(since, nowMs) {
+  if (typeof since !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(since)) return false;
+  const ms = Date.parse(`${since}T00:00:00Z`);
+  if (Number.isNaN(ms) || new Date(ms).toISOString().slice(0, 10) !== since) return false;
+  return since <= jstToday(nowMs) && since >= jstToday(nowMs - MAX_SINCE_DAYS * DAY_MS);
+}
+
+async function syncSource({ db, getJson, nowMs, clubId, apiKey, since }, sources, index) {
   let source = sources[index];
   if (!source.uploads_playlist_id) {
     const res = await getJson(channelsUrl(source.channel, apiKey));
@@ -33,13 +51,21 @@ async function syncSource({ db, getJson, nowMs, clubId, apiKey }, sources, index
     sources[index] = source;
     await db.saveVideoSources(clubId, sources);
   }
-  const playlist = await getJson(playlistItemsUrl(source.uploads_playlist_id, apiKey));
-  const items = playlist?.items ?? [];
-  const ids = items.map((i) => i?.contentDetails?.videoId ?? i?.snippet?.resourceId?.videoId).filter(Boolean);
-  const details = ids.length > 0 ? (await getJson(videosUrl(ids, apiKey)))?.items ?? [] : [];
-  const videos = toVideos(items, details, source.channel);
+  // ふだんは新着1ページ（50本）だけ。since があれば、since より古い動画が出るページまで（最大 MAX_BACKFILL_PAGES）
+  const maxPages = since ? MAX_BACKFILL_PAGES : 1;
+  const videos = [];
+  let pageToken;
+  for (let page = 0; page < maxPages; page++) {
+    const playlist = await getJson(playlistItemsUrl(source.uploads_playlist_id, apiKey, pageToken));
+    const items = playlist?.items ?? [];
+    const ids = items.map((i) => i?.contentDetails?.videoId ?? i?.snippet?.resourceId?.videoId).filter(Boolean);
+    const details = ids.length > 0 ? (await getJson(videosUrl(ids, apiKey)))?.items ?? [] : [];
+    videos.push(...toVideos(items, details, source.channel));
+    pageToken = playlist?.nextPageToken;
+    if (!pageToken || (since && items.some((i) => publishedDate(i) !== null && publishedDate(i) < since))) break;
+  }
 
-  const fixtures = await db.fixturesBetween(clubId, jstToday(nowMs - LOOKBACK_DAYS * DAY_MS), jstToday(nowMs));
+  const fixtures = await db.fixturesBetween(clubId, since ?? jstToday(nowMs - LOOKBACK_DAYS * DAY_MS), jstToday(nowMs));
   const rows = planVideoUpserts(videos, {
     fixtures,
     clubs: await db.clubs(),
@@ -70,7 +96,7 @@ async function sync(args, report) {
     report.message = '取得元がありません';
     return;
   }
-  const parts = [];
+  const parts = args.since ? [`${args.since} からさかのぼり`] : [];
   for (const i of targets) {
     const r = await syncSource(args, sources, i);
     parts.push(`${sources[i].channel}：動画 ${r.read} 本を調べ、${r.saved} 本を登録しました`);
@@ -80,15 +106,18 @@ async function sync(args, report) {
 }
 
 // 戻り値：{ ok, message }。最後に必ず sync_runs を1行にする
-export async function runSyncVideos({ db, getJson, nowMs, clubId, apiKey }) {
+// since：一度だけのさかのぼり（設計書 6.3）。渡さなければ、ふだんの毎日の取り込み
+export async function runSyncVideos({ db, getJson, nowMs, clubId, apiKey, since }) {
   const report = { error: null, message: '' };
   if (!isClubId(clubId)) {
     report.error = 'club_id の形が正しくありません';
+  } else if (since !== undefined && since !== null && !isValidSince(since, nowMs)) {
+    report.error = 'さかのぼる日付（since）は、今日から1年前〜今日の YYYY-MM-DD で指定してください';
   } else if (!apiKey) {
     report.error = 'YouTube の APIキーが設定されていません';
   } else {
     try {
-      await sync({ db, getJson, nowMs, clubId, apiKey }, report);
+      await sync({ db, getJson, nowMs, clubId, apiKey, since: since ?? undefined }, report);
     } catch (e) {
       // 念のため、キーの値が文に入っていたら伏せる
       report.error = String(e?.message ?? e).split(apiKey).join('***');

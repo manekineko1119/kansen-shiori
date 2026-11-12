@@ -81,9 +81,12 @@ Deno.serve(async (req: Request) => {
   // PostgREST の or() の文字列に入れるので、形を確かめる
   if (!isClubId(clubId)) return json(req, { ok: false, message: 'club_id の形が正しくありません' }, 400);
 
+  // 一度だけのさかのぼり（設計書 6.3）。値の確かめは run.js が行う
+  const since = typeof body?.since === 'string' ? body.since : undefined;
+
   try {
     const result = await runSyncVideos({
-      db: makeDb(supabase), getJson, nowMs: Date.now(), clubId, apiKey: Deno.env.get('YOUTUBE_API_KEY') ?? '',
+      db: makeDb(supabase), getJson, nowMs: Date.now(), clubId, apiKey: Deno.env.get('YOUTUBE_API_KEY') ?? '', since,
     });
     return json(req, { ok: result.ok, message: result.message });
   } catch (e) {
