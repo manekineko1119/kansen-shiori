@@ -5,6 +5,7 @@ import { startRouter } from './router.js';
 import { renderFrame } from './ui/frame.js';
 import { renderView } from './ui/views/index.js';
 import { buildCtx } from './ui/ctx.js';
+import { createNotice, RELOAD_FAILED_NOTICE } from './ui/notice.js';
 import { createViewState, routeKey, sameUserId, scrollPlan } from './ui/view-state.js';
 import { rerender } from './ui/mount.js';
 import { openKv } from './data/kv-idb.js';
@@ -57,7 +58,7 @@ let signingOut = false; // ログアウトの最中（SIGNED_OUT を期限切れ
 let loginError = null; // ログインから戻ったときのエラー（'not_invited' | 'failed'）
 let expiredNotice = false; // 期限切れでログイン画面へ移ったとき、ログイン画面にいる間だけ理由を出す
 let welcomeSettings = null; // #/welcome の初期値（5-7 の load の settings）
-let notice = null; // 画面の上に1回だけ出すお知らせ（ログアウトで端末の写しを消せなかったときなど）
+const notice = createNotice(); // 画面の上に出すお知らせ（ログアウトで写しを消せなかったとき・共通データを読み直せなかったとき）
 // 何も覚えない Kv（IndexedDB が開けないとき。Safari のプライベートなど）
 const nullKv = { get: async () => undefined, set: async () => {}, delete: async () => {} };
 let snapshot = createSnapshot(nullKv);
@@ -84,9 +85,8 @@ const OFFLINE_NOTICE = 'オフラインのため、最後にログインして�
 
 // 共通データを最新に読み直して、画面を描き直す（管理者が試合の情報を保存したあと）
 async function reloadMasters() {
-  const r = await reloadMastersData({ client: getClient(), snapshot, nowMs: Date.now(), previous: masters });
-  masters = r.masters; // 読み直せなかったときは前の最新を残してお知らせ（M-5）
-  if (r.failed) notice = '共通データを読み直せませんでした（通信できません）。保存した内容は反映されています。画面を開き直すと最新になります';
+  const r = await reloadMastersData({ client: getClient(), snapshot, nowMs: Date.now(), previous: masters }); masters = r.masters; // 読み直せなかったときは前の最新を残す（M-5）
+  if (r.failed) notice.set(RELOAD_FAILED_NOTICE, 1); // 保存のあとの遷移で消えないよう、1回の遷移をまたいで残す
   personal.sync();
   seasonCache.reset(); fixtureCache.reset(); // 保存した試合を含むシーズン・前のシーズンの1件読みを読み直す（M-4）
   redraw();
@@ -126,7 +126,7 @@ function draw(route) {
     welcome: { settings: welcomeSettings, save: saveWelcome },
   });
   root.replaceChildren(renderFrame({
-    route, user, notices: [user?.offline ? OFFLINE_NOTICE : null, notice],
+    route, user, notices: [user?.offline ? OFFLINE_NOTICE : null, notice.text],
     body: renderView(ctx),
     // 今の画面を戻り先に覚える（ログインのあと、この画面に戻る）
     onLogin: () => { if (parseRoute(location.hash).name !== 'login') setReturnTo(location.hash || '#/search'); },
@@ -146,9 +146,9 @@ async function saveWelcome(values) {
 
 // 画面の遷移：離れる画面の位置を残し、次の画面は scrollPlan に従って先頭・残した位置・そのまま
 function renderApp(route) {
-  const prev = currentRoute;
-  if (prev) state.setScroll(routeKey(prev), window.scrollY);
+  const prev = currentRoute; if (prev) state.setScroll(routeKey(prev), window.scrollY);
   const key = routeKey(route);
+  state.dropErrorsExcept(key); // 別の画面に移ったら、前の画面の失敗の理由は捨てる（同じ画面の描き直しでは残る）
   const plan = scrollPlan({ prev, next: route, size: document.documentElement.dataset.size ?? 'S', hasSaved: state.hasScroll(key) });
   draw(route);
   if (plan === 'top') window.scrollTo(0, 0);
@@ -161,8 +161,8 @@ async function doSignOut() {
   signingOut = true;
   try {
     const { cleaned, signedOut } = await signOut({ snapshot, userId: user?.id });
-    if (!signedOut) notice = 'ログアウトできませんでした（通信できません）。通信できる場所でもう一度ログアウトしてください';
-    else if (!cleaned) notice = 'ログアウトしました。ただし、この端末の遠征予定・観戦記録の写しを消せませんでした。次に開いたときにもう一度消します（アカウントのデータはそのままです）';
+    if (!signedOut) notice.set('ログアウトできませんでした（通信できません）。通信できる場所でもう一度ログアウトしてください');
+    else if (!cleaned) notice.set('ログアウトしました。ただし、この端末の遠征予定・観戦記録の写しを消せませんでした。次に開いたときにもう一度消します（アカウントのデータはそのままです）');
     if (signedOut) {
       setUser(null);
       clearLastUser();
@@ -287,7 +287,7 @@ async function start() {
 
 // welcome を直接開いたとき（再読み込みなど）は、設定を読み直して初期値にする
 addEventListener('hashchange', async () => {
-  if (notice && parseRoute(location.hash).name !== 'search') notice = null; // お知らせはログアウト直後の画面だけ
+  notice.onNavigate(parseRoute(location.hash).name);
   loginError = null; // ログインから戻ったときのエラーは、そのときの1回だけ出す
   if (parseRoute(location.hash).name !== 'login') expiredNotice = false; // 期限切れの理由は、ログイン画面を離れたら消す
   const r = parseRoute(location.hash);
