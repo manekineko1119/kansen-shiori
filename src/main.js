@@ -25,11 +25,13 @@ import { createAdminCache } from './data/admin-cache.js';
 import { createHistory } from './data/history.js';
 import { browserLocal } from './data/local.js';
 import { setReturnTo } from './data/return-to.js';
+import { createPendingInput } from './data/pending-input.js';
 import { getLastUser, setLastUser, clearLastUser } from './data/last-user.js';
 import { handleAuthReturn, resolveAuth, onAppUserChange, signInWithGoogle, signOut, dropLocalSession } from './auth/auth.js';
 
 const root = document.getElementById('app');
 const state = createViewState(); // 入力中の値とスクロール位置（メモリ）
+const pendingInput = createPendingInput(); // 期限切れでログインへ移るあいだだけ、入力を1件預かる（9章）
 const local = browserLocal();
 let currentRoute = null;
 // ブラウザの自動のスクロール復元と、アプリの復元（scrollPlan）を取り違えないため
@@ -39,7 +41,15 @@ let masters = null; // 共通データの状態（readMastersSnapshot／refreshM
 let user = null;
 // 利用者を替える。ID が変わるとき（別の人・未ログイン）は、前の人の入力中の値を捨てる（同じ ID なら残す）
 function setUser(next) {
-  if (!sameUserId(user, next)) { state.clearAll(); adminCache.reset(); }
+  if (!sameUserId(user, next)) {
+    state.clearAll();
+    adminCache.reset();
+    // 期限切れで預けた入力：同じ人がログインし直したときだけ戻す（別の人なら捨てる）
+    if (next && !next.offline) {
+      const kept = pendingInput.take({ userId: next.id, nowMs: Date.now() });
+      if (kept) state.setForm(kept.key, kept.values);
+    }
+  }
   user = next;
   personal.sync(); // 利用者・状態が変わったら、前の人の個人データを捨てて読み直す
 }
@@ -169,7 +179,14 @@ async function onExpired() {
   if (expiring) return;
   expiring = true;
   try {
-    if (parseRoute(location.hash).name !== 'login') setReturnTo(location.hash);
+    if (parseRoute(location.hash).name !== 'login') {
+      setReturnTo(location.hash);
+      // 入力中の値を預ける（Google のログインから戻るとページを読み直し、メモリの入力は消えるため）
+      if (currentRoute) {
+        const key = routeKey(currentRoute);
+        pendingInput.save({ userId: user?.id ?? null, key, values: state.getForm(key), nowMs: Date.now() });
+      }
+    }
     expiredNotice = true;
     signingOut = true; // 捨てたときの SIGNED_OUT で、もう一度戻り先を書き換えない
     try { await dropLocalSession(); } finally { signingOut = false; }
