@@ -13,11 +13,11 @@ function newestFirst(a, b) {
   return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
 }
 
-// そのシーズンの終わった試合（status = 'finished'、今日より前）すべて。記録がなければ record は null・style は「記録なし」
+// そのシーズンの終わった試合（status = 'finished'、今日まで）すべて。記録がなければ record は null・style は「記録なし」
 export function recordRows({ fixtures, records, supportClubId, today, onlyWatched }) {
   const byFixture = new Map((records ?? []).map((r) => [r.fixture_id, r]));
   return (fixtures ?? [])
-    .filter((f) => f.status === 'finished' && f.match_date < today)
+    .filter((f) => f.status === 'finished' && f.match_date <= today)
     .sort(newestFirst)
     .map((f) => {
       const record = byFixture.get(f.id) ?? null;

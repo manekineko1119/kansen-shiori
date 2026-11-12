@@ -30,13 +30,13 @@ test('観戦方法の文言：現地・PV・中継', () => {
   assert.deepEqual(recordRows({ ...base, records }).map((r) => r.style), ['PV', '現地']);
 });
 
-test('今日の試合・終了でない試合（中止・延期）・日付が同じ試合の並び（キックオフ→ID）', () => {
+test('今日に終わった試合（M-1）・終了でない試合（中止・延期）・日付が同じ試合の並び（キックオフ→ID）', () => {
   const same1 = fx('S1', '2026-10-25', 'matsumoto', 'a', 1, 0, { kickoff: '13:00' });
   const same2 = fx('S2', '2026-10-25', 'matsumoto', 'b', 1, 0, { kickoff: '16:00' });
   const today = fx('T', '2026-11-11', 'matsumoto', 'c', 1, 0);
   const off = fx('X', '2026-10-01', 'matsumoto', 'd', null, null, { status: 'cancelled' });
   const rows = recordRows({ ...base, fixtures: [same1, same2, today, off], records: [] });
-  assert.deepEqual(rows.map((r) => r.fixture.id), ['S2', 'S1']);
+  assert.deepEqual(rows.map((r) => r.fixture.id), ['T', 'S2', 'S1']);
 });
 
 test('スコア未登録の終わった試合は、結果なし（outcome・score は null）で出る', () => {
@@ -69,4 +69,11 @@ test('シーズンの選び：なし・今のシーズン→今のシーズン�
 
 test('シーズンの名前', () => {
   assert.equal(seasonLabel('2026-27'), '2026-27シーズン');
+});
+
+test('試合当日に終わった試合（結果登録済み）も一覧に出る。まだ終わっていない当日の試合は出ない（M-1）', () => {
+  const todayDone = fx('T', '2026-11-11', 'matsumoto', 'nara', 2, 0);
+  const todayScheduled = fx('S', '2026-11-11', 'matsumoto', 'nara', null, null, { status: 'scheduled' });
+  const rows = recordRows({ ...base, fixtures: [fA, todayDone, todayScheduled] });
+  assert.deepEqual(rows.map((r) => r.fixture.id), ['T', 'A']);
 });
