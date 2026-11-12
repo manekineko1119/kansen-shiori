@@ -7,16 +7,22 @@ const ROOT = new URL('../', import.meta.url);
 const read = (p) => readFileSync(new URL(p, ROOT));
 const BINARY = /\.(png|jpe?g)$/;
 
-// JS の import（静的）とアイコンの参照をたどる
-function jsRefs(path, text) {
+// ファイルから参照される同じアプリのファイル。取りこぼさないよう、import の書き方を読み分けずに、
+// JS は相対パスの .js・.mjs の文字列をすべて（静的・動的な import、export from。コメントの中も拾うが、多い分には害がない）、
+// CSS は url() の相対パスを拾う。'./icons/…' はページ（index.html）から数える（画面が img の src に入れるため）
+export function refsOf(path, text) {
   const dir = posix.dirname(path);
+  const join = (spec) => posix.normalize(posix.join(dir, spec));
   const refs = [];
-  for (const m of text.matchAll(/(?:^|[\s;}])(?:import|export)\s[^'"]*?from\s*['"]([^'"]+)['"]|^\s*import\s*['"]([^'"]+)['"]/gm)) {
-    const spec = m[1] ?? m[2];
-    if (spec.startsWith('.')) refs.push(posix.normalize(posix.join(dir, spec)));
+  if (/\.m?js$/.test(path)) {
+    for (const m of text.matchAll(/['"](\.{1,2}\/[^'"\s]+\.m?js)['"]/g)) {
+      if (m[1] === './sw.js') continue; // Service Worker の登録先（ページから数える。sw.js 自身は事前キャッシュしない）
+      refs.push(join(m[1]));
+    }
+    for (const m of text.matchAll(/['"]\.\/(icons\/[\w.-]+)['"]/g)) refs.push(m[1]);
+  } else if (/\.css$/.test(path)) {
+    for (const m of text.matchAll(/url\(\s*['"]?(\.{1,2}\/[^'")\s]+)['"]?\s*\)/g)) refs.push(join(m[1]));
   }
-  // 画面から読むアイコン（例：'./icons/icon.svg'）。パスはページ（index.html）から数える
-  for (const m of text.matchAll(/['"]\.\/(icons\/[\w.-]+)['"]/g)) refs.push(m[1]);
   return refs;
 }
 
@@ -35,7 +41,7 @@ export function computeAssets() {
     if (seen.has(p)) continue;
     if (!existsSync(new URL(p, ROOT))) throw new Error(`見つからないファイル：${p}`);
     seen.add(p);
-    if (/\.m?js$/.test(p)) queue.push(...jsRefs(p, read(p).toString('utf8')));
+    if (/\.(m?js|css)$/.test(p)) queue.push(...refsOf(p, read(p).toString('utf8')));
   }
   return [...seen].sort();
 }

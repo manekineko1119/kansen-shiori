@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
-import { computeAssets, assetsHash, readSw } from '../scripts/sw-assets.js';
+import { computeAssets, assetsHash, readSw, refsOf } from '../scripts/sw-assets.js';
 
 // Service Worker（設計書 8章）：事前キャッシュの一覧・版の上げ忘れ・キャッシュのしかた
 const sw = readSw();
@@ -93,13 +93,43 @@ test('fetch：Supabase（別のオリジン）と POST には手を出さない'
   assert.equal(await dispatchFetch(env, { url: `${SCOPE}src/main.js`, method: 'POST', mode: 'cors' }), null);
 });
 
-test('fetch：同じオリジンのファイルはキャッシュから返し、なければネットワーク', async () => {
+test('fetch：事前キャッシュのファイルはキャッシュから返し、なければネットワーク', async () => {
   const env = load({ cached: { 'src/ui/styles/base.css': 'css' } });
   assert.deepEqual(await dispatchFetch(env, { url: `${SCOPE}src/ui/styles/base.css`, method: 'GET', mode: 'no-cors' }), { body: 'css' });
   assert.equal(env.fetched.length, 0);
-  const res = await dispatchFetch(env, { url: `${SCOPE}src/unknown.js`, method: 'GET', mode: 'cors' });
+  const res = await dispatchFetch(env, { url: `${SCOPE}src/main.js`, method: 'GET', mode: 'cors' });
   assert.equal(res.status, 200);
   assert.equal(env.fetched.length, 1);
+});
+
+test('fetch：事前キャッシュにない同じオリジンのファイル・スコープの外には手を出さない', async () => {
+  const env = load();
+  assert.equal(await dispatchFetch(env, { url: `${SCOPE}src/unknown.js`, method: 'GET', mode: 'cors' }), null);
+  assert.equal(await dispatchFetch(env, { url: `${ORIGIN}/other-app/index.html`, method: 'GET', mode: 'cors' }), null);
+  assert.equal(await dispatchFetch(env, { url: `${ORIGIN}/other-app/`, method: 'GET', mode: 'navigate' }), null);
+});
+
+test('ナビゲーションの index.html がキャッシュになければネットワークから', async () => {
+  const env = load();
+  const res = await dispatchFetch(env, { url: `${SCOPE}?code=abc`, method: 'GET', mode: 'navigate' });
+  assert.equal(res.status, 200);
+  assert.equal(env.fetched.length, 1);
+});
+
+test('refsOf：相対パスの JS の文字列（静的・動的な import、export from）と CSS の url() をすべて拾う', () => {
+  const js = [
+    "import a from './a.js'; // import x from './commented.js'",
+    'export { b } from "../b.js";',
+    "const c = await import('./c.js');",
+    "import './side.js';",
+    "brand.innerHTML = '<img src=\"./icons/icon.svg\">';",
+    "const u = 'https://example.com/x.js';",
+  ].join('\n');
+  assert.deepEqual(refsOf('src/ui/x.js', js).sort(), [
+    'icons/icon.svg', 'src/b.js', 'src/ui/a.js', 'src/ui/c.js', 'src/ui/commented.js', 'src/ui/side.js',
+  ]);
+  const css = ".a { background: url('../img/bg.png'); } .b { background: url(data:image/png;base64,AA); } .c { src: url(\"./f.woff2\"); }";
+  assert.deepEqual(refsOf('src/ui/styles/x.css', css).sort(), ['src/ui/img/bg.png', 'src/ui/styles/f.woff2']);
 });
 
 test('fetch：ナビゲーションは ?code= 付き（ログインから戻ったとき）でも index.html を返す', async () => {

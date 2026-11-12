@@ -36,7 +36,9 @@ jobs:
           tar -C "$work" -czf "$work/backup.tar.gz" sql
           printf '%s' "$PASSPHRASE" > "$work/pass"
           stamp=$(TZ=Asia/Tokyo date +%Y-%m-%d)
+          # 合言葉から鍵を作る手間を最大にする（成果物は他人も取れるので、総当たりを遅くする）。合言葉は長いランダムの文字列にする
           gpg --batch --yes --pinentry-mode loopback --passphrase-file "$work/pass" --symmetric --cipher-algo AES256 \
+            --s2k-mode 3 --s2k-digest-algo SHA512 --s2k-count 65011712 \
             -o "out/kansen-shiori-$stamp.tar.gz.gpg" "$work/backup.tar.gz"
           rm -rf "$work"
           ls -l out

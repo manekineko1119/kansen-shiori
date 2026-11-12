@@ -39,6 +39,7 @@ test('backup：暗号化した .gpg だけを成果物に入れる（11.3）', (
   assert.match(y, /DB_URL: \$\{\{ secrets\.SUPABASE_DB_URL \}\}/);
   assert.match(y, /secrets\.BACKUP_PASSPHRASE/);
   assert.match(y, /gpg --batch .*--symmetric --cipher-algo AES256/);
+  assert.match(y, /--s2k-mode 3 --s2k-digest-algo SHA512 --s2k-count 65011712/, '合言葉からの鍵の作り方を強くする');
   const upload = y.indexOf('actions/upload-artifact@');
   assert.ok(upload > 0, 'upload-artifact がない');
   assert.ok(y.indexOf('--symmetric') < upload, '暗号化が upload より前');

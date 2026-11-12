@@ -1,7 +1,7 @@
 // 観戦のしおりの Service Worker（設計書 8章）。画面のファイルは版ごとに丸ごと入れ替える
 // VERSION・ASSETS_SHA256・ASSETS は npm run sw-version が書き換える（手で直さない）
-const VERSION = '2026-11-12.1';
-const ASSETS_SHA256 = 'ad872ef1c0d3b8ef13a890a6c8cadc125d73f1fee78ebc17215bedf8252b1a10';
+const VERSION = '2026-11-12.2';
+const ASSETS_SHA256 = 'd1fd510725e2be3a754a3824760092d4125bfe85f3cb4ae524bf6e36e9b9eb75';
 const ASSETS = [
   "icons/apple-touch-icon-180.png",
   "icons/icon-192.png",
@@ -143,6 +143,7 @@ const ASSETS = [
 const PREFIX = 'kansen-shiori-';
 const CACHE = PREFIX + VERSION;
 const abs = (path) => new URL(path, self.location).href;
+const OWN = new Set(ASSETS.map(abs)); // この版のファイル（これ以外の通信には手を出さない）
 
 // 事前キャッシュ：HTTP のキャッシュ（GitHub Pages は max-age=600）を通さずに取り直す。1つでも失敗したら、この版は入れない
 self.addEventListener('install', (event) => {
@@ -175,17 +176,19 @@ async function fromCache(key, request, opts) {
   return (await cache.match(key, opts)) ?? fetch(request);
 }
 
-// 同じオリジンの GET だけをキャッシュから返す。Supabase などほかのオリジンには手を出さない（キャッシュしない）
+// この版のファイルの GET と、アプリの中へのナビゲーションだけをキャッシュから返す。
+// Supabase などほかのオリジン・一覧にないファイルには手を出さない（キャッシュしない）
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin || !url.href.startsWith(abs('./'))) return;
   if (req.mode === 'navigate') {
-    // 画面は index.html の1つだけ（# で切り替える）。ログインから戻る ?code= 付きも同じ
+    // 画面は index.html の1つだけ（# で切り替える）。ログインから戻る ?code= 付きも同じ。なければネットワーク
     event.respondWith(fromCache(abs('index.html'), req, { ignoreSearch: true }));
     return;
   }
+  if (!OWN.has(url.href)) return;
   event.respondWith(fromCache(req, req));
 });
 

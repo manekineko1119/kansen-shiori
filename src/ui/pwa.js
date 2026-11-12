@@ -46,7 +46,12 @@ export function createPwa({ local, onChange }) {
       el('span', null, '更新があります'),
       el('button', {
         type: 'button', class: 'btn btn-small',
-        onclick: () => { reloading = true; waiting?.postMessage('skipWaiting'); },
+        onclick: () => {
+          reloading = true;
+          // 別のタブで先に切り替わっていたら、もう待っていないので、そのまま読み直す
+          if (waiting?.state === 'installed') waiting.postMessage('skipWaiting');
+          else location.reload();
+        },
       }, '再読み込み'));
   }
 
