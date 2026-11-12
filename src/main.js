@@ -29,6 +29,7 @@ import { setReturnTo } from './data/return-to.js';
 import { createPendingInput } from './data/pending-input.js';
 import { getLastUser, setLastUser, clearLastUser } from './data/last-user.js';
 import { handleAuthReturn, resolveAuth, onAppUserChange, signInWithGoogle, signOut, dropLocalSession } from './auth/auth.js';
+import { createPwa } from './ui/pwa.js';
 
 const root = document.getElementById('app');
 const state = createViewState(); // 入力中の値とスクロール位置（メモリ）
@@ -58,6 +59,7 @@ let signingOut = false; // ログアウトの最中（SIGNED_OUT を期限切れ
 let loginError = null; // ログインから戻ったときのエラー（'not_invited' | 'failed'）
 let expiredNotice = false; // 期限切れでログイン画面へ移ったとき、ログイン画面にいる間だけ理由を出す
 let welcomeSettings = null; // #/welcome の初期値（5-7 の load の settings）
+const pwa = createPwa({ local, onChange: () => redraw() }); // Service Worker と、更新・iPhone の追加の案内の帯（8章）
 const notice = createNotice(); // 画面の上に出すお知らせ（ログアウトで写しを消せなかったとき・共通データを読み直せなかったとき）
 // 何も覚えない Kv（IndexedDB が開けないとき。Safari のプライベートなど）
 const nullKv = { get: async () => undefined, set: async () => {}, delete: async () => {} };
@@ -126,7 +128,7 @@ function draw(route) {
     welcome: { settings: welcomeSettings, save: saveWelcome },
   });
   root.replaceChildren(renderFrame({
-    route, user, notices: [user?.offline ? OFFLINE_NOTICE : null, notice.text],
+    route, user, notices: [user?.offline ? OFFLINE_NOTICE : null, notice.text], banners: pwa.banners(route.name),
     body: renderView(ctx),
     // 今の画面を戻り先に覚える（ログインのあと、この画面に戻る）
     onLogin: () => { if (parseRoute(location.hash).name !== 'login') setReturnTo(location.hash || '#/search'); },
@@ -222,6 +224,7 @@ const recheckRoute = () => dispatchEvent(new HashChangeEvent('hashchange'));
 
 async function start() {
   watchSize(redraw); // 幅が変わっても、入力とスクロールを残す
+  pwa.start(); // 待たない（登録できなくても画面は動く）
 
   try { snapshot = createSnapshot(await openKv()); } catch { /* 保存なしで続ける */ }
   const last = getLastUser();

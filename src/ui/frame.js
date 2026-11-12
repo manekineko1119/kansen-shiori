@@ -11,11 +11,12 @@ function topLinks({ user, onLogin }) {
   return box;
 }
 
-// notices：画面の上に出すお知らせの文（空は出さない）。onLogin：ログインのリンクを押したとき（戻り先を覚える）
-export function renderFrame({ route, user, notices = [], body, onLogin }) {
+// notices：画面の上に出すお知らせの文（空は出さない）。banners：その上に出す帯（DOM。更新の表示・iPhone の案内。8章）
+// onLogin：ログインのリンクを押したとき（戻り先を覚える）
+export function renderFrame({ route, user, notices = [], banners = [], body, onLogin }) {
   const header = el('header', { class: 'top' }, el('h1', null, TITLES[route.name] ?? '観戦のしおり'), topLinks({ user, onLogin }));
   header.insertAdjacentHTML('beforeend', `<a class="gearbtn" href="#/settings" aria-label="設定">${ICONS.settings}</a>`);
-  const main = el('main', null,
+  const main = el('main', null, banners,
     notices.filter(Boolean).map((t) => el('p', { class: 'note', role: 'status' }, t)), body);
   return el('div', { class: 'app' }, renderNav(navKeyOf(route.name)), el('div', { class: 'col' }, header, main));
 }
