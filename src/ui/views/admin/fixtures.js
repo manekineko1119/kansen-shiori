@@ -152,9 +152,9 @@ function importPanel(ctx, season, fixtures) {
   cancel.addEventListener('click', () => { preview = null; ctx.redraw(); });
   go.addEventListener('click', () => run(() => ctx.data.admin.importFixtures(mine, { skipErrors: hasErrors }), go, async (res) => {
     preview = null;
-    imported = { seasonId: season.id, inserted: res.inserted, updated: res.updated };
     state.clearForm(key);
-    await reloadFixtures(ctx);
+    await reloadFixtures(ctx); // 読み直しの描き直しは取り込みの画面のまま（知らせを消す）なので、知らせは読み直しのあとに覚える
+    imported = { seasonId: season.id, inserted: res.inserted, updated: res.updated };
     ctx.navigate(href(season.id));
   }));
   return form;
