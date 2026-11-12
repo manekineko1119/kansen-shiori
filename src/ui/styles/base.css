@@ -49,6 +49,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
 a { color: var(--theme-primary); }
 img, svg { max-width: 100%; }
+/* hidden 属性は .btn などの display の指定より強くする（隠したボタンが出ないように） */
+[hidden] { display: none !important; }
 
 /* 大きい数字だけ細身の書体にする（時刻・スコア・日付・料金・集計） */
 .fig {

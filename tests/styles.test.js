@@ -49,6 +49,10 @@ test('index.html は styles/ の CSS をすべて読み、base.css を最初に�
   assert.equal(/styles\.css/.test(html), false);
 });
 
+test('base.css で [hidden] を display: none !important にする（.btn などの display に負けない）', () => {
+  assert.match(css, /\[hidden\]\s*\{\s*display\s*:\s*none\s*!important\s*;?\s*\}/);
+});
+
 test('CSS のファイルは 300 行以下', () => {
   for (const name of cssFiles) assert.ok(read(name).split(/\r?\n/).length <= 300, name);
 });
