@@ -6,7 +6,7 @@ import { bindForm } from '../mount.js';
 import { nextAwayFixture, recordPromptFixture } from '../../core/fixtures.js';
 import { opponentOf } from '../../core/fixture-view.js';
 import {
-  searchDefaults, queryFromForm, historyLabel, fixtureLabel, upcomingFixtures, ticketInfo, MODE_NAMES, LODGING_NAMES,
+  searchDefaults, queryFromForm, historyLabel, fixtureLabel, upcomingFixtures, ticketInfo, opponentGroups, MODE_NAMES, LODGING_NAMES,
 } from '../../core/search-form.js';
 
 const ERR_KEYS = ['fixtureId', 'opponentId', 'date', 'kickoff', 'modes'];
@@ -50,8 +50,11 @@ export function renderSearch(ctx) {
   buildOptions(fixtureSelect, '試合を選んでください',
     upcomingFixtures(fixtures, supportClubId, ctx.today).map((f) => [f.id, fixtureLabel(f, labelEnv)]));
   const opponentSelect = el('select', { id: 'sf-opponentId', name: 'opponentId', class: 'input' });
-  buildOptions(opponentSelect, '指定しない',
-    (data?.clubs ?? []).filter((c) => c.id !== supportClubId).map((c) => [c.id, c.name]));
+  // 応援クラブと同じ大会を先頭に、大会ごとにまとめる（カップ戦でほかの大会のクラブとも当たるため）
+  opponentSelect.append(new Option('指定しない', ''));
+  for (const g of opponentGroups({ clubs: data?.clubs, seasonClubs: data?.seasonClubs, supportClubId })) {
+    opponentSelect.append(el('optgroup', { label: g.label }, g.clubs.map((c) => new Option(c.name, c.id))));
+  }
 
   const fixtureBlock = el('div', { 'data-kind': 'fixture' }, field('日程から選ぶ', 'sf-fixtureId', fixtureSelect, 'fixtureId'));
   const customBlock = el('div', { 'data-kind': 'custom' },

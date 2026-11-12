@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { searchDefaults, queryFromForm, historyLabel, formFromQuery, fixtureLabel, upcomingFixtures, ticketInfo } from '../src/core/search-form.js';
+import { searchDefaults, queryFromForm, historyLabel, formFromQuery, fixtureLabel, upcomingFixtures, ticketInfo, opponentGroups } from '../src/core/search-form.js';
 import { parseResultQuery } from '../src/core/search-query.js';
 
 const clubsById = {
@@ -70,4 +70,36 @@ test('結果画面の条件 → 検索画面の入力欄の値', () => {
   const custom = formFromQuery(parseResultQuery('o=gifu&d=2026-12-06&k=19%3A00&v=長野Uスタジアム&m=car&here=1'));
   assert.deepEqual([custom.kind, custom.fixtureId, custom.opponentId, custom.date, custom.kickoff, custom.venue, custom.origin],
     ['custom', '', 'gifu', '2026-12-06', '19:00', '長野Uスタジアム', 'here']);
+});
+
+// 手入力の対戦相手（設計書 3.1）：応援クラブと同じ大会を先頭に、ほかの大会も大会ごとにまとめる（カップ戦で J1・J2 のクラブとも当たるため）
+const oc = (id, name) => ({ id, name });
+const ogClubs = [oc('j1a', 'J1のA'), oc('j2a', 'J2のA'), oc('matsumoto', '松本山雅FC'), oc('j3a', 'J3のA'), oc('j1b', 'J1のB'), oc('free', '所属なし')];
+const ogSeason = [
+  { competition: 'J1', club_id: 'j1a' }, { competition: 'J1', club_id: 'j1b' },
+  { competition: 'J2', club_id: 'j2a' }, { competition: 'J3', club_id: 'matsumoto' }, { competition: 'J3', club_id: 'j3a' },
+];
+const ids = (groups) => groups.map((g) => [g.label, g.clubs.map((c) => c.id)]);
+
+test('対戦相手は、応援クラブと同じ大会が先頭、残りは J1・J2・J3 の順、所属のないクラブは最後の「その他」', () => {
+  assert.deepEqual(ids(opponentGroups({ clubs: ogClubs, seasonClubs: ogSeason, supportClubId: 'matsumoto' })),
+    [['J3', ['j3a']], ['J1', ['j1a', 'j1b']], ['J2', ['j2a']], ['その他', ['free']]]);
+});
+
+test('対戦相手に応援クラブ自身は入れない', () => {
+  const all = opponentGroups({ clubs: ogClubs, seasonClubs: ogSeason, supportClubId: 'j1a' }).flatMap((g) => g.clubs.map((c) => c.id));
+  assert.ok(!all.includes('j1a'));
+  assert.deepEqual(ids(opponentGroups({ clubs: ogClubs, seasonClubs: ogSeason, supportClubId: 'j1a' }))[0], ['J1', ['j1b']]);
+});
+
+test('応援クラブの所属が分からないとき・所属の表がないときは、J1・J2・J3・その他の順', () => {
+  assert.deepEqual(ids(opponentGroups({ clubs: ogClubs, seasonClubs: ogSeason, supportClubId: 'free' })),
+    [['J1', ['j1a', 'j1b']], ['J2', ['j2a']], ['J3', ['matsumoto', 'j3a']]]);
+  assert.deepEqual(ids(opponentGroups({ clubs: ogClubs, seasonClubs: [], supportClubId: 'matsumoto' })),
+    [['その他', ['j1a', 'j2a', 'j3a', 'j1b', 'free']]]);
+});
+
+test('クラブがないときは空、空の大会は出さない', () => {
+  assert.deepEqual(opponentGroups({ clubs: [], seasonClubs: [], supportClubId: 'matsumoto' }), []);
+  assert.deepEqual(ids(opponentGroups({ clubs: [oc('j3a', 'A')], seasonClubs: ogSeason, supportClubId: 'matsumoto' })), [['J3', ['j3a']]]);
 });

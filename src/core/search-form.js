@@ -104,3 +104,19 @@ export function ticketInfo(f, { clubsById, stadiumsById, supportClubId, originSt
     days: days <= 0 ? '今日' : `あと${days}日`,
   };
 }
+
+// 手入力の対戦相手の選択肢（設計書 3.1）。応援クラブと同じ大会を先頭に、残りは J1・J2・J3、所属のないクラブは「その他」。
+// seasonClubs は今のシーズンの所属の行（competition・club_id）。カップ戦でほかの大会のクラブとも当たるので、絞らずにまとめる
+const COMPETITION_ORDER = ['J1', 'J2', 'J3'];
+export function opponentGroups({ clubs, seasonClubs, supportClubId }) {
+  const compOf = new Map((seasonClubs ?? []).map((r) => [r.club_id, r.competition]));
+  const own = compOf.get(supportClubId);
+  const comps = [...new Set([own, ...COMPETITION_ORDER, ...compOf.values()].filter(Boolean))];
+  const groups = [...comps.map((c) => ({ label: c, comp: c })), { label: 'その他', comp: null }];
+  return groups
+    .map(({ label, comp }) => ({
+      label,
+      clubs: (clubs ?? []).filter((c) => c.id !== supportClubId && (compOf.get(c.id) ?? null) === comp),
+    }))
+    .filter((g) => g.clubs.length > 0);
+}
