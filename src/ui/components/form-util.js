@@ -11,16 +11,33 @@ export function readValues(form) {
   return values;
 }
 
-// 保存の実行：実行中は2回押せない。'expired' は ctx.onExpired()、失敗は理由を出す、成功は onOk。
+const fill = (root, errors) => {
+  for (const [k, msg] of Object.entries(errors ?? {})) {
+    const b = root?.querySelector(`[data-err="${k}"]`) ?? root?.querySelector('[data-err="_form"]');
+    if (b) b.textContent = msg;
+  }
+};
+const wipe = (root) => { for (const p of root?.querySelectorAll('[data-err]') ?? []) p.textContent = ''; };
+
+// 保存の失敗の理由（[data-err] の文）を view-state に覚える。フォームを作るとき出し直し、入力すると消す（開閉・回転で消えない。M-6）
+// live()：今の画面のフォーム（作り直されたあとの出し先）。show/clear はそこに書く
+export function bindErrors(ctx, form, formKey, live = () => form) {
+  const k = `${ctx.key}|${formKey}`;
+  fill(form, ctx.state.getErrors(k));
+  form.addEventListener('input', () => { ctx.state.clearErrors(k); wipe(form); });
+  return {
+    show(errors) { ctx.state.setErrors(k, errors); fill(live(), errors); },
+    clear() { ctx.state.clearErrors(k); wipe(live()); },
+  };
+}
+
+// 保存の実行：実行中は2回押せない。'expired' は ctx.onExpired()、失敗は理由を出す（覚える）、成功は onOk。
 // 幅が変わって画面が作り直されても、今の画面に理由を出す（form が外れていたら、同じ class の今のフォームを探す）
 export function createRunner(ctx, form, formClass) {
-  const live = () => (form.isConnected ? form : document.querySelector(`form.${formClass}`));
-  const errBox = (name) => live()?.querySelector(`[data-err="${name}"]`) ?? live()?.querySelector('[data-err="_form"]');
-  const clearErrors = () => { for (const p of live()?.querySelectorAll('[data-err]') ?? []) p.textContent = ''; };
-  const showErrors = (errors) => { for (const [k, msg] of Object.entries(errors)) { const b = errBox(k); if (b) b.textContent = msg; } };
+  const errors = bindErrors(ctx, form, formClass, () => (form.isConnected ? form : document.querySelector(`form.${formClass}`)));
 
   return async function run(action, button, onOk, mapErrors = (e) => e) {
-    clearErrors();
+    errors.clear();
     button.disabled = true;
     let res;
     try {
@@ -29,7 +46,7 @@ export function createRunner(ctx, form, formClass) {
       button.disabled = false;
     }
     if (res === 'expired') { ctx.onExpired(); return; }
-    if (!res.ok) { showErrors(mapErrors(res.errors)); return; }
+    if (!res.ok) { errors.show(mapErrors(res.errors)); return; }
     await onOk(res);
   };
 }

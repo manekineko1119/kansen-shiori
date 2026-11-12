@@ -2,6 +2,7 @@
 // データ層は ctx から使う（src/data/・src/auth/ を import しない。D29）。保存は「load のあとの同じ入れ物」で行う
 import { el, innerLink } from '../components/parts.js';
 import { bindForm } from '../mount.js';
+import { bindErrors } from '../components/form-util.js';
 import { settingsFromForm, airportRowIndexes, requiredErrors, MAX_AIRPORTS } from '../../core/settings-form.js';
 import { validateSettings } from '../../core/validate.js';
 import { TOYOKO_PREFECTURE_CODES } from '../../core/links/toyoko-inn.js';
@@ -128,6 +129,7 @@ export function renderSettings(ctx) {
     const next = { ...readValues(form), airport_count: String(count + 1) };
     for (const f of AP_FIELDS) next[`airport_${count}_${f}`] = '';
     state.setForm(key, next);
+    errs.clear(); // 行の番号が変わるので、理由は消す
     ctx.redraw();
   }
   function removeRow(i) {
@@ -136,28 +138,24 @@ export function renderSettings(ctx) {
     for (const f of AP_FIELDS) next[`airport_${count - 1}_${f}`] = '';
     next.airport_count = String(count - 1);
     state.setForm(key, next);
+    errs.clear(); // 行の番号が変わるので、理由は消す
     ctx.redraw();
   }
 
-  const showErrors = (errors) => {
-    for (const [k, msg] of Object.entries(errors)) {
-      (form.querySelector(`[data-err="${k}"]`) ?? form.querySelector('[data-err="_form"]')).textContent = msg;
-    }
-  };
-
   bindForm(form, state, key); // 開閉・回転で入力を残す（段6 の約束）
+  const errs = bindErrors(ctx, form, 'settings'); // 失敗の理由も残す（M-6）
   form.addEventListener('input', () => { flash = false; form.querySelector('[data-flash]')?.remove(); });
 
   form.addEventListener('submit', async (ev) => {
     ev.preventDefault();
     if (locked) return;
-    for (const p of form.querySelectorAll('[data-err]')) p.textContent = '';
+    errs.clear();
     flash = false;
     const values = readValues(form);
     const next = settingsFromForm(values, settings);
     const rows = airportRowIndexes(values);
     const local = { ...toRowKeys(validateSettings(next).errors, rows), ...requiredErrors(next) };
-    if (Object.keys(local).length) { showErrors(local); return; }
+    if (Object.keys(local).length) { errs.show(local); return; }
     const btn = form.querySelector('button[type="submit"]');
     btn.disabled = true; // 保存中は2回押せない
     let res;
@@ -174,7 +172,7 @@ export function renderSettings(ctx) {
       return;
     }
     if (res.expired) { ctx.onExpired(); return; }
-    showErrors(toRowKeys(res.errors, rows));
+    errs.show(toRowKeys(res.errors, rows));
   });
 
   return el('div', { class: 'two-col even' }, form, accountSection(ctx));

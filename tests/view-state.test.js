@@ -116,3 +116,30 @@ test('写真の再アップロードの状態：clearForm では消えず、利�
   s.clearAll();
   assert.equal(s.getPhotoRetry('k'), null);
 });
+
+test('保存の失敗の理由：キーごとに覚え、返した値を書き換えても中身は変わらない。空を入れると消える（M-6）', () => {
+  const s = createViewState();
+  assert.deepEqual(s.getErrors('k1|f'), {});
+  const e = { _form: '保存できませんでした', title: '必須です' };
+  s.setErrors('k1|f', e);
+  e.title = '変えた';
+  const got = s.getErrors('k1|f');
+  assert.deepEqual(got, { _form: '保存できませんでした', title: '必須です' });
+  got._form = 'x';
+  assert.equal(s.getErrors('k1|f')._form, '保存できませんでした');
+  assert.deepEqual(s.getErrors('k2|f'), {});
+  s.setErrors('k1|f', {});
+  assert.deepEqual(s.getErrors('k1|f'), {});
+  s.setErrors('k1|f', { a: 'b' });
+  s.clearErrors('k1|f');
+  assert.deepEqual(s.getErrors('k1|f'), {});
+});
+
+test('保存の失敗の理由：clearForm では消えず、利用者が変わる clearAll で消える', () => {
+  const s = createViewState();
+  s.setErrors('k|f', { _form: 'あ' });
+  s.clearForm('k');
+  assert.deepEqual(s.getErrors('k|f'), { _form: 'あ' });
+  s.clearAll();
+  assert.deepEqual(s.getErrors('k|f'), {});
+});

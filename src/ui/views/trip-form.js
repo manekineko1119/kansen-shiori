@@ -2,6 +2,7 @@
 // 保存・削除は ctx.data.trips、保存のあとの読み直しは ctx.data.reloadPersonal()（D33）。この画面から src/data/ は読まない
 import { el, innerLink } from '../components/parts.js';
 import { bindForm } from '../mount.js';
+import { readValues, createRunner } from '../components/form-util.js';
 import { tripFormValues, tripFromForm, fixtureOptions } from '../../core/trip-view.js';
 import { isTripPast } from '../../core/trips.js';
 import { buildResultQuery } from '../../core/search-query.js';
@@ -9,17 +10,6 @@ import { MODE_NAMES, LODGING_NAMES } from '../../core/search-form.js';
 
 const CONFIRM_DELETE = 'この遠征予定を削除しますか';
 let flashId = null; // 保存に成功した直後の「保存しました」を出す遠征予定の ID（作り直しをまたぐ。次の入力で消す）
-
-// 入力欄の今の値（チェックは true/false、ラジオは選んでいるものだけ）
-function readValues(form) {
-  const values = {};
-  for (const f of form.elements) {
-    if (!f.name || f.type === 'file') continue;
-    if (f.type === 'checkbox') values[f.name] = f.checked;
-    else if (f.type === 'radio') { if (f.checked) values[f.name] = f.value; } else values[f.name] = f.value;
-  }
-  return values;
-}
 
 const control = (tag, name, attrs = {}) => el(tag, { id: `t-${name}`, name, class: 'input', ...attrs });
 const field = (label, name, node, err = name) => el('div', { class: 'field' }, el('label', { for: `t-${name}` }, label), node, el('p', { class: 'err', 'data-err': err }));
@@ -75,27 +65,7 @@ export function renderTripForm(ctx, { trip, initial, env }) {
   bindForm(form, state, key); // 開閉・回転で入力を残す（段6 の約束）
   form.addEventListener('input', () => { flashId = null; form.querySelector('[data-flash]')?.remove(); });
 
-  // 作り直された（幅が変わった）あとでも、今の画面に理由を出す
-  const errBox = (name) => {
-    const f = form.isConnected ? form : document.querySelector('form.trip-form');
-    return f?.querySelector(`[data-err="${name}"]`) ?? f?.querySelector('[data-err="_form"]');
-  };
-  const showErrors = (errors) => { for (const [k, msg] of Object.entries(errors)) errBox(k).textContent = msg; };
-  const clearErrors = () => { for (const p of form.querySelectorAll('[data-err]')) p.textContent = ''; };
-
-  async function run(action, button, onOk) {
-    clearErrors();
-    button.disabled = true; // 実行中は2回押せない
-    let res;
-    try {
-      res = await action();
-    } finally {
-      button.disabled = false;
-    }
-    if (res === 'expired') { ctx.onExpired(); return; }
-    if (!res.ok) { showErrors(res.errors); return; }
-    await onOk(res);
-  }
+  const run = createRunner(ctx, form, 'trip-form'); // 失敗の理由は view-state に覚える（M-6）
 
   form.addEventListener('submit', (ev) => {
     ev.preventDefault();
