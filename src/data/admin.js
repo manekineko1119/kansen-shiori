@@ -1,8 +1,9 @@
-// 管理画面の保存（スタジアム・クラブ・シーズン・テスター。設計書 3.4・4.1・4.3）。書けるのは管理者だけ（守りは RLS と関数の中の is_admin()）
+// 管理画面の保存（スタジアム・クラブ・シーズン・日程・テスター。設計書 3.4・4.1・4.3）。書けるのは管理者だけ（守りは RLS と関数の中の is_admin()）
 // 保存はどれも検証 → 保存。戻り値は遠征予定（trips.js）と同じ形：{ ok: true } | { ok: false, errors } | 'expired'
 // 読み取り（テスター・取り込みの状況・写真の使用量）は { ok: true, ... } | { ok: false, message } | 'expired'
 // メールアドレスはログに出さない（console に書かない）
 import { validateStadium, validateClub, validateSeason, validateEmail } from '../core/validate.js';
+import { validateFixtureForm } from '../core/fixture-form.js';
 import { toFormError, FORM_MESSAGES } from './errors.js';
 
 const STADIUM_COLUMNS = ['id', 'name', 'prefecture', 'address', 'lat', 'lng', 'stations', 'airports', 'access_url', 'shuttle_note', 'parking_note', 'agoda_area', 'verified_at'];
@@ -16,6 +17,21 @@ const fail = (e) => {
   const r = toFormError(e);
   return r === 'expired' ? 'expired' : { ok: false, errors: r };
 };
+
+const IMPORT_CHUNK = 100; // 日程の取り込みの1回の upsert の行数
+
+// 列の組み合わせごとに分けて、chunk 件ずつにする（1回の upsert の行は同じ列にする。足りない列が null で上書きされないように）
+function chunksBySameColumns(rows, chunk) {
+  const groups = new Map();
+  for (const r of rows) {
+    const key = Object.keys(r).sort().join(',');
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(r);
+  }
+  const out = [];
+  for (const list of groups.values()) for (let i = 0; i < list.length; i += chunk) out.push(list.slice(i, i + chunk));
+  return out;
+}
 
 const READ_FAILED = '読み込めませんでした。通信できる場所で開き直してください';
 const RUN_OFFLINE = '取り込みを実行できませんでした。通信できる場所でもう一度押してください';
@@ -124,6 +140,63 @@ export function createAdminStore({ client }) {
         } catch { /* 通信できない */ }
       }
       return fail(failure);
+    },
+
+    // --- 日程（設計書 3.4・5.5、FR-42・43） ---
+    // 新規は insert（同じ試合IDがあれば理由を出す）。編集は id で update し、id・season_id は送らない（試合IDは変えない。4.4）
+    async saveFixture(fixture, { isNew, clubIds }) {
+      const v = validateFixtureForm(fixture, clubIds);
+      if (!v.ok) return { ok: false, errors: v.errors };
+      try {
+        if (isNew) {
+          const { error } = await client.from('fixtures').insert(fixture);
+          if (error?.code === '23505') return { ok: false, errors: { _form: 'この試合はすでに登録されています（同じシーズン・大会・節・対戦）' } };
+          return error ? fail(error) : { ok: true };
+        }
+        const { id, season_id: _season, ...cols } = fixture;
+        const { data, error } = await client.from('fixtures').update(cols).eq('id', id).select('id');
+        if (error) return fail(error);
+        return (data ?? []).length ? { ok: true } : { ok: false, errors: { _form: FORM_MESSAGES.forbidden } };
+      } catch (e) {
+        return fail(e);
+      }
+    },
+
+    // 観戦記録・遠征予定が指している試合は、外部キー（23503）で消せない
+    async deleteFixture(id) {
+      try {
+        const { data, error } = await client.from('fixtures').delete().eq('id', id).select('id');
+        if (error?.code === '23503') return { ok: false, errors: { _form: '観戦記録か遠征予定がある試合なので削除できません' } };
+        if (error) return fail(error);
+        return (data ?? []).length ? { ok: true } : { ok: false, errors: { _form: FORM_MESSAGES.forbidden } };
+      } catch (e) {
+        return fail(e);
+      }
+    },
+
+    // 貼り付けの取り込み：importPlan の結果を id で upsert（100 件ずつ）。エラー行があるときは skipErrors を渡すまで送らない（9章）
+    async importFixtures(plan, { skipErrors = false } = {}) {
+      if (plan.errors.length && !skipErrors) {
+        return { ok: false, errors: { _form: 'エラーの行があります。「エラー行を除いて取り込む」か「すべて取り消す」を選んでください' } };
+      }
+      const rows = [...plan.insert, ...plan.update];
+      if (rows.length === 0) return { ok: false, errors: { _form: '取り込む試合がありません' } };
+      let done = 0;
+      for (const part of chunksBySameColumns(rows, IMPORT_CHUNK)) {
+        let error;
+        try {
+          ({ error } = await client.from('fixtures').upsert(part, { onConflict: 'id' }));
+        } catch (e) {
+          error = e;
+        }
+        if (error) {
+          const r = fail(error);
+          if (r === 'expired' || done === 0) return r;
+          return { ok: false, errors: { _form: `${done} 件まで取り込みました。残りは取り込めませんでした（${r.errors._form}）。もう一度取り込むと、同じ試合は上書きされます` } };
+        }
+        done += part.length;
+      }
+      return { ok: true, inserted: plan.insert.length, updated: plan.update.length };
     },
 
     // --- テスター（許可リスト。設計書 7.1、FR-33） ---

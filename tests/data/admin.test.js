@@ -146,3 +146,76 @@ test('今のシーズンの切り替え：id が空なら送らない', async ()
   assert.ok((await createAdminStore({ client }).setCurrentSeason('')).errors.id);
   assert.equal(client.calls.length, 0);
 });
+
+// --- 日程（6-11。設計書 3.4・5.5・9章） ---
+const fxClubIds = new Set(['a', 'b']);
+const fxRow = (id, extra = {}) => ({
+  id, season_id: '2026-27', competition: 'J3', round: '1', match_date: '2026-08-08', kickoff: '18:00', home_club_id: 'a', away_club_id: 'b',
+  venue_stadium_id: null, venue_name_override: null, jleague_match_url: null, ...extra,
+});
+
+test('日程の1件：新規は insert、同じ ID があれば理由を出す。検証で止めたら送らない', async () => {
+  const client = fakeClient({ fixtures: [] });
+  const store = createAdminStore({ client });
+  const bad = await store.saveFixture(fxRow('X', { home_club_id: 'zz' }), { isNew: true, clubIds: fxClubIds });
+  assert.ok(bad.errors.home_club_id);
+  assert.equal(client.calls.length, 0);
+  assert.deepEqual(await store.saveFixture(fxRow('X'), { isNew: true, clubIds: fxClubIds }), { ok: true });
+  assert.deepEqual([client.calls[0].table, client.calls[0].op], ['fixtures', 'insert']);
+  const dup = createAdminStore({ client: fakeClient({ fixtures: [] }, { failOn: { fixtures: { code: '23505', message: 'dup' } } }) });
+  assert.match((await dup.saveFixture(fxRow('X'), { isNew: true, clubIds: fxClubIds })).errors._form, /すでに登録/);
+});
+
+test('日程の1件：編集は id で update（id・season_id は送らない）。RLS で0行なら権限なし', async () => {
+  const client = fakeClient({ fixtures: [fxRow('X', { status: 'finished', home_score: 2 })] });
+  const store = createAdminStore({ client });
+  assert.deepEqual(await store.saveFixture(fxRow('X', { kickoff: '19:00' }), { isNew: false, clubIds: fxClubIds }), { ok: true });
+  const c = client.calls.at(-1);
+  assert.deepEqual([c.op, c.eq], ['update', [['id', 'X']]]);
+  assert.equal('id' in c.values, false);
+  assert.equal('season_id' in c.values, false);
+  assert.equal('status' in c.values, false); // 状態を渡さなければ送らない
+  const none = createAdminStore({ client: fakeClient({ fixtures: [] }) });
+  assert.deepEqual(await none.saveFixture(fxRow('X'), { isNew: false, clubIds: fxClubIds }), { ok: false, errors: { _form: '権限がありません' } });
+});
+
+test('日程の削除：観戦記録・遠征予定がある試合（外部キー）は理由を出す', async () => {
+  const ok = createAdminStore({ client: fakeClient({ fixtures: [fxRow('X')] }) });
+  assert.deepEqual(await ok.deleteFixture('X'), { ok: true });
+  const fk = createAdminStore({ client: fakeClient({ fixtures: [fxRow('X')] }, { failOn: { fixtures: { code: '23503', message: 'fk' } } }) });
+  assert.match((await fk.deleteFixture('X')).errors._form, /観戦記録か遠征予定/);
+  const none = createAdminStore({ client: fakeClient({ fixtures: [] }) });
+  assert.deepEqual(await none.deleteFixture('X'), { ok: false, errors: { _form: '権限がありません' } });
+});
+
+test('日程の取り込み：エラー行があるときは、除くと選ぶまで送らない', async () => {
+  const client = fakeClient({ fixtures: [] });
+  const store = createAdminStore({ client });
+  const plan = { insert: [fxRow('A')], update: [], errors: [{ line: 3, reason: 'x' }] };
+  assert.match((await store.importFixtures(plan)).errors._form, /エラーの行/);
+  assert.equal(client.calls.length, 0);
+  assert.deepEqual(await store.importFixtures(plan, { skipErrors: true }), { ok: true, inserted: 1, updated: 0 });
+  assert.deepEqual(await store.importFixtures({ insert: [], update: [], errors: [] }), { ok: false, errors: { _form: '取り込む試合がありません' } });
+});
+
+test('日程の取り込み：100 件ずつ id で upsert し、列の違う行（URL を送らない上書き）は別に送る', async () => {
+  const client = fakeClient({ fixtures: [] });
+  const store = createAdminStore({ client });
+  const insert = Array.from({ length: 150 }, (_, i) => fxRow(`N${i}`));
+  const { jleague_match_url, ...noUrl } = fxRow('U');
+  const res = await store.importFixtures({ insert, update: [noUrl], errors: [] });
+  assert.deepEqual(res, { ok: true, inserted: 150, updated: 1 });
+  const ups = client.calls.filter((c) => c.op === 'upsert');
+  assert.deepEqual(ups.map((c) => [c.onConflict, c.rows.length]), [['id', 100], ['id', 50], ['id', 1]]);
+  for (const c of ups) {
+    const keys = new Set(c.rows.map((r) => Object.keys(r).sort().join(',')));
+    assert.equal(keys.size, 1); // 1回の upsert の行は同じ列（足りない列を null にしないため）
+  }
+});
+
+test('日程の取り込み：途中で失敗したら、どこまで入ったかを出す', async () => {
+  const client = fakeClient({ fixtures: [] }, { failNth: { fixtures: { n: 2, message: 'x', code: '500' } } });
+  const res = await createAdminStore({ client }).importFixtures({ insert: Array.from({ length: 150 }, (_, i) => fxRow(`N${i}`)), update: [], errors: [] });
+  assert.equal(res.ok, false);
+  assert.match(res.errors._form, /100 件/);
+});

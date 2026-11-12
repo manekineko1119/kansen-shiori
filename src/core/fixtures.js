@@ -42,6 +42,11 @@ export function unresultedFixtures(fixtures, nowMs) {
     .sort(byStart);
 }
 
+// キックオフ時刻が未定の、これからの試合の数（管理画面の日程。取り込み直しに気づくため）。today は 'YYYY-MM-DD'（日本時間）
+export function pendingKickoffCount(fixtures, today) {
+  return fixtures.filter(f => f.status === 'scheduled' && f.kickoff == null && f.match_date >= today).length;
+}
+
 // 記録をつける案内：試合終了の目安〜翌日いっぱい。複数なら新しい試合
 export function recordPromptFixture(fixtures, supportClubId, nowMs) {
   const now = jstNow(nowMs);
