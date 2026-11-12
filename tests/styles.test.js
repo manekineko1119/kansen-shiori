@@ -61,12 +61,13 @@ test('日程・観戦記録の一覧の日付の欄は幅を固定する（日�
   }
 });
 
-test('日程・観戦記録の一覧で選んだ行は、左の帯（inset 4px）より広い左の余白を取る（帯が日付や結果の印に重ならないように）', () => {
+test('日程・観戦記録の一覧で選んだ行は、背景と左の帯をカードの余白（.sec の 16px）まで広げ、中身の位置は動かさない（帯が日付や結果の印に重ならず、列もずれないように）', () => {
   for (const [name, selector] of [['fixtures.css', '.fixtures .item.sel'], ['records.css', '.rec-list .item.sel']]) {
     const rule = read(name).match(new RegExp(`${selector.replace(/\./g, '\\.')}\\s*\\{([^}]*)\\}`))?.[1] ?? '';
     assert.match(rule, /inset\s+4px/, `${name} の ${selector} に左の帯がない`);
-    const pad = Number(/(?:^|;)\s*padding-left\s*:\s*(\d+)px/.exec(rule)?.[1] ?? 0);
-    assert.ok(pad >= 8, `${name} の ${selector} の padding-left が 8px より小さい（${pad}px）`);
+    assert.match(rule, /(?:^|;)\s*margin\s*:\s*0\s+-16px\s*(?:;|$)/, `${name} の ${selector} を左右に 16px 広げていない`);
+    assert.match(rule, /(?:^|;)\s*padding-left\s*:\s*16px/, `${name} の ${selector} の padding-left が 16px でない`);
+    assert.match(rule, /(?:^|;)\s*padding-right\s*:\s*16px/, `${name} の ${selector} の padding-right が 16px でない`);
   }
 });
 
