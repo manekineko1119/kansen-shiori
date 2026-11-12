@@ -46,5 +46,5 @@
 
 /* 管理：シーズンの所属クラブ（クラブごとに大会を選ぶ。設計書 3.4） */
 .admin .season-clubs h3 { margin: 16px 0 4px; font-size: 14px; color: var(--ink-2); }
-.admin .season-club { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 48px; border-bottom: 1px solid var(--rule); }
-.admin .season-club select { flex: none; width: 7em; }
+.admin .season-club { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 52px; padding: 8px 0; border-bottom: 1px solid var(--rule); }
+.admin .season-club select.input { flex: none; width: 6.5em; min-height: 36px; padding: 4px 8px; font-size: 14px; }
