@@ -60,43 +60,45 @@ const seasonTables = () => ({
   ],
 });
 
-test('シーズン：seasons を upsert（is_current は触らない）し、足りないクラブだけ insert・余分なクラブだけ delete する', async () => {
+test('シーズン：seasons を upsert（is_current は触らない）し、所属は消す行を大会ごとに delete → 足す行を insert（設計書 3.4）', async () => {
   const client = fakeClient(seasonTables());
-  const res = await createAdminStore({ client }).saveSeason(season, ['b', 'c', 'd']);
+  // a：J3 → なし、b：J3 のまま、z：J2 → J1（大会が変わる）、c：なし → J3
+  const res = await createAdminStore({ client }).saveSeason(season, { a: '', b: 'J3', z: 'J1', c: 'J3' });
   assert.deepEqual(res, { ok: true });
-  const [up, read, ins, del] = client.calls;
+  const [up, read, del1, del2, ins] = client.calls;
   assert.deepEqual([up.table, up.op, up.onConflict], ['seasons', 'upsert', 'id']);
   assert.deepEqual(up.rows, [{ id: '2026-27', starts_on: '2026-08-01', ends_on: '2027-06-30' }]);
-  assert.deepEqual([read.table, read.op, read.eq], ['season_clubs', 'select', [['season_id', '2026-27'], ['competition', 'J3']]]);
+  assert.deepEqual([read.table, read.op, read.eq], ['season_clubs', 'select', [['season_id', '2026-27']]]);
+  assert.deepEqual([del1.op, del1.eq, del1.in], ['delete', [['season_id', '2026-27'], ['competition', 'J3']], [['club_id', ['a']]]]);
+  assert.deepEqual([del2.op, del2.eq, del2.in], ['delete', [['season_id', '2026-27'], ['competition', 'J2']], [['club_id', ['z']]]]);
   assert.deepEqual([ins.table, ins.op], ['season_clubs', 'insert']);
-  assert.deepEqual(ins.values, [{ season_id: '2026-27', competition: 'J3', club_id: 'c' }, { season_id: '2026-27', competition: 'J3', club_id: 'd' }]);
-  assert.deepEqual([del.table, del.op, del.eq, del.in], ['season_clubs', 'delete', [['season_id', '2026-27'], ['competition', 'J3']], [['club_id', ['a']]]]);
-  assert.equal(client.calls.length, 4);
+  assert.deepEqual(ins.values, [{ season_id: '2026-27', competition: 'J1', club_id: 'z' }, { season_id: '2026-27', competition: 'J3', club_id: 'c' }]);
+  assert.equal(client.calls.length, 5);
 });
 
-test('シーズン：変えるクラブがなければ insert も delete もしない。ほかの大会の所属と、ほかのシーズンの所属は残る', async () => {
+test('シーズン：変えるクラブがなければ insert も delete もしない。選択肢にないクラブと、ほかのシーズンの所属は残る', async () => {
   const tables = seasonTables();
   const client = fakeClient(tables);
-  await createAdminStore({ client }).saveSeason(season, ['a', 'b']);
+  await createAdminStore({ client }).saveSeason(season, { a: 'J3', b: 'J3' });
   assert.deepEqual(client.calls.map((c) => c.op), ['upsert', 'select']);
   const client2 = fakeClient(tables);
-  await createAdminStore({ client: client2 }).saveSeason(season, ['b']);
-  assert.deepEqual(tables.season_clubs.map((r) => `${r.season_id}/${r.competition}/${r.club_id}`).sort(), ['2025/J3/a', '2026-27/J2/z', '2026-27/J3/b']);
+  await createAdminStore({ client: client2 }).saveSeason(season, { a: '', z: 'J3' });
+  assert.deepEqual(tables.season_clubs.map((r) => `${r.season_id}/${r.competition}/${r.club_id}`).sort(), ['2025/J3/a', '2026-27/J3/b', '2026-27/J3/z']);
 });
 
 test('シーズン：検証で止める（IDの形・日付の前後）。新しいシーズンも作れる', async () => {
   const client = fakeClient({ seasons: [], season_clubs: [] });
   const store = createAdminStore({ client });
-  const bad = await store.saveSeason({ id: 'x', starts_on: '2027-01-02', ends_on: '2027-01-01' }, []);
+  const bad = await store.saveSeason({ id: 'x', starts_on: '2027-01-02', ends_on: '2027-01-01' }, {});
   assert.deepEqual(Object.keys(bad.errors).sort(), ['ends_on', 'id']);
   assert.equal(client.calls.length, 0);
-  assert.deepEqual(await store.saveSeason({ id: '2027-28', starts_on: '2027-08-01', ends_on: '2028-06-30' }, ['a']), { ok: true });
+  assert.deepEqual(await store.saveSeason({ id: '2027-28', starts_on: '2027-08-01', ends_on: '2028-06-30' }, { a: 'J2' }), { ok: true });
   assert.deepEqual(client.calls.map((c) => c.op), ['upsert', 'select', 'insert']);
 });
 
 test('シーズン：所属クラブの途中の失敗は理由を返す', async () => {
   const client = fakeClient(seasonTables(), { failOn: { season_clubs: { code: '23503', message: 'fk' } } });
-  assert.deepEqual(await createAdminStore({ client }).saveSeason(season, ['q']), { ok: false, errors: { _form: '入力の値を保存できませんでした' } });
+  assert.deepEqual(await createAdminStore({ client }).saveSeason(season, { q: 'J3' }), { ok: false, errors: { _form: '入力の値を保存できませんでした' } });
 });
 
 test('今のシーズンの切り替え：今の is_current を false → 選んだものを true の2回の update', async () => {

@@ -4,12 +4,12 @@
 // メールアドレスはログに出さない（console に書かない）
 import { validateStadium, validateClub, validateSeason, validateEmail } from '../core/validate.js';
 import { validateFixtureForm } from '../core/fixture-form.js';
+import { seasonClubDiff } from '../core/season-clubs.js';
 import { toFormError, FORM_MESSAGES } from './errors.js';
 
 const STADIUM_COLUMNS = ['id', 'name', 'prefecture', 'address', 'lat', 'lng', 'stations', 'airports', 'access_url', 'shuttle_note', 'parking_note', 'agoda_area', 'verified_at'];
 // theme_colors は送らない（フェーズ2。上書きしないため）
 const CLUB_COLUMNS = ['id', 'name', 'short_name', 'aliases', 'official_url', 'jleague_url', 'home_stadium_id', 'video_sources'];
-const COMPETITION = 'J3';
 
 const pickColumns = (obj, columns) => Object.fromEntries(columns.map((c) => [c, obj[c]]));
 
@@ -77,20 +77,19 @@ export function createAdminStore({ client }) {
     }
   }
 
-  // 所属クラブを clubIds に合わせる：足りない行だけ insert、余分な行だけ delete（全部消して入れ直さない）。ほかの大会の行は触らない
-  async function syncSeasonClubs(seasonId, clubIds) {
-    const { data, error } = await client.from('season_clubs').select('*').eq('season_id', seasonId).eq('competition', COMPETITION);
+  // 所属を want（クラブ → 'J1'|'J2'|'J3'|''）に合わせる（設計書 3.4）：差分だけ、消す行を大会ごとに delete → 足す行を insert。
+  // 全部消して入れ直さない。want にないクラブの行と、ほかのシーズンの行は触らない
+  async function syncSeasonClubs(seasonId, want) {
+    const { data, error } = await client.from('season_clubs').select('*').eq('season_id', seasonId);
     if (error) return error;
-    const have = new Set((data ?? []).map((r) => r.club_id));
-    const want = new Set(clubIds);
-    const add = [...want].filter((id) => !have.has(id));
-    const drop = [...have].filter((id) => !want.has(id));
-    if (add.length) {
-      const res = await client.from('season_clubs').insert(add.map((club_id) => ({ season_id: seasonId, competition: COMPETITION, club_id })));
+    const { add, drop } = seasonClubDiff(data ?? [], want);
+    for (const comp of [...new Set(drop.map((r) => r.competition))]) {
+      const ids = drop.filter((r) => r.competition === comp).map((r) => r.club_id);
+      const res = await client.from('season_clubs').delete().eq('season_id', seasonId).eq('competition', comp).in('club_id', ids);
       if (res.error) return res.error;
     }
-    if (drop.length) {
-      const res = await client.from('season_clubs').delete().eq('season_id', seasonId).eq('competition', COMPETITION).in('club_id', drop);
+    if (add.length) {
+      const res = await client.from('season_clubs').insert(add.map((r) => ({ season_id: seasonId, competition: r.competition, club_id: r.club_id })));
       if (res.error) return res.error;
     }
     return null;
@@ -101,13 +100,13 @@ export function createAdminStore({ client }) {
     saveClub: (club) => saveRow('clubs', pickColumns(club, CLUB_COLUMNS), validateClub(club)),
 
     // is_current はここでは触らない（setCurrentSeason で切り替える）
-    async saveSeason(season, clubIds) {
+    async saveSeason(season, want) {
       const v = validateSeason(season);
       if (!v.ok) return { ok: false, errors: v.errors };
       try {
         const up = await client.from('seasons').upsert({ id: season.id, starts_on: season.starts_on, ends_on: season.ends_on }, { onConflict: 'id' });
         if (up.error) return fail(up.error);
-        const error = await syncSeasonClubs(season.id, clubIds);
+        const error = await syncSeasonClubs(season.id, want);
         return error ? fail(error) : { ok: true };
       } catch (e) {
         return fail(e);

@@ -1,4 +1,4 @@
-// 管理：シーズン（#/admin/seasons。設計書 3.4・11.4、FR-40）。一覧＋編集（所属クラブのチェックリスト・現在のシーズンの切り替え）
+// 管理：シーズン（#/admin/seasons。設計書 3.4・11.4、FR-40）。一覧＋編集（所属クラブの大会の選択・現在のシーズンの切り替え）
 // 選んでいるシーズンは ?id=、新規は ?new=1（D32）。今のシーズンの所属クラブは共通データ、ほかは ctx.data.seasonClubs（通信1回で覚える）
 import { el, split } from '../../components/parts.js';
 import { bindForm } from '../../mount.js';
@@ -6,8 +6,7 @@ import { readValues, createRunner } from '../../components/form-util.js';
 import {
   selection, mastersGuard, canEdit, backLink, ctrl, field, listRow, setFlash, flashNote, dropFlashOnInput,
 } from './common.js';
-
-const COMPETITION = 'J3';
+import { COMPETITIONS, seasonClubSections, currentCompetitions } from '../../../core/season-clubs.js';
 
 // 所属クラブの行（undefined＝読み込み中、null＝読めない）
 function clubRowsFor(ctx, id) {
@@ -15,17 +14,27 @@ function clubRowsFor(ctx, id) {
   return ctx.data.seasonClubs(id);
 }
 
-function clubChecklist(ctx, rows, locked, form) {
+// 所属クラブ：クラブごとに「なし・J1・J2・J3」を選ぶ（設計書 3.4）。見出しは保存してある所属の大会ごと。
+// 選び直しても行は動かさず（入力を残すため）、上の数だけ変える
+function clubCompetitionList(ctx, rows, locked, form) {
   const clubs = ctx.masters.data.clubs;
-  const inSeason = new Set((rows ?? []).filter((r) => r.competition === COMPETITION).map((r) => r.club_id));
+  const current = currentCompetitions(rows);
   const count = el('p', { class: 'muted', 'data-count': '' });
   const update = () => {
-    const n = clubs.filter((c) => form()?.elements[`club_${c.id}`]?.checked).length;
-    count.textContent = `${n}クラブを選んでいます`;
+    const f = form();
+    const n = (comp) => clubs.filter((c) => (f?.elements[`comp_${c.id}`]?.value ?? '') === comp).length;
+    count.textContent = [...COMPETITIONS.map((c) => `${c} ${n(c)}`), `所属なし ${n('')}`].join('・');
   };
-  const boxes = clubs.map((c) => el('label', { class: 'check' },
-    el('input', { type: 'checkbox', name: `club_${c.id}`, checked: inSeason.has(c.id), disabled: locked || null }), el('span', null, c.name)));
-  return { node: el('div', null, count, boxes), update };
+  const select = (c) => {
+    const sel = el('select', { name: `comp_${c.id}`, class: 'input', 'aria-label': `${c.name}の大会`, disabled: locked || null });
+    for (const v of ['', ...COMPETITIONS]) sel.append(new Option(v || 'なし', v));
+    sel.value = COMPETITIONS.includes(current.get(c.id)) ? current.get(c.id) : '';
+    return sel;
+  };
+  const sections = seasonClubSections(clubs, rows).map((s) => el('div', { class: 'season-clubs' },
+    el('h3', null, `${s.label}（${s.clubs.length}）`),
+    s.clubs.map((c) => el('div', { class: 'season-club' }, el('span', null, c.name), select(c)))));
+  return { node: el('div', null, count, sections), update };
 }
 
 function seasonForm(ctx, season) {
@@ -38,7 +47,7 @@ function seasonForm(ctx, season) {
   const date = (label, name, value) => field(label, name, ctrl('input', name, value, { type: 'date', disabled: locked }), name);
 
   let form;
-  const list = ready ? clubChecklist(ctx, rows, locked, () => form) : null;
+  const list = ready ? clubCompetitionList(ctx, rows, locked, () => form) : null;
   const rowsNote = rows === undefined ? '所属クラブを読み込み中です。'
     : rows === null ? '所属クラブを読み込めませんでした。通信できる場所で開き直してください。' : null;
 
@@ -49,7 +58,7 @@ function seasonForm(ctx, season) {
     el('div', { class: 'row2' },
       date('開始日', 'starts_on', isNew ? '' : season.starts_on),
       date('終了日', 'ends_on', isNew ? '' : season.ends_on)),
-    el('h2', null, `所属クラブ（${COMPETITION}）`),
+    el('h2', null, '所属クラブ'),
     list ? list.node : el('p', { class: 'muted', role: 'status' }, rowsNote),
     el('p', { class: 'err', 'data-err': '_form', role: 'alert' }),
     flashNote('seasons', isNew ? '' : season.id),
@@ -75,10 +84,10 @@ function seasonForm(ctx, season) {
     if (locked || !ready) return;
     const values = readValues(form);
     const next = { id: String(values.id ?? '').trim(), starts_on: String(values.starts_on ?? '').trim(), ends_on: String(values.ends_on ?? '').trim() };
-    const clubIds = ctx.masters.data.clubs.filter((c) => values[`club_${c.id}`] === true).map((c) => c.id);
+    const want = Object.fromEntries(ctx.masters.data.clubs.map((c) => [c.id, String(values[`comp_${c.id}`] ?? '')]));
     const taken = isNew && (ctx.data.seasons() ?? []).some((s) => s.id === next.id);
     run(
-      async () => (taken ? { ok: false, errors: { id: 'このIDはすでに登録されています' } } : ctx.data.admin.saveSeason(next, clubIds)),
+      async () => (taken ? { ok: false, errors: { id: 'このIDはすでに登録されています' } } : ctx.data.admin.saveSeason(next, want)),
       form.querySelector('button[type="submit"]'),
       afterSave(next.id),
     );

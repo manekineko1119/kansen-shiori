@@ -43,3 +43,8 @@
 .usage-bar { height: 10px; margin-top: 10px; border-radius: 5px; background: var(--bg); overflow: hidden; }
 .usage-bar > span { display: block; height: 100%; background: var(--theme-primary); }
 .usage-bar.usage-warn > span { background: var(--lose); }
+
+/* 管理：シーズンの所属クラブ（クラブごとに大会を選ぶ。設計書 3.4） */
+.admin .season-clubs h3 { margin: 16px 0 4px; font-size: 14px; color: var(--ink-2); }
+.admin .season-club { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 48px; border-bottom: 1px solid var(--rule); }
+.admin .season-club select { flex: none; width: 7em; }
