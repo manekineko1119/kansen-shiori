@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
   parseScheduleList, parseMatchPage, matchFixture, buildScorers, clubSlugFromUrl,
+  canonicalMatchPageUrl, parseMatchDetails,
 } from '../../supabase/functions/_shared/jleague-parse.js';
 
 const load = (n) => readFileSync(new URL(`../data/${n}`, import.meta.url), 'utf8');
@@ -159,4 +160,50 @@ test('試合ページ：先に得点リストのない見出し風のノード�
   assert.equal(page.reason, undefined);
   assert.deepEqual(page.home.scorers.map((s) => s.player), ['架空 花子']);
   assert.equal(page.away.score, 0);
+});
+
+test('canonicalMatchPageUrl', () => {
+  const c = 'https://www.jleague.jp/match/leaguecup/2026/090901/';
+  for (const u of [c, 'https://www.jleague.jp/match/leaguecup/2026/090901/#summary', 'https://www.jleague.jp/sp/match/leaguecup/2026/090901/lineup/',
+    'https://www.jleague.jp/match/leaguecup/2026/090901', ' https://www.jleague.jp/match/leaguecup/2026/090901/?a=1 ']) assert.equal(canonicalMatchPageUrl(u), c);
+  for (const u of ['http://www.jleague.jp/match/leaguecup/2026/090901/', 'https://jleague.jp/match/leaguecup/2026/090901/',
+    'https://www.jleague.jp/match/leaguecup/2026/0909/', 'https://www.jleague.jp/club/matsumoto/', '', null]) assert.equal(canonicalMatchPageUrl(u), null);
+});
+
+test('試合ページ：試合後の見本を読む', () => {
+  const d = parseMatchDetails(load('jleague-cup-post.html'));
+  assert.equal(d.tournament, 'leaguecup');
+  assert.equal(d.tournamentName, '架空カップ');
+  assert.equal(d.section, '1回戦');
+  assert.equal(d.date, '2026-09-09');
+  assert.equal(d.kickoff, '19:00');
+  assert.equal(d.state, 'finished');
+  assert.equal(d.stadiumName, '架空 スタジアム');
+  assert.equal(d.home.teamCode, 'matsumoto');
+  assert.equal(d.home.score, 1);
+  assert.deepEqual(d.home.scorers, [{ player: '鈴木 次郎', minute: '68', type: 'goal' }]);
+  assert.deepEqual(d.away.scorers, [{ player: '山田 一郎', minute: '90+2', type: 'goal' }]);
+  assert.deepEqual(d.penalty, { home: 4, away: 3 });
+  assert.equal(d.canceledInfo, '');
+});
+
+test('試合ページ：試合前の見本を読む', () => {
+  const d = parseMatchDetails(load('jleague-cup-pre.html'));
+  assert.equal(d.state, 'scheduled');
+  assert.equal(d.kickoff, null);
+  assert.equal(d.date, '2026-10-15');
+  assert.equal(d.stadiumName, null);
+  assert.equal(d.home.score, null);
+  assert.equal(d.home.scorers, null);
+  assert.equal(d.penalty, null);
+});
+
+test('試合ページ：PK戦は同点のときだけ、0対0は null', () => {
+  const html = load('jleague-cup-post.html');
+  assert.equal(parseMatchDetails(html.replace('\\"score\\":1,\\"playerScoreList\\":[{\\"name\\":\\"山田', '\\"score\\":2,\\"playerScoreList\\":[{\\"name\\":\\"山田')).penalty, null);
+  assert.equal(parseMatchDetails(html.replace('\\"homeTeamScore\\":4,\\"awayTeamScore\\":3', '\\"homeTeamScore\\":0,\\"awayTeamScore\\":0')).penalty, null);
+});
+
+test('試合ページ：大会・回戦のデータがないページは reason', () => {
+  assert.ok(parseMatchDetails(load('jleague-list.html')).reason);
 });

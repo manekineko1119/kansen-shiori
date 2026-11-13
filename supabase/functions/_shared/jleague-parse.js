@@ -157,3 +157,73 @@ export function matchFixture(item, fixtures, clubs) {
 export function clubSlugFromUrl(jleagueUrl) {
   return /\/club\/([^/?#]+)/.exec(jleagueUrl ?? '')?.[1] ?? null;
 }
+
+// 試合ページのURLを https://www.jleague.jp/match/{大会}/{年}/{6桁}/ にそろえる。合わなければ null
+export function canonicalMatchPageUrl(input) {
+  if (typeof input !== 'string') return null;
+  let u;
+  try {
+    u = new URL(toHalfWidth(input).trim());
+  } catch {
+    return null;
+  }
+  if (u.protocol !== 'https:' || u.hostname !== 'www.jleague.jp') return null;
+  const m = /^\/(?:sp\/)?match\/([a-z0-9-]+)\/(\d{4})\/(\d{6})(?:\/.*)?$/.exec(u.pathname);
+  return m ? `${ORIGIN}/match/${m[1]}/${m[2]}/${m[3]}/` : null;
+}
+
+// "$D2026-09-09T10:00:00.000Z"（UTC）→ 日本時間の { date, kickoff }。00:00 は時刻未定として kickoff を null にする
+function jstDateTime(v) {
+  const m = /^\$D(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})/.exec(str(v) ?? '');
+  if (!m) return null;
+  const t = Date.parse(`${m[1]}:00Z`);
+  if (Number.isNaN(t)) return null;
+  const iso = new Date(t + 9 * 3600 * 1000).toISOString();
+  const time = iso.slice(11, 16);
+  return { date: iso.slice(0, 10), kickoff: time === '00:00' ? null : time };
+}
+
+function detailSide(t, finished) {
+  const read = finished ? readSide(t) : null;
+  return {
+    teamCode: str(t?.teamCode),
+    name: str(t?.name),
+    nameS: str(t?.nameS),
+    score: read ? read.score : (finished ? num(t?.score) : null),
+    scorers: read ? read.scorers : null,
+  };
+}
+
+// 試合ページ1つから、大会・回戦・日時・会場・結果・PK戦を読む。読めなければ { reason }
+export function parseMatchDetails(html) {
+  for (const data of jsonLinesWith(html, 'tournament')) {
+    const node = findNode(data, (o) => 'tournament' in o && 'section' in o);
+    if (!node) continue;
+    const when = jstDateTime(node.date);
+    const tournament = str(node.tournament);
+    if (!when || !tournament || !node.homeTeam || !node.awayTeam) continue;
+    const finished = node.type === 'post-game';
+    const home = detailSide(node.homeTeam, finished);
+    const away = detailSide(node.awayTeam, finished);
+    const ph = num(node.penalty?.homeTeamScore);
+    const pa = num(node.penalty?.awayTeamScore);
+    const hasPenalty = finished && ph !== null && pa !== null && (ph > 0 || pa > 0)
+      && home.score !== null && home.score === away.score;
+    const stadium = undecided(node.stadium?.name);
+    return {
+      tournament,
+      tournamentName: str(node.tournamentName),
+      section: str(node.section),
+      date: when.date,
+      kickoff: when.kickoff,
+      state: finished ? 'finished' : 'scheduled',
+      type: str(node.type),
+      stadiumName: stadium === null ? null : (toHalfWidth(stadium).trim() || null),
+      home,
+      away,
+      penalty: hasPenalty ? { home: ph, away: pa } : null,
+      canceledInfo: str(node.afterCanceledInfo) ?? '',
+    };
+  }
+  return { reason: '試合ページに大会・回戦のデータが見つかりません' };
+}
