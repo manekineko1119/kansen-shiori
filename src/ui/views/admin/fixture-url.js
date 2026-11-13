@@ -12,10 +12,19 @@ import { canEdit, backLink, ctrl, field, setFlash, reloadFixtures } from './comm
 
 // 読み込んだ試合ページと今日の読んだ数（描き直しをまたいで覚える。DOM に持たせない）
 let loaded = null; // { url, page }
+let busy = false; // 読み込み・登録の一連の処理（保存後の読み直し・移動まで）が終わるまで、2回目を受け付けない
+let typed = ''; // 欄に今入っている URL（読み込み中に書き換えたら、返ってきた結果を捨てるため）
 let used; // undefined＝未取得、null＝読めなかった、数＝今日読んだ試合ページの数
 
 // 管理のメニューに戻ったとき（index.js）に捨てる
-export function forgetFixtureUrl() { loaded = null; used = undefined; }
+export function forgetFixtureUrl() { loaded = null; used = undefined; typed = ''; }
+
+// 二重の操作を防ぐ：busy の間は action を始めない。onOk を含む全体が終わってから解く
+async function guarded(fn) {
+  if (busy) return;
+  busy = true;
+  try { await fn(); } finally { busy = false; }
+}
 
 const href = (seasonId, extra = '') => `#/admin/fixtures?s=${encodeURIComponent(seasonId)}${extra}`;
 const scoreText = (s) => (s ? `${s[0]}-${s[1]}` : '');
@@ -70,31 +79,32 @@ export function renderFixtureUrl(ctx, seasonId) {
     el('p', { class: 'muted' }, 'ルヴァンカップの試合ページの URL を入れると、大会・回戦・日時・会場・対戦相手を読みます。試合のあとにもう一度入れると、結果・得点者・PK戦を更新します。'),
     field('試合ページの URL', 'match_url',
       ctrl('input', 'match_url', loaded?.url ?? '', { type: 'url', inputmode: 'url', autocapitalize: 'none', spellcheck: 'false', disabled: editable ? null : true }), 'match_url'),
-    editable ? el('button', { class: 'btn btn-sub', type: 'submit' }, '読み込む') : el('p', { class: 'muted' }, 'オフラインのため、読み込めません。'),
+    editable ? el('button', { class: 'btn btn-sub', type: 'submit', disabled: busy ? true : null }, '読み込む') : el('p', { class: 'muted' }, 'オフラインのため、読み込めません。'),
     remaining === null ? null : el('p', { class: 'hint' }, `今日あと ${remaining} 件読めます`),
     el('p', { class: 'err', 'data-err': '_form', role: 'alert' }));
   bindForm(form, state, key);
   const run = createRunner(ctx, form, 'admin-form');
   // 書き換えたらプレビューを消す（画面は作り直さない。入力中のフォーカス・キーボードを保つ）
-  form.addEventListener('input', () => { loaded = null; form.querySelector('[data-preview]')?.remove(); });
+  form.addEventListener('input', () => { typed = readValues(form).match_url.trim(); loaded = null; form.querySelector('[data-preview]')?.remove(); });
   form.addEventListener('submit', (ev) => {
     ev.preventDefault();
-    if (!editable) return;
+    if (!editable || busy) return;
     const url = readValues(form).match_url.trim();
-    run(() => admin.readMatchPage(url), form.querySelector('button[type="submit"]'), async (res) => {
-      loaded = { url: res.url ?? url, page: res.page };
+    typed = url;
+    guarded(() => run(() => admin.readMatchPage(url), form.querySelector('button[type="submit"]'), async (res) => {
+      if (typed === url) loaded = { url: res.url ?? url, page: res.page }; // 読み込み中に書き換えられていたら捨てる
       const day = await admin.loadMatchPagesToday(jstDayStartIso(ctx.nowMs)); // 読んだ分を数え直す
       if (day?.ok) used = day.used;
       ctx.redraw();
-    });
+    }));
   });
   if (!loaded) return form;
 
   const seasons = ctx.data.seasons();
   const season = seasonForDate(seasons ?? [], loaded.page.date);
-  const fixtures = season ? ctx.data.seasonFixtures(season.id) : [];
-  if (seasons === undefined || fixtures === undefined) { form.append(el('p', { class: 'muted' }, '読み込み中です。')); return form; }
-  if (fixtures === null) { form.append(el('p', { class: 'note', role: 'status' }, '日程を読み込めませんでした。通信できる場所で開き直してください。')); return form; }
+  const fixtures = season ? ctx.data.seasonFixtures(season.id) : (seasons === null ? null : []);
+  if (seasons === undefined || fixtures === undefined) { form.append(el('p', { class: 'muted', 'data-preview': '' }, '読み込み中です。')); return form; }
+  if (seasons === null || fixtures === null) { form.append(el('p', { class: 'note', role: 'status', 'data-preview': '' }, '日程を読み込めませんでした。通信できる場所で開き直してください。')); return form; }
   const plan = planMatchImport(loaded.page, {
     url: loaded.url, season, clubs: ctx.masters.data.clubs, stadiums: ctx.masters.data.stadiums, existing: fixtures,
     supportClubId: ctx.settings?.support_club_id ?? null, nowIso: new Date(ctx.nowMs).toISOString(),
@@ -103,14 +113,14 @@ export function renderFixtureUrl(ctx, seasonId) {
     form.append(el('div', { 'data-preview': '' }, plan.errors.map((e) => el('p', { class: 'err', role: 'alert' }, e))));
     return form;
   }
-  const go = el('button', { class: 'btn', type: 'button', disabled: editable ? null : true }, plan.mode === 'insert' ? '登録' : '更新');
+  const go = el('button', { class: 'btn', type: 'button', disabled: editable && !busy ? null : true }, plan.mode === 'insert' ? '登録' : '更新');
   form.append(previewBox(ctx, plan), el('div', { class: 'actions' }, go));
-  go.addEventListener('click', () => run(() => admin.saveMatchImport(plan), go, async () => {
+  go.addEventListener('click', () => guarded(() => run(() => admin.saveMatchImport(plan), go, async () => {
     loaded = null;
     state.clearForm(key);
     setFlash('fixtures', plan.id);
     await reloadFixtures(ctx);
     ctx.navigate(href(season.id, `&id=${encodeURIComponent(plan.id)}`));
-  }));
+  })));
   return form;
 }
