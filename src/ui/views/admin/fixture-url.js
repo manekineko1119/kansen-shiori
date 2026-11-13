@@ -63,6 +63,7 @@ export function renderFixtureUrl(ctx, seasonId) {
   const { state, key } = ctx;
   const editable = canEdit(ctx);
   const admin = ctx.data.admin;
+  if (loaded) typed = loaded.url; // 欄にはこの URL を入れて描く
   if (used === undefined && editable) { // 今日あと何件読めるか：最初に1回だけ読む
     used = null;
     admin.loadMatchPagesToday(jstDayStartIso(ctx.nowMs)).then((res) => {
@@ -79,7 +80,7 @@ export function renderFixtureUrl(ctx, seasonId) {
     el('p', { class: 'muted' }, 'ルヴァンカップの試合ページの URL を入れると、大会・回戦・日時・会場・対戦相手を読みます。試合のあとにもう一度入れると、結果・得点者・PK戦を更新します。'),
     field('試合ページの URL', 'match_url',
       ctrl('input', 'match_url', loaded?.url ?? '', { type: 'url', inputmode: 'url', autocapitalize: 'none', spellcheck: 'false', disabled: editable ? null : true }), 'match_url'),
-    editable ? el('button', { class: 'btn btn-sub', type: 'submit', disabled: busy ? true : null }, '読み込む') : el('p', { class: 'muted' }, 'オフラインのため、読み込めません。'),
+    editable ? el('button', { class: 'btn btn-sub', type: 'submit' }, '読み込む') : el('p', { class: 'muted' }, 'オフラインのため、読み込めません。'),
     remaining === null ? null : el('p', { class: 'hint' }, `今日あと ${remaining} 件読めます`),
     el('p', { class: 'err', 'data-err': '_form', role: 'alert' }));
   bindForm(form, state, key);
@@ -113,7 +114,7 @@ export function renderFixtureUrl(ctx, seasonId) {
     form.append(el('div', { 'data-preview': '' }, plan.errors.map((e) => el('p', { class: 'err', role: 'alert' }, e))));
     return form;
   }
-  const go = el('button', { class: 'btn', type: 'button', disabled: editable && !busy ? null : true }, plan.mode === 'insert' ? '登録' : '更新');
+  const go = el('button', { class: 'btn', type: 'button', disabled: editable ? null : true }, plan.mode === 'insert' ? '登録' : '更新');
   form.append(previewBox(ctx, plan), el('div', { class: 'actions' }, go));
   go.addEventListener('click', () => guarded(() => run(() => admin.saveMatchImport(plan), go, async () => {
     loaded = null;
