@@ -34,6 +34,7 @@ function chunksBySameColumns(rows, chunk) {
 }
 
 const READ_FAILED = '読み込めませんでした。通信できる場所で開き直してください';
+const sumPages = (rows) => (rows ?? []).reduce((n, r) => n + (r.pages_read ?? 0), 0);
 const RUN_OFFLINE = '取り込みを実行できませんでした。通信できる場所でもう一度押してください';
 
 const readFail = (e) => {
@@ -235,7 +236,10 @@ export function createAdminStore({ client }) {
       if (!latest.ok) return latest;
       const videos = await read(runs().eq('job', 'videos').order('ran_at', { ascending: false }).limit(1), (rows) => ({ rows: rows ?? [] }));
       if (!videos.ok) return videos;
-      return { ok: true, runs: today.rows.length ? today.rows : latest.rows, videoLast: videos.rows[0] ?? null };
+      // URL での登録（match）の今日の試合ページ数。残りの試合ページから引く（runs には入れない＝最後の結果に出さない）
+      const match = await read(runs().eq('job', 'match').gte('ran_at', dayStartIso), (rows) => ({ used: sumPages(rows) }));
+      if (!match.ok) return match;
+      return { ok: true, runs: today.rows.length ? today.rows : latest.rows, videoLast: videos.rows[0] ?? null, matchPagesToday: match.used };
     },
 
     // 「今すぐ取り込む」：管理者のログインの JWT で sync-results を1回呼ぶ（1日の上限は Edge Function の予約が守る）
@@ -260,6 +264,38 @@ export function createAdminStore({ client }) {
         return fail(e);
       }
     },
+
+    // --- URL での登録（設計書 3.4・6.2） ---
+    // 試合ページを1件読む（Edge Function import-match。1日の上限は関数の予約が守る）。{ ok: true, url, page } か { ok: false, errors: { _form } }
+    async readMatchPage(url) {
+      try {
+        const { data, error } = await client.functions.invoke('import-match', { body: { url } });
+        if (error) return invokeFail(error);
+        if (data?.ok === true) return { ok: true, url: data.url, page: data.page };
+        return { ok: false, errors: { _form: typeof data?.message === 'string' && data.message !== '' ? data.message : '試合ページを読み込めませんでした' } };
+      } catch {
+        return { ok: false, errors: { _form: RUN_OFFLINE } };
+      }
+    },
+
+    // planMatchImport の結果を保存する。新規は insert（同じ試合は 23505）、更新は id で update（RLS で書けなければ0行）
+    async saveMatchImport(plan) {
+      try {
+        if (plan.mode === 'insert') {
+          const { error } = await client.from('fixtures').insert(plan.row);
+          if (error?.code === '23505') return { ok: false, errors: { _form: 'この試合はすでに登録されています' } };
+          return error ? fail(error) : { ok: true };
+        }
+        const { data, error } = await client.from('fixtures').update(plan.row).eq('id', plan.id).select('id');
+        if (error) return fail(error);
+        return (data ?? []).length ? { ok: true } : { ok: false, errors: { _form: FORM_MESSAGES.forbidden } };
+      } catch (e) {
+        return fail(e);
+      }
+    },
+
+    // 今日（dayStartIso から）読んだ試合ページの数（results と match の合計）
+    loadMatchPagesToday: (dayStartIso) => read(client.from('sync_runs').select('*').in('job', ['results', 'match']).gte('ran_at', dayStartIso), (rows) => ({ used: sumPages(rows) })),
 
     // --- 写真の使用量（設計書 9章） ---
     loadPhotoUsage: () => read(client.rpc('admin_photo_usage'), (bytes) => ({ bytes: Number(bytes ?? 0) })),

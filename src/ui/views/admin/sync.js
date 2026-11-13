@@ -28,12 +28,12 @@ function outcomeNote(outcome) {
   return el('p', { class: r.ok || r.skippedReason ? 'note' : 'err', role: 'status' }, r.message ? `${head}：${r.message}` : head);
 }
 
-function runButton(ctx, runs, panel) {
+function runButton(ctx, runs, panel, matchPages) {
   const cache = ctx.data.adminCache;
   const running = cache.run().running;
   const btn = el('button', { class: 'btn', type: 'button', disabled: running || !panel.canRun || null }, running ? '取り込み中…' : '今すぐ取り込む');
   btn.addEventListener('click', async () => {
-    if (cache.run().running || !syncPanel(runs, Date.now()).canRun) return;
+    if (cache.run().running || !syncPanel(runs, Date.now(), matchPages).canRun) return;
     if (pressSkipsEvening(runs, Date.now()) && !window.confirm(D37_CONFIRM)) return;
     btn.disabled = true; // 結果が返るまで押せない（作り直しても cache.run().running で押せない）
     const res = await cache.runNow(ctx.settings?.support_club_id ?? null);
@@ -45,7 +45,8 @@ function runButton(ctx, runs, panel) {
 
 function resultsSection(ctx, status) {
   const runs = status.runs;
-  const panel = syncPanel(runs, ctx.nowMs);
+  const matchPages = status.matchPagesToday ?? 0;
+  const panel = syncPanel(runs, ctx.nowMs, matchPages);
   const fixtures = ctx.masters.data?.fixtures ?? [];
   const counts = importCounts(fixtures, ctx.nowMs);
   const editable = canEdit(ctx);
@@ -57,7 +58,7 @@ function resultsSection(ctx, status) {
       el('dt', null, '今日の残り'), el('dd', null, `一覧 ${panel.remaining.list}/${ACCESS_LIMITS.listPerDay}回　試合ページ ${panel.remaining.pages}/${ACCESS_LIMITS.matchPagesPerDay}件`)),
     counts.missing ? el('a', { class: 'row', href: '#/admin/unresulted' },
       el('span', { class: 'row-main' }, el('span', { class: 'row-label' }, '結果の未入力一覧')), el('span', { class: 'row-mark', 'aria-hidden': 'true' }, '›')) : null,
-    editable ? runButton(ctx, runs, panel) : el('p', { class: 'muted' }, 'オフラインのため、取り込みは実行できません。'),
+    editable ? runButton(ctx, runs, panel, matchPages) : el('p', { class: 'muted' }, 'オフラインのため、取り込みは実行できません。'),
     editable && panel.reason ? el('p', { class: 'muted' }, panel.reason) : null,
     editable ? outcomeNote(ctx.data.adminCache.run().outcome) : null,
     el('p', { class: 'hint' }, '1日に一覧2回・試合ページ10件までです（定期の取り込み 7:00・23:30 を含みます）。'));

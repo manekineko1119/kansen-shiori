@@ -103,6 +103,9 @@ test('照合できない item は unmatched に入る', () => {
 test('残りの回数は results の行だけ数える', () => {
   assert.deepEqual(remainingQuota([{ job: 'results', list_read: 1, pages_read: 4 }, { job: 'videos', list_read: 0, pages_read: 0 }]), { list: 1, matchPages: 6 });
   assert.deepEqual(remainingQuota([]), { list: 2, matchPages: 10 });
+  // match の行は試合ページだけ数える（一覧は results だけ）
+  assert.deepEqual(remainingQuota([{ job: 'results', list_read: 1, pages_read: 5 }, { job: 'match', list_read: 0, pages_read: 3 }]), { list: 1, matchPages: 2 });
+  assert.deepEqual(remainingQuota([{ job: 'match', list_read: 1, pages_read: 1 }]), { list: 2, matchPages: 9 });
   assert.deepEqual(remainingQuota([{ job: 'results', list_read: 3, pages_read: 12 }]), { list: 0, matchPages: 0 });
 });
 

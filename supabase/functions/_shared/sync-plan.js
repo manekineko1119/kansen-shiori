@@ -7,13 +7,13 @@ export const ACCESS_LIMITS = { listPerRun: 1, matchPagesPerRun: 5, listPerDay: 2
 // 一覧の回数・ページの間隔はふだんと同じ。1日の試合ページは、ふだんの10件にこの15件を足した数まで
 export const BACKFILL_LIMITS = { matchPagesPerRun: 15 };
 
-// sync_runs の今日の分から、残りの回数を出す（試合結果の取り込み＝job が results の行だけ）
+// sync_runs の今日の分から、残りの回数を出す
+// 試合ページは results（試合結果の取り込み）と match（URL での登録。1行＝試合ページ1件）の両方で数える。一覧は results だけ
 export function remainingQuota(runsToday) {
-  const rows = runsToday.filter((r) => r.job === 'results');
-  const sum = (key) => rows.reduce((n, r) => n + (r[key] ?? 0), 0);
+  const sum = (jobs, key) => runsToday.filter((r) => jobs.includes(r.job)).reduce((n, r) => n + (r[key] ?? 0), 0);
   return {
-    list: Math.max(0, ACCESS_LIMITS.listPerDay - sum('list_read')),
-    matchPages: Math.max(0, ACCESS_LIMITS.matchPagesPerDay - sum('pages_read')),
+    list: Math.max(0, ACCESS_LIMITS.listPerDay - sum(['results'], 'list_read')),
+    matchPages: Math.max(0, ACCESS_LIMITS.matchPagesPerDay - sum(['results', 'match'], 'pages_read')),
   };
 }
 

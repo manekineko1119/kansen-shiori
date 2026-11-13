@@ -29,11 +29,12 @@ function stateOf(run, nowMs) {
 }
 
 // runs：job = 'results' の行（今日の分。最後の結果のために、昨日以前の最新の行が混じってもよい）
+// matchPagesToday：今日、URL での登録（job = 'match'）で読んだ試合ページの数（残りの試合ページから引く）
 // 戻り値：last（最新の行の状態）、remaining（今日の残り）、canRun（「今すぐ取り込む」を押せるか）、reason（押せない理由）
-export function syncPanel(runs, nowMs) {
+export function syncPanel(runs, nowMs, matchPagesToday = 0) {
   const dayStart = Date.parse(jstDayStartIso(nowMs));
   const today = runs.filter((r) => msOf(r) >= dayStart);
-  const quota = remainingQuota(today.map((r) => ({ ...r, job: 'results' })));
+  const quota = remainingQuota([...today.map((r) => ({ ...r, job: 'results' })), { job: 'match', pages_read: matchPagesToday }]);
   const remaining = { list: quota.list, pages: quota.matchPages };
 
   const latest = runs.reduce((a, r) => (a === null || msOf(r) > msOf(a) ? r : a), null);

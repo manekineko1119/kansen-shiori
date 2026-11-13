@@ -226,3 +226,61 @@ test('日程の削除の通信の失敗は、削除の文を返す', async () =>
   const s = createAdminStore({ client: fakeClient({ fixtures: [fxRow('X')] }, { throwOn: ['fixtures'] }) });
   assert.deepEqual(await s.deleteFixture('X'), { ok: false, errors: { _form: '削除できませんでした。通信できる場所でもう一度削除してください' } });
 });
+
+// --- URL での登録（設計書 3.4・6.2） ---
+const httpErr = (status, body) => ({ name: 'FunctionsHttpError', message: 'non-2xx', context: { status, json: async () => body } });
+
+test('試合ページの読み込み：import-match を { url } で呼び、ページを返す', async () => {
+  const reply = { ok: true, url: 'https://www.jleague.jp/match/j3/2026/111/live/', page: { home: 'a' } };
+  const client = fakeClient({}, { functions: { 'import-match': () => reply } });
+  assert.deepEqual(await createAdminStore({ client }).readMatchPage('https://www.jleague.jp/match/j3/2026/111/live/'), reply);
+  assert.deepEqual(client.calls, [{ op: 'invoke', name: 'import-match', opts: { body: { url: 'https://www.jleague.jp/match/j3/2026/111/live/' } } }]);
+});
+
+test('試合ページの読み込み：ok false は message を _form で返す。400・401・通信できない', async () => {
+  const run = (opts) => createAdminStore({ client: fakeClient({}, opts) }).readMatchPage('u');
+  assert.deepEqual(await run({ functions: { 'import-match': () => ({ ok: false, reason: 'limit', message: '今日の上限です' }) } }), { ok: false, errors: { _form: '今日の上限です' } });
+  assert.deepEqual(await run({ functions: { 'import-match': () => ({ ok: false, reason: 'parse' }) } }), { ok: false, errors: { _form: '試合ページを読み込めませんでした' } });
+  assert.deepEqual(await run({ failOn: { 'import-match': httpErr(400, { ok: false, reason: 'url', message: 'URL の形が違います' }) } }), { ok: false, errors: { _form: 'URL の形が違います' } });
+  assert.equal(await run({ failOn: { 'import-match': httpErr(401, {}) } }), 'expired');
+  assert.deepEqual(await run({ throwOn: ['import-match'] }), { ok: false, errors: { _form: '取り込みを実行できませんでした。通信できる場所でもう一度押してください' } });
+});
+
+test('URL での登録の保存：新規は insert(row)。同じ試合は「すでに登録されています」', async () => {
+  const row = { id: 'x', home_club_id: 'a' };
+  const client = fakeClient({ fixtures: [] });
+  assert.deepEqual(await createAdminStore({ client }).saveMatchImport({ mode: 'insert', row }), { ok: true });
+  assert.deepEqual([client.calls[0].op, client.calls[0].values], ['insert', row]);
+  const dup = fakeClient({}, { failOn: { fixtures: { code: '23505', message: 'dup' } } });
+  assert.deepEqual(await createAdminStore({ client: dup }).saveMatchImport({ mode: 'insert', row }), { ok: false, errors: { _form: 'この試合はすでに登録されています' } });
+});
+
+test('URL での登録の保存：更新は update(row).eq(id)。0 行なら権限なし', async () => {
+  const client = fakeClient({ fixtures: [{ id: 'x', home_score: null }] });
+  const store = createAdminStore({ client });
+  assert.deepEqual(await store.saveMatchImport({ mode: 'update', id: 'x', row: { home_score: 2 } }), { ok: true });
+  assert.deepEqual([client.calls[0].op, client.calls[0].values, client.calls[0].eq], ['update', { home_score: 2 }, [['id', 'x']]]);
+  assert.deepEqual(await store.saveMatchImport({ mode: 'update', id: 'none', row: {} }), { ok: false, errors: { _form: '権限がありません' } });
+});
+
+test('今日の試合ページの数：results と match の pages_read の合計', async () => {
+  const sync_runs = [
+    { job: 'results', ran_at: '2026-11-11T20:00:00.000Z', pages_read: 4 },
+    { job: 'match', ran_at: '2026-11-11T21:00:00.000Z', pages_read: 1 },
+    { job: 'videos', ran_at: '2026-11-11T21:00:00.000Z', pages_read: 9 },
+    { job: 'match', ran_at: '2026-11-10T21:00:00.000Z', pages_read: 1 },
+  ];
+  const client = fakeClient({ sync_runs });
+  assert.deepEqual(await createAdminStore({ client }).loadMatchPagesToday('2026-11-11T15:00:00.000Z'), { ok: true, used: 5 });
+  assert.deepEqual(await createAdminStore({ client: fakeClient({}, { throwOn: ['sync_runs'] }) }).loadMatchPagesToday('x'), { ok: false, message: '読み込めませんでした。通信できる場所で開き直してください' });
+});
+
+test('取り込みの状況：今日の match の試合ページ数を matchPagesToday で返す。runs には match の行を入れない', async () => {
+  const sync_runs = [
+    { id: 1, job: 'results', ran_at: '2026-11-11T20:00:00.000Z', pages_read: 2, list_read: 1 },
+    { id: 2, job: 'match', ran_at: '2026-11-11T21:00:00.000Z', pages_read: 1, list_read: 0 },
+    { id: 3, job: 'match', ran_at: '2026-11-11T22:00:00.000Z', pages_read: 1, list_read: 0 },
+  ];
+  const res = await createAdminStore({ client: fakeClient({ sync_runs }) }).loadSyncStatus('2026-11-11T15:00:00.000Z');
+  assert.deepEqual([res.runs.map((r) => r.id), res.matchPagesToday], [[1], 2]);
+});
