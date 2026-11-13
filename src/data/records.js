@@ -28,13 +28,24 @@ const PARTIAL_MESSAGE = '試合の情報は保存しました。動画だけ保�
 const partialOrExpired = (e) => (fail(e) === 'expired' ? 'expired' : { ok: false, partial: true, errors: { _form: PARTIAL_MESSAGE } });
 
 // now：手で直した時刻（result_updated_at）に使う現在時刻（テストでは固定の値を渡す）
-export function createRecordStore({ client, photos = null, now = () => Date.now() }) {
+// fetchVideoMeta：手で貼った動画のタイトル・チャンネルを読む関数（url → { title, channel }）。渡さなければ読まない
+export function createRecordStore({ client, photos = null, now = () => Date.now(), fetchVideoMeta = null }) {
+  // 読めなくても保存は止めない（タイトルなしで保存し、画面は「YouTube で見る」と出す）
+  async function videoMeta(url) {
+    try {
+      const m = await fetchVideoMeta(url);
+      return { title: m?.title ?? null, channel: m?.channel ?? null };
+    } catch {
+      return { title: null, channel: null };
+    }
+  }
+
   // 手入力で保存する動画（種類ごと）。URL があれば upsert、空なら手入力の行だけ消す（自動の動画は消さない）
   async function saveVideo(fixtureId, kind, url) {
-    const q = url
-      ? client.from('fixture_videos').upsert({ fixture_id: fixtureId, kind, url, source: 'manual' }, { onConflict: 'fixture_id,kind' })
-      : client.from('fixture_videos').delete().eq('fixture_id', fixtureId).eq('kind', kind).eq('source', 'manual');
-    return q;
+    if (!url) return client.from('fixture_videos').delete().eq('fixture_id', fixtureId).eq('kind', kind).eq('source', 'manual');
+    const row = { fixture_id: fixtureId, kind, url, source: 'manual' };
+    if (fetchVideoMeta) Object.assign(row, await videoMeta(url));
+    return client.from('fixture_videos').upsert(row, { onConflict: 'fixture_id,kind' });
   }
 
   const store = {

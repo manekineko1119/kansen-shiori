@@ -63,6 +63,25 @@ test('saveFixtureInfo：fixtures は side を club_id にして manual と手で
   assert.deepEqual([del.table, del.eq], ['fixture_videos', [['fixture_id', 'f1'], ['kind', 'highlight'], ['source', 'manual']]]);
 });
 
+test('saveFixtureInfo：手で貼った動画は、タイトルとチャンネルを取って一緒に保存する', async () => {
+  const client = fakeClient({ fixtures: [{ id: 'f1' }], fixture_videos: [] });
+  const asked = [];
+  const fetchVideoMeta = async (url) => { asked.push(url); return { title: '【INSIDE】架空', channel: '@kaku-ch' }; };
+  const store = createRecordStore({ client, now: () => NOW_MS, fetchVideoMeta });
+  assert.deepEqual(await store.saveFixtureInfo('f1', edit, ids), { ok: true });
+  assert.deepEqual(asked, ['https://youtu.be/x']);
+  const up = client.calls.find((c) => c.op === 'upsert');
+  assert.deepEqual(up.values, { fixture_id: 'f1', kind: 'inside', url: 'https://youtu.be/x', source: 'manual', title: '【INSIDE】架空', channel: '@kaku-ch' });
+});
+
+test('saveFixtureInfo：タイトルを取れなくても、URL だけで保存する', async () => {
+  const client = fakeClient({ fixtures: [{ id: 'f1' }], fixture_videos: [] });
+  const store = createRecordStore({ client, now: () => NOW_MS, fetchVideoMeta: async () => { throw new TypeError('Failed to fetch'); } });
+  assert.deepEqual(await store.saveFixtureInfo('f1', edit, ids), { ok: true });
+  const up = client.calls.find((c) => c.op === 'upsert');
+  assert.deepEqual(up.values, { fixture_id: 'f1', kind: 'inside', url: 'https://youtu.be/x', source: 'manual', title: null, channel: null });
+});
+
 test('saveFixtureInfo：PK戦のスコアを送る', async () => {
   const client = fakeClient({ fixtures: [{ id: 'f1' }], fixture_videos: [] });
   const store = createRecordStore({ client, now: () => NOW_MS });

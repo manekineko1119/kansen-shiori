@@ -64,7 +64,8 @@ test('index.html に CSP と referrer の指定がある（接続先は自分と
   assert.deepEqual(dir['default-src'], ["'self'"]);
   assert.deepEqual(dir['script-src'], ["'self'"]);
   assert.deepEqual(dir['style-src'], ["'self'"]);
-  assert.deepEqual(dir['connect-src'], ["'self'", SUPABASE_URL]);
+  // youtube.com は、手で貼った動画のタイトルを oEmbed で取るため（設計書 11.6）
+  assert.deepEqual(dir['connect-src'], ["'self'", SUPABASE_URL, 'https://www.youtube.com']);
   assert.deepEqual(dir['object-src'], ["'none'"]);
   assert.deepEqual(dir['base-uri'], ["'self'"]);
   assert.deepEqual(dir['form-action'], ["'self'"]);
