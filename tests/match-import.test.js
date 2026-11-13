@@ -197,3 +197,58 @@ test('seasonForDate', () => {
   assert.equal(seasonForDate(s, '2026-07-31'), null);
   assert.equal(seasonForDate(s, '2027-05-24'), null);
 });
+
+test('更新で得点者が読めないとき、登録済みの得点者は消さない', () => {
+  const page = makePage();
+  page.home.scorers = [scorer('A', '10')];
+  for (const ex of [{ scorers: [{ player: 'X' }] }, { scorers_fetched_at: NOW, scorers: [] }]) {
+    const r = planMatchImport(page, ctx({ existing: [{ id: ID, status: 'finished', ...ex }] }));
+    assert.equal('scorers' in r.row, false);
+    assert.equal('scorers_failed_at' in r.row, false);
+    assert.equal(r.row.home_score, 3);
+    assert.ok(r.warnings.includes('得点者を読み取れなかったので、登録済みの得点者はそのままにします'));
+  }
+  const r2 = planMatchImport(page, ctx({ existing: [{ id: ID, status: 'finished', scorers: [] }] }));
+  assert.deepEqual(r2.row.scorers, []);
+  assert.equal(r2.row.scorers_failed_at, NOW);
+});
+
+test('試合前の更新で未定の時刻・会場は送らない', () => {
+  const r = planMatchImport(makePage({ state: 'scheduled', penalty: null, kickoff: null, stadiumName: null }),
+    ctx({ existing: [{ id: ID, status: 'scheduled' }] }));
+  assert.equal(r.row.match_date, '2026-09-09');
+  for (const k of ['kickoff', 'venue_stadium_id', 'venue_name_override']) assert.equal(k in r.row, false, k);
+});
+
+test('名前がないクラブのエラーと同じクラブ', () => {
+  const bad = makePage();
+  bad.home = { teamCode: 'zzz', name: null, nameS: null, score: 3, scorers: [] };
+  const r = planMatchImport(bad, ctx());
+  assert.ok(r.errors.includes('zzz が登録されていません。先にクラブを登録してください'));
+  const same = makePage();
+  same.away = { ...same.home };
+  const r2 = planMatchImport(same, ctx());
+  assert.deepEqual(r2.errors, ['ホームとアウェイが同じクラブです']);
+});
+
+test('スコアがない終了ページは結果を送らない', () => {
+  const page = makePage();
+  page.home.score = null;
+  const r = planMatchImport(page, ctx());
+  assert.equal(r.ok, true);
+  assert.equal(r.row.status, 'scheduled');
+  for (const k of ['home_score', 'away_score', 'home_pk', 'away_pk', 'scorers', 'result_source', 'result_updated_at', 'scorers_fetched_at', 'scorers_failed_at']) {
+    assert.equal(k in r.row, false, k);
+  }
+  assert.ok(r.warnings.includes('試合ページにスコアがないため、結果は登録しません'));
+  assert.equal(r.view.score, null);
+  const u = planMatchImport(page, ctx({ existing: [{ id: ID, status: 'scheduled' }] }));
+  assert.equal('status' in u.row, false);
+  assert.equal('home_score' in u.row, false);
+});
+
+test('全角の回戦は同じ id・他の URL の行だけなら無事', () => {
+  const r = planMatchImport(makePage({ section: '１回戦' }), ctx({ existing: [{ id: 'Y', jleague_match_url: 'https://www.jleague.jp/match/leaguecup/2026/000001/' }] }));
+  assert.equal(r.ok, true);
+  assert.equal(r.id, ID);
+});

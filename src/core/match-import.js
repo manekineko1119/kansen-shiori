@@ -38,7 +38,7 @@ function planVenue(stadiumName, homeClub, stadiums) {
   return { kind: 'name', stadiumId: null, nameOverride: stadiumName, label: stadiumName };
 }
 
-function resultColumns(page, ids, nowIso, warnings) {
+function resultColumns(page, ids, nowIso, warnings, keepScorers) {
   const built = buildScorers(page, ids);
   const row = {
     status: 'finished',
@@ -50,7 +50,11 @@ function resultColumns(page, ids, nowIso, warnings) {
     result_source: 'api',
     result_updated_at: nowIso,
   };
-  if (built.reason) {
+  if (built.reason && keepScorers) {
+    // 登録済みの得点者は、読み取れなかったときに消さない
+    delete row.scorers;
+    warnings.push(built.reason, '得点者を読み取れなかったので、登録済みの得点者はそのままにします');
+  } else if (built.reason) {
     row.scorers_failed_at = nowIso;
     warnings.push(built.reason);
   } else {
@@ -70,8 +74,9 @@ export function planMatchImport(page, { url, season, clubs, stadiums, existing, 
   const homeClub = findClub(page.home, clubs);
   const awayClub = findClub(page.away, clubs);
   for (const [club, side] of [[homeClub, page.home], [awayClub, page.away]]) {
-    if (!club) errors.push(`${side.name} が登録されていません。先にクラブを登録してください`);
+    if (!club) errors.push(`${side.name ?? side.nameS ?? side.teamCode} が登録されていません。先にクラブを登録してください`);
   }
+  if (errors.length === 0 && homeClub.id === awayClub.id) errors.push('ホームとアウェイが同じクラブです');
   if (errors.length > 0) return { ok: false, errors };
 
   const round = normalizeRound(page.section);
@@ -99,6 +104,14 @@ export function planMatchImport(page, { url, season, clubs, stadiums, existing, 
     match_date: page.date, kickoff: page.kickoff ?? null,
     venue_stadium_id: venue.stadiumId, venue_name_override: venue.nameOverride,
   };
+  // 更新では、読めなかった（未定の）時刻・会場で、決まっている値を消さない
+  const updateSchedule = { match_date: page.date };
+  if (page.kickoff) updateSchedule.kickoff = page.kickoff;
+  if (venue.kind !== 'none') {
+    updateSchedule.venue_stadium_id = venue.stadiumId;
+    updateSchedule.venue_name_override = venue.nameOverride;
+  }
+  const hasScore = Number.isInteger(page.home.score) && Number.isInteger(page.away.score);
   let score = null;
   let pk = null;
   let scorerCount = 0;
@@ -106,19 +119,22 @@ export function planMatchImport(page, { url, season, clubs, stadiums, existing, 
   if (!current) {
     Object.assign(row, { id, season_id: season.id, competition, round: round || null }, schedule);
     row.jleague_match_url = url;
-    if (!finished) row.status = 'scheduled';
+    if (!finished || !hasScore) row.status = 'scheduled';
   } else {
-    if (current.status !== 'finished' && !finished) Object.assign(row, schedule);
+    if (current.status !== 'finished' && !finished) Object.assign(row, updateSchedule);
     if (!current.jleague_match_url) row.jleague_match_url = url;
   }
 
-  if (finished) {
+  if (finished && !hasScore) {
+    warnings.push('試合ページにスコアがないため、結果は登録しません');
+  } else if (finished) {
     score = [page.home.score, page.away.score];
     if (page.penalty) pk = [page.penalty.home, page.penalty.away];
     if (manual) {
       warnings.push('手で直した試合なので、結果・得点者・PK は更新しません');
     } else {
-      const res = resultColumns(page, { homeClubId: homeClub.id, awayClubId: awayClub.id }, nowIso, warnings);
+      const res = resultColumns(page, { homeClubId: homeClub.id, awayClubId: awayClub.id }, nowIso, warnings,
+        current !== null && (current.scorers?.length > 0 || Boolean(current.scorers_fetched_at)));
       Object.assign(row, res.row);
       scorerCount = res.scorerCount;
     }
