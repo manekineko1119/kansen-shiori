@@ -210,3 +210,8 @@ test('saveFixtureInfo：今と同じ URL の動画は書き込まない（自動
   const vids = client.calls.filter((c) => c.table === 'fixture_videos');
   assert.deepEqual(vids.map((c) => [c.op, c.values?.kind]), [['upsert', 'inside']]);
 });
+
+test('remove の通信の失敗は、削除の文を返す', async () => {
+  const { store } = setup({ throwOn: ['match_records'] });
+  assert.deepEqual(await store.remove('r1', null), { ok: false, errors: { _form: '削除できませんでした。通信できる場所でもう一度削除してください' } });
+});

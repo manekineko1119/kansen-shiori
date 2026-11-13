@@ -221,3 +221,8 @@ test('日程の取り込み：途中で失敗したら、どこまで入った�
   assert.equal(res.ok, false);
   assert.match(res.errors._form, /100 件/);
 });
+
+test('日程の削除の通信の失敗は、削除の文を返す', async () => {
+  const s = createAdminStore({ client: fakeClient({ fixtures: [fxRow('X')] }, { throwOn: ['fixtures'] }) });
+  assert.deepEqual(await s.deleteFixture('X'), { ok: false, errors: { _form: '削除できませんでした。通信できる場所でもう一度削除してください' } });
+});

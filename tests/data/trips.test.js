@@ -55,3 +55,8 @@ test('remove は id で削除する', async () => {
   assert.deepEqual([client.calls.at(-1).op, client.calls.at(-1).eq], ['delete', [['id', 't1']]]);
   assert.deepEqual(tables.trips.map((t) => t.id), ['t2']);
 });
+
+test('remove の通信の失敗は、削除の文を返す', async () => {
+  const r = await createTripStore({ client: fakeClient({ trips: [{ id: 't1' }] }, { throwOn: ['trips'] }) }).remove('t1');
+  assert.deepEqual(r, { ok: false, errors: { _form: '削除できませんでした。通信できる場所でもう一度削除してください' } });
+});

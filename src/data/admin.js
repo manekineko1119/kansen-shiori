@@ -13,8 +13,8 @@ const CLUB_COLUMNS = ['id', 'name', 'short_name', 'aliases', 'official_url', 'jl
 
 const pickColumns = (obj, columns) => Object.fromEntries(columns.map((c) => [c, obj[c]]));
 
-const fail = (e) => {
-  const r = toFormError(e);
+const fail = (e, action) => {
+  const r = toFormError(e, action);
   return r === 'expired' ? 'expired' : { ok: false, errors: r };
 };
 
@@ -166,10 +166,10 @@ export function createAdminStore({ client }) {
       try {
         const { data, error } = await client.from('fixtures').delete().eq('id', id).select('id');
         if (error?.code === '23503') return { ok: false, errors: { _form: '観戦記録か遠征予定がある試合なので削除できません' } };
-        if (error) return fail(error);
+        if (error) return fail(error, 'delete');
         return (data ?? []).length ? { ok: true } : { ok: false, errors: { _form: FORM_MESSAGES.forbidden } };
       } catch (e) {
-        return fail(e);
+        return fail(e, 'delete');
       }
     },
 
@@ -218,10 +218,10 @@ export function createAdminStore({ client }) {
     async removeTester(email) {
       try {
         const { data, error } = await client.from('allowed_emails').delete().eq('email', email).select('email');
-        if (error) return fail(error);
+        if (error) return fail(error, 'delete');
         return (data ?? []).length ? { ok: true } : { ok: false, errors: { _form: FORM_MESSAGES.forbidden } };
       } catch (e) {
-        return fail(e);
+        return fail(e, 'delete');
       }
     },
 
