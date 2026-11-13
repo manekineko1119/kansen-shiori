@@ -25,7 +25,17 @@ h2:first-child { margin-top: 0; }
   border: 1px solid var(--rule);
   border-radius: var(--r-s);
   background: var(--paper);
+  font-family: inherit;
+  font-size: 16px; /* iPhone の Safari は 16px 未満の欄をタップすると拡大する（設計書 8.1） */
 }
+/* iPhone の Safari の日付・時刻の欄は独自の最小の幅を持ち、2列（.row2）で隣と重なる。見た目の部品を外して枠に収める（設計書 8.1） */
+input[type="date"].input, input[type="time"].input {
+  display: block;
+  min-width: 0;
+  -webkit-appearance: none;
+  appearance: none;
+}
+input.input::-webkit-date-and-time-value { text-align: left; }
 .input:hover { border-color: var(--ink-2); }
 
 /* 操作ボタン：ページの流れの中に置く（画面下に固定しない。設計書 3.5） */

@@ -5,7 +5,7 @@
 .admin .row[aria-current="true"] { background: var(--theme-tint); box-shadow: inset 4px 0 0 var(--theme-primary); padding-left: 8px; }
 .admin .cur { flex: none; font-size: 13px; font-weight: 700; color: var(--theme-primary); }
 .admin .sec > .btn { margin-top: 12px; }
-.admin textarea.input { min-height: 84px; resize: vertical; font: inherit; }
+.admin textarea.input { min-height: 84px; resize: vertical; }
 .admin .hint { margin: 0; color: var(--ink-2); font-size: 13px; overflow-wrap: anywhere; }
 .admin .hint:empty { display: none; }
 .admin .row-actions { display: flex; flex-wrap: wrap; gap: 8px; }
