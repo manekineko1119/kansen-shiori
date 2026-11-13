@@ -207,3 +207,11 @@ test('試合ページ：PK戦は同点のときだけ、0対0は null', () => {
 test('試合ページ：大会・回戦のデータがないページは reason', () => {
   assert.ok(parseMatchDetails(load('jleague-list.html')).reason);
 });
+
+test('試合ページ：ありえない日時（2/30・25時・13月）は読み替えずに reason', () => {
+  const html = load('jleague-cup-post.html');
+  for (const bad of ['2026-02-30T10:00', '2026-09-09T25:00', '2026-13-09T10:00']) {
+    const d = parseMatchDetails(html.replace('$D2026-09-09T10:00', `$D${bad}`));
+    assert.equal(d.reason, '試合ページの日時を読み取れません', bad);
+  }
+});

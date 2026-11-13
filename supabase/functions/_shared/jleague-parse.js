@@ -173,11 +173,16 @@ export function canonicalMatchPageUrl(input) {
 }
 
 // "$D2026-09-09T10:00:00.000Z"（UTC）→ 日本時間の { date, kickoff }。00:00 は時刻未定として kickoff を null にする
+const INVALID_DATE = Symbol('invalid-date');
 function jstDateTime(v) {
-  const m = /^\$D(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})/.exec(str(v) ?? '');
+  const m = /^\$D(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(str(v) ?? '');
   if (!m) return null;
-  const t = Date.parse(`${m[1]}:00Z`);
-  if (Number.isNaN(t)) return null;
+  const [y, mo, d, h, mi] = m.slice(1).map(Number);
+  const t = Date.UTC(y, mo - 1, d, h, mi);
+  const u = new Date(t);
+  // 形は合っていても ありえない日時（2/30・25時・13月）は読み替えずに INVALID_DATE を返す
+  if (!Number.isFinite(t) || u.getUTCFullYear() !== y || u.getUTCMonth() !== mo - 1 || u.getUTCDate() !== d
+    || u.getUTCHours() !== h || u.getUTCMinutes() !== mi) return INVALID_DATE;
   const iso = new Date(t + 9 * 3600 * 1000).toISOString();
   const time = iso.slice(11, 16);
   return { date: iso.slice(0, 10), kickoff: time === '00:00' ? null : time };
@@ -200,6 +205,7 @@ export function parseMatchDetails(html) {
     const node = findNode(data, (o) => 'tournament' in o && 'section' in o);
     if (!node) continue;
     const when = jstDateTime(node.date);
+    if (when === INVALID_DATE) return { reason: '試合ページの日時を読み取れません' };
     const tournament = str(node.tournament);
     if (!when || !tournament || !node.homeTeam || !node.awayTeam) continue;
     const finished = node.type === 'post-game';
