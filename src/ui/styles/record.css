@@ -21,6 +21,7 @@
 .sb-team.me { color: var(--theme-primary); font-weight: 800; }
 .sb-score { font-size: 60px; line-height: 1; white-space: nowrap; color: var(--ink); }
 .sb-score i { font-style: normal; font-size: 32px; color: var(--rule); margin: 0 8px; vertical-align: 10px; }
+.sb-pk { display: block; margin-top: 6px; font-size: 16px; font-weight: 700; color: var(--ink); }
 .sb-res { margin: 10px 0; }
 .sb-res .res { font-size: 14px; padding: 2px 12px; height: auto; }
 .sb-goals { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; font-size: 13px; line-height: 1.9; margin: 4px 0 12px; position: relative; }

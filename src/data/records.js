@@ -100,6 +100,8 @@ export function createRecordStore({ client, photos = null, now = () => Date.now(
         status: f.status,
         home_score: f.home_score,
         away_score: f.away_score,
+        home_pk: f.home_pk ?? null,
+        away_pk: f.away_pk ?? null,
         scorers: f.scorers.map((s) => ({ club_id: s.side === 'home' ? homeClubId : awayClubId, player: s.player, minute: s.minute, type: s.type })),
         result_source: 'manual',
         // 手で直した時刻。画面の「更新日時」に出す（自動の取り込みの時刻のままにしない。2026-11-13）

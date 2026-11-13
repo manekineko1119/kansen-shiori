@@ -78,7 +78,10 @@ export function fixtureEditFromForm(values) {
     type: values[`scorer_${i}_type`] ?? 'goal',
   }));
   return {
-    fixture: { status: values.status, home_score: toInt(values.home_score), away_score: toInt(values.away_score), scorers },
+    fixture: {
+      status: values.status, home_score: toInt(values.home_score), away_score: toInt(values.away_score),
+      home_pk: toInt(values.home_pk), away_pk: toInt(values.away_pk), scorers,
+    },
     videos: { highlight: blankToNull(values.video_highlight), inside: blankToNull(values.video_inside) },
   };
 }
@@ -90,6 +93,8 @@ export function fixtureFormValues(fixture) {
     status: fixture.status ?? 'scheduled',
     home_score: fixture.home_score == null ? '' : String(fixture.home_score),
     away_score: fixture.away_score == null ? '' : String(fixture.away_score),
+    home_pk: fixture.home_pk == null ? '' : String(fixture.home_pk),
+    away_pk: fixture.away_pk == null ? '' : String(fixture.away_pk),
     video_highlight: videos.highlight ?? '',
     video_inside: videos.inside ?? '',
   };
@@ -153,6 +158,20 @@ export function validateFixtureEdit(edit, { homeClubId, awayClubId } = {}) {
       if (f.status === 'finished') errors[k] = 'スコアを入力してください';
     } else if (!isScore(f[k])) {
       errors[k] = 'スコアは0以上の整数で入力してください';
+    }
+  }
+  // PK戦（設計書 5.6）：空なら何もしない。入れるなら両方・0以上の整数・違う数・スコアが同点のとき
+  const pkGiven = (k) => f[k] !== null && f[k] !== undefined;
+  if (pkGiven('home_pk') || pkGiven('away_pk')) {
+    const bad = ['home_pk', 'away_pk'].filter((k) => pkGiven(k) && !isScore(f[k]));
+    if (bad.length > 0) {
+      for (const k of bad) errors[k] = '0以上の整数で入力してください';
+    } else if (!pkGiven('home_pk') || !pkGiven('away_pk')) {
+      errors.away_pk = 'PK戦は両方のスコアを入れてください';
+    } else if (f.home_pk === f.away_pk) {
+      errors.home_pk = 'PK戦のスコアが同じです';
+    } else if (f.home_score !== f.away_score) {
+      errors.home_pk = 'PK戦はスコアが同点のときだけ入れられます';
     }
   }
   f.scorers.forEach((s, i) => {

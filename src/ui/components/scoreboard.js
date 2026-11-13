@@ -2,7 +2,7 @@
 import { el } from './parts.js';
 import { competitionLabel, statusLabel, venueOf, splitScorers } from '../../core/fixture-view.js';
 import { formatDateLong } from '../../core/format.js';
-import { matchOutcome, OUTCOME_MARK, OUTCOME_LABEL } from '../../core/result.js';
+import { matchOutcome, outcomeLabel, isPkDecided, OUTCOME_MARK } from '../../core/result.js';
 
 const nameOf = (id, clubsById) => clubsById?.[id]?.name ?? id ?? '未定';
 
@@ -15,6 +15,7 @@ export function renderScoreboard({ fixture: f, clubsById, stadiumsById, supportC
   const env = { clubsById, supportClubId };
   const hasScore = f.home_score != null && f.away_score != null;
   const outcome = matchOutcome(f, supportClubId);
+  const pk = isPkDecided(f);
   const status = statusLabel(f);
   const goals = splitScorers(f);
   const kickoff = f.kickoff ? `${f.kickoff} キックオフ` : 'キックオフ時刻未定';
@@ -26,10 +27,11 @@ export function renderScoreboard({ fixture: f, clubsById, stadiumsById, supportC
     status ? el('div', { class: 'sb-status' }, status) : null,
     el('div', { class: 'sb-main' },
       team('home', f.home_club_id, env),
-      el('div', { class: 'sb-score fig', 'aria-label': hasScore ? `${f.home_score}対${f.away_score}` : 'スコアなし' },
-        hasScore ? [String(f.home_score), el('i', null, '-'), String(f.away_score)] : '－'),
+      el('div', { class: 'sb-score fig', 'aria-label': hasScore ? `${f.home_score}対${f.away_score}${pk ? `、PK戦 ${f.home_pk}対${f.away_pk}` : ''}` : 'スコアなし' },
+        hasScore ? [String(f.home_score), el('i', null, '-'), String(f.away_score)] : '－',
+        pk ? el('small', { class: 'sb-pk', 'aria-hidden': 'true' }, `PK ${f.home_pk}-${f.away_pk}`) : null),
       team('away', f.away_club_id, env)),
-    outcome ? el('div', { class: 'sb-res' }, el('span', { class: `res ${outcome}` }, `${OUTCOME_MARK[outcome]} ${OUTCOME_LABEL[outcome]}`)) : null,
+    outcome ? el('div', { class: 'sb-res' }, el('span', { class: `res ${outcome}` }, `${OUTCOME_MARK[outcome]} ${outcomeLabel(f, supportClubId)}`)) : null,
     goals.home.length || goals.away.length
       ? el('div', { class: 'sb-goals' }, el('div', { class: 'home' }, lines(goals.home)), el('div', { class: 'away' }, lines(goals.away)))
       : null);

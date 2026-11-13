@@ -53,7 +53,7 @@ test('saveFixtureInfo：fixtures は side を club_id にして manual と手で
   const [fx, ...vids] = client.calls.filter((c) => c.op !== 'select');
   assert.deepEqual([fx.table, fx.op, fx.eq], ['fixtures', 'update', [['id', 'f1']]]);
   assert.deepEqual(fx.values, {
-    status: 'finished', home_score: 1, away_score: 3,
+    status: 'finished', home_score: 1, away_score: 3, home_pk: null, away_pk: null,
     scorers: [{ club_id: 'nara', player: '田中', minute: '64', type: 'goal' }], result_source: 'manual',
     result_updated_at: '2026-11-12T15:15:00.000Z',
   });
@@ -61,6 +61,15 @@ test('saveFixtureInfo：fixtures は side を club_id にして manual と手で
   assert.deepEqual([up.table, up.onConflict, up.values], ['fixture_videos', 'fixture_id,kind', { fixture_id: 'f1', kind: 'inside', url: 'https://youtu.be/x', source: 'manual' }]);
   const del = vids.find((c) => c.op === 'delete');
   assert.deepEqual([del.table, del.eq], ['fixture_videos', [['fixture_id', 'f1'], ['kind', 'highlight'], ['source', 'manual']]]);
+});
+
+test('saveFixtureInfo：PK戦のスコアを送る', async () => {
+  const client = fakeClient({ fixtures: [{ id: 'f1' }], fixture_videos: [] });
+  const store = createRecordStore({ client, now: () => NOW_MS });
+  const pk = { ...edit, fixture: { ...edit.fixture, home_score: 1, away_score: 1, home_pk: 4, away_pk: 3 } };
+  assert.deepEqual(await store.saveFixtureInfo('f1', pk, ids), { ok: true });
+  const fx = client.calls.find((c) => c.table === 'fixtures' && c.op === 'update');
+  assert.deepEqual([fx.values.home_pk, fx.values.away_pk], [4, 3]);
 });
 
 test('saveFixtureInfo：away の得点者は away のクラブ。検証で止めたら送らない', async () => {

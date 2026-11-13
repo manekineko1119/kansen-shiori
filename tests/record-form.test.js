@@ -62,6 +62,28 @@ test('validateFixtureEdit：延期はスコアなしで通る。壊れた数・�
   assert.ok(validateFixtureEdit({ fixture: { status: 'zzz', home_score: null, away_score: null, scorers: [] }, ...blank }, ids).errors.status);
 });
 
+test('PK戦：入力欄 ↔ 保存する値', () => {
+  const v = fixtureFormValues({ status: 'finished', home_score: 1, away_score: 1, home_pk: 4, away_pk: 3 });
+  assert.deepEqual([v.home_pk, v.away_pk], ['4', '3']);
+  const none = fixtureFormValues({ status: 'finished', home_score: 1, away_score: 0 });
+  assert.deepEqual([none.home_pk, none.away_pk], ['', '']);
+  const e = fixtureEditFromForm({ status: 'finished', home_score: '1', away_score: '1', home_pk: '4', away_pk: '' });
+  assert.deepEqual([e.fixture.home_pk, e.fixture.away_pk], [4, null]);
+});
+
+test('validateFixtureEdit：PK戦（両方・同じ数でない・同点のときだけ・0以上の整数）', () => {
+  const draw = { ...edit.fixture, home_score: 1, away_score: 1 };
+  const v = (pk, fx = draw) => validateFixtureEdit({ ...edit, fixture: { ...fx, ...pk } }, ids);
+  assert.equal(v({ home_pk: 4, away_pk: 3 }).ok, true);
+  assert.equal(v({ home_pk: null, away_pk: null }).ok, true);
+  assert.equal(v({ home_pk: 4, away_pk: null }).errors.away_pk, 'PK戦は両方のスコアを入れてください');
+  assert.equal(v({ home_pk: null, away_pk: 3 }).errors.away_pk, 'PK戦は両方のスコアを入れてください');
+  assert.equal(v({ home_pk: 3, away_pk: 3 }).errors.home_pk, 'PK戦のスコアが同じです');
+  assert.equal(v({ home_pk: 4, away_pk: 3 }, edit.fixture).errors.home_pk, 'PK戦はスコアが同点のときだけ入れられます');
+  assert.equal(v({ home_pk: -1, away_pk: 3 }).errors.home_pk, '0以上の整数で入力してください');
+  assert.equal(v({ home_pk: 4, away_pk: NaN }).errors.away_pk, '0以上の整数で入力してください');
+});
+
 test('得点者の行：初期値は club_id から側へ。行の削除は後ろを詰める。元の行の番号に戻せる', () => {
   const f = {
     status: 'finished', home_club_id: 'nara', away_club_id: 'matsumoto', home_score: 1, away_score: 2,
