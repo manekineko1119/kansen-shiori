@@ -43,6 +43,8 @@ test('新しい試合は insert', () => {
   assert.equal(row.season_id, '2026-27');
   assert.equal(row.competition, 'LEVAIN');
   assert.equal(row.round, '1回戦');
+  assert.equal(row.home_club_id, 'matsumoto');
+  assert.equal(row.away_club_id, 'shonan');
   assert.equal(row.match_date, '2026-09-09');
   assert.equal(row.kickoff, '19:00');
   assert.equal(row.jleague_match_url, URL_);

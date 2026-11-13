@@ -126,7 +126,10 @@ export function planMatchImport(page, { url, season, clubs, stadiums, existing, 
   let scorerCount = 0;
 
   if (!current) {
-    Object.assign(row, { id, season_id: season.id, competition, round: round || null }, schedule);
+    Object.assign(row, {
+      id, season_id: season.id, competition, round: round || null,
+      home_club_id: homeClub.id, away_club_id: awayClub.id,
+    }, schedule);
     row.jleague_match_url = url;
     if (!finished || !hasScore) row.status = 'scheduled';
   } else {
