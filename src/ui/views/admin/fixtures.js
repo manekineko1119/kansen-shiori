@@ -1,5 +1,5 @@
 // 管理：日程（#/admin/fixtures。設計書 3.4・4.4・5.5、FR-42・43）。シーズンごとの一覧＋1件の編集・追加・削除＋貼り付けの取り込み
-// URL（D32）：?s=<シーズン>（なければ今のシーズン）、?id=<試合ID>、?new=1、?import=1
+// URL（D32）：?s=<シーズン>（なければ今のシーズン）、?id=<試合ID>、?new=1、?import=1、?url=1
 import { el, split } from '../../components/parts.js';
 import { bindForm } from '../../mount.js';
 import { readValues, createRunner } from '../../components/form-util.js';
@@ -10,8 +10,9 @@ import { compareFixtures } from '../../../core/fixture-order.js';
 import { STATUS_OPTIONS } from '../../../core/record-form.js'; // 状態の言葉は観戦記録の画面とそろえる（M-8）
 import { formatDateJa } from '../../../core/format.js';
 import { jstNow } from '../../../core/time.js';
+import { renderFixtureUrl } from './fixture-url.js';
 import {
-  selection, mastersGuard, canEdit, backLink, ctrl, field, textField, listRow, setFlash, flashNote, dropFlashOnInput, matchLabel,
+  selection, mastersGuard, canEdit, backLink, ctrl, field, textField, listRow, setFlash, flashNote, dropFlashOnInput, matchLabel, reloadFixtures,
 } from './common.js';
 
 const BLANK = { ...fixtureToValues({}), competition: 'J3', status: 'scheduled' };
@@ -25,12 +26,6 @@ let imported = null; // { seasonId, inserted, updated }：一覧に1回知らせ
 export function forgetFixtureImport() { preview = null; imported = null; }
 
 const href = (seasonId, extra = '') => `#/admin/fixtures?s=${encodeURIComponent(seasonId)}${extra}`;
-
-// 保存・削除・取り込みのあと：覚えた試合を捨て、共通データ（今のシーズン）も読み直す
-async function reloadFixtures(ctx) {
-  ctx.data.resetSeasons();
-  await ctx.data.reloadMasters();
-}
 
 function fixtureForm(ctx, seasonId, f) {
   const { state, key, masters } = ctx;
@@ -201,12 +196,14 @@ export function renderFixtures(ctx) {
     pending ? el('p', { class: 'note', role: 'status' }, `キックオフ時刻が未定の試合：${pending} 件（これからの試合）。日程が発表されたら、表を作り直して取り込み直してください。`) : null,
     canEdit(ctx) ? el('div', { class: 'actions' },
       el('a', { class: 'btn btn-sub', href: href(seasonId, '&import=1') }, '貼り付けで取り込み'),
+      el('a', { class: 'btn btn-sub', href: href(seasonId, '&url=1') }, '試合ページの URL で登録'),
       el('a', { class: 'btn btn-sub', href: href(seasonId, '&new=1') }, '試合を追加')) : null,
     body);
 
-  if (q.get('import') === '1' || sel.isNew || sel.id) imported = null; // 一覧から離れたら、取り込みの知らせは消す
+  if (q.get('import') === '1' || q.get('url') === '1' || sel.isNew || sel.id) imported = null; // 一覧から離れたら、取り込みの知らせは消す
   let detail = null;
   if (q.get('import') === '1') detail = importPanel(ctx, season, fixtures);
+  else if (q.get('url') === '1') detail = renderFixtureUrl(ctx, seasonId);
   else if (sel.isNew) detail = fixtureForm(ctx, seasonId, null);
   else if (sel.id && fixtures === undefined) detail = el('section', { class: 'sec' }, el('p', { class: 'muted' }, '読み込み中です。'));
   else if (sel.id) {

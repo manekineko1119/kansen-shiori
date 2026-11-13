@@ -79,3 +79,9 @@ export function matchLabel(ctx, f) {
 
 // ISO の日時 → '2026/11/12 7:00'（日本時間）。読めなければ '－'
 export const dateTimeText = (iso) => (iso ? formatDateTimeJst(iso) ?? '－' : '－');
+
+// 試合の保存・削除・取り込みのあと：覚えた試合を捨て、共通データ（今のシーズン）も読み直す
+export async function reloadFixtures(ctx) {
+  ctx.data.resetSeasons();
+  await ctx.data.reloadMasters();
+}
