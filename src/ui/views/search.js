@@ -6,7 +6,7 @@ import { bindForm } from '../mount.js';
 import { nextAwayFixture, recordPromptFixture } from '../../core/fixtures.js';
 import { opponentOf } from '../../core/fixture-view.js';
 import {
-  searchDefaults, queryFromForm, historyLabel, fixtureLabel, upcomingFixtures, ticketInfo, opponentGroups, MODE_NAMES, LODGING_NAMES,
+  searchDefaults, queryFromForm, ticketQuery, historyLabel, fixtureLabel, upcomingFixtures, ticketInfo, opponentGroups, MODE_NAMES, LODGING_NAMES,
 } from '../../core/search-form.js';
 
 const ERR_KEYS = ['fixtureId', 'opponentId', 'date', 'kickoff', 'modes'];
@@ -129,9 +129,9 @@ export function renderSearch(ctx) {
       form.querySelector('[data-cond]').scrollIntoView({ block: 'start', behavior: 'smooth' });
     };
     const search = () => {
-      const r = queryFromForm({ ...defaults, fixtureId: next.id });
+      const r = ticketQuery(read(), next.id); // 交通手段・宿泊・出発地は下の欄の値（設計書 3.1）
       if (r.ok) go(r.qs);
-      else pick(); // 設定の交通手段が空など、そのまま検索できないときは条件に入れる
+      else { pick(); form.requestSubmit(); } // 交通手段が空など：条件に試合を入れ、理由を出す
     };
     root.append(renderTicket({ fixture: info, from: info.from, to: info.to, kickoff: info.kickoff, days: info.days, onSearch: search, onPick: pick }));
   } else {

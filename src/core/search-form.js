@@ -47,6 +47,11 @@ export function queryFromForm(values) {
   return { ok: true, qs: buildResultQuery({ fixtureId, custom, modes, lodging: values.lodging, origin: values.origin }) };
 }
 
+// きっぷの「この試合で検索」：試合はきっぷの試合（fixtureId）、交通手段・宿泊・出発地は検索画面の欄の値（設計書 3.1。2026-11-13）
+export function ticketQuery(values, fixtureId) {
+  return queryFromForm({ ...values, kind: 'fixture', fixtureId });
+}
+
 // 結果画面の条件（parseResultQuery の値）→ 検索画面の入力欄の値（「条件を変える」で入れ直す。bindForm の名前に合わせる）
 export function formFromQuery(q) {
   const c = q.custom ?? {};

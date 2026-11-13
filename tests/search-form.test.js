@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { searchDefaults, queryFromForm, historyLabel, formFromQuery, fixtureLabel, upcomingFixtures, ticketInfo, opponentGroups } from '../src/core/search-form.js';
+import { searchDefaults, queryFromForm, ticketQuery, historyLabel, formFromQuery, fixtureLabel, upcomingFixtures, ticketInfo, opponentGroups } from '../src/core/search-form.js';
 import { parseResultQuery } from '../src/core/search-query.js';
 
 const clubsById = {
@@ -102,4 +102,18 @@ test('応援クラブの所属が分からないとき・所属の表がない�
 test('クラブがないときは空、空の大会は出さない', () => {
   assert.deepEqual(opponentGroups({ clubs: [], seasonClubs: [], supportClubId: 'matsumoto' }), []);
   assert.deepEqual(ids(opponentGroups({ clubs: [oc('j3a', 'A')], seasonClubs: ogSeason, supportClubId: 'matsumoto' })), [['J3', ['j3a']]]);
+});
+
+test('きっぷの「この試合で検索」：試合はきっぷの試合、交通手段・宿泊・出発地は下の欄の値（7-6 の実機の確認で決めた）', () => {
+  const values = { kind: 'custom', fixtureId: '', opponentId: '', date: '', kickoff: '', venue: '', modes: ['bus', 'plane'], lodging: 'pre', origin: 'here' };
+  const r = ticketQuery(values, 'F1');
+  assert.equal(r.ok, true);
+  const q = new URLSearchParams(r.qs);
+  assert.equal(q.get('f'), 'F1');
+  assert.equal(q.get('l'), 'pre');
+  assert.deepEqual(r.qs, queryFromForm({ ...values, kind: 'fixture', fixtureId: 'F1' }).qs);
+  // 手入力の欄が空でも、日程から選んだ欄が別の試合でも、きっぷの試合で検索する
+  assert.equal(new URLSearchParams(ticketQuery({ ...values, kind: 'fixture', fixtureId: 'F9' }, 'F1').qs).get('f'), 'F1');
+  // 交通手段が空なら検索できない（条件に入れて理由を出す）
+  assert.deepEqual(ticketQuery({ ...values, modes: [] }, 'F1'), { ok: false, errors: { modes: '交通手段を1つ以上選んでください' } });
 });
