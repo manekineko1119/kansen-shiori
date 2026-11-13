@@ -80,6 +80,7 @@ test('validateFixtureEdit：PK戦（両方・同じ数でない・同点のと�
   assert.equal(v({ home_pk: null, away_pk: 3 }).errors.away_pk, 'PK戦は両方のスコアを入れてください');
   assert.equal(v({ home_pk: 3, away_pk: 3 }).errors.home_pk, 'PK戦のスコアが同じです');
   assert.equal(v({ home_pk: 4, away_pk: 3 }, edit.fixture).errors.home_pk, 'PK戦はスコアが同点のときだけ入れられます');
+  assert.equal(v({ status: 'scheduled', home_pk: 4, away_pk: 3 }).errors.home_pk, 'PK戦はスコアが同点のときだけ入れられます');
   assert.equal(v({ home_pk: -1, away_pk: 3 }).errors.home_pk, '0以上の整数で入力してください');
   assert.equal(v({ home_pk: 4, away_pk: NaN }).errors.away_pk, '0以上の整数で入力してください');
 });

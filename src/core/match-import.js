@@ -59,6 +59,7 @@ function resultColumns(page, ids, nowIso, warnings, keepScorers) {
     warnings.push(built.reason);
   } else {
     row.scorers_fetched_at = nowIso;
+    row.scorers_failed_at = null; // 前の失敗の印を消す
   }
   return { row, scorerCount: built.scorers.length };
 }
@@ -89,6 +90,14 @@ export function planMatchImport(page, { url, season, clubs, stadiums, existing, 
   const other = rows.find((f) => f.id !== id && f.jleague_match_url === url);
   if (other) {
     return { ok: false, errors: [`この試合ページはすでに別の試合ID（${other.id}）に登録されています`] };
+  }
+
+  if (!current) {
+    const dup = rows.find((f) => f.id !== id && f.match_date === page.date
+      && f.home_club_id === homeClub.id && f.away_club_id === awayClub.id);
+    if (dup) {
+      return { ok: false, errors: [`同じ日・同じ対戦の試合（${dup.id}）がすでにあります。1件編集で大会・回戦をそろえてから入れ直してください`] };
+    }
   }
 
   if (page.canceledInfo) warnings.push('中止・延期の案内があります');
@@ -141,7 +150,7 @@ export function planMatchImport(page, { url, season, clubs, stadiums, existing, 
   }
 
   if (current && Object.keys(row).length === 0) {
-    return { ok: false, errors: ['更新する項目がありません'] };
+    return { ok: false, errors: [warnings.length > 0 ? `更新する項目がありません（${warnings.join('／')}）` : '更新する項目がありません'] };
   }
   const view = {
     competition, round, date: page.date, kickoff: page.kickoff ?? null,

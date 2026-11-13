@@ -152,7 +152,7 @@ test('manual は結果を送らない', () => {
   assert.ok(r.warnings.includes('手で直した試合なので、結果・得点者・PK は更新しません'));
   const r2 = planMatchImport(makePage(), ctx({ existing: [{ ...existing[0], jleague_match_url: URL_ }] }));
   assert.equal(r2.ok, false);
-  assert.deepEqual(r2.errors, ['更新する項目がありません']);
+  assert.deepEqual(r2.errors, ['更新する項目がありません（手で直した試合なので、結果・得点者・PK は更新しません）']);
 });
 
 test('得点者の数が合わない', () => {
@@ -251,4 +251,17 @@ test('全角の回戦は同じ id・他の URL の行だけなら無事', () => 
   const r = planMatchImport(makePage({ section: '１回戦' }), ctx({ existing: [{ id: 'Y', jleague_match_url: 'https://www.jleague.jp/match/leaguecup/2026/000001/' }] }));
   assert.equal(r.ok, true);
   assert.equal(r.id, ID);
+});
+
+test('同じ日・同じ対戦で別IDの試合があれば止める（手入力のカップ戦の二重登録を防ぐ）', () => {
+  const existing = [{ id: 'hand-made', match_date: '2026-09-09', home_club_id: 'matsumoto', away_club_id: 'shonan', jleague_match_url: null }];
+  const r = planMatchImport(makePage(), ctx({ existing }));
+  assert.equal(r.ok, false);
+  assert.deepEqual(r.errors, ['同じ日・同じ対戦の試合（hand-made）がすでにあります。1件編集で大会・回戦をそろえてから入れ直してください']);
+});
+
+test('得点者を読めたら scorers_failed_at を null にして失敗の印を消す', () => {
+  const r = planMatchImport(makePage(), ctx());
+  assert.equal(r.row.scorers_failed_at, null);
+  assert.ok('scorers_failed_at' in r.row);
 });

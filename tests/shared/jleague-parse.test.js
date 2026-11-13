@@ -165,9 +165,8 @@ test('試合ページ：先に得点リストのない見出し風のノード�
 test('canonicalMatchPageUrl', () => {
   const c = 'https://www.jleague.jp/match/leaguecup/2026/090901/';
   for (const u of [c, 'https://www.jleague.jp/match/leaguecup/2026/090901/#summary', 'https://www.jleague.jp/sp/match/leaguecup/2026/090901/lineup/',
-    'https://www.jleague.jp/match/leaguecup/2026/090901', ' https://www.jleague.jp/match/leaguecup/2026/090901/?a=1 ']) assert.equal(canonicalMatchPageUrl(u), c);
-  for (const u of ['http://www.jleague.jp/match/leaguecup/2026/090901/', 'https://jleague.jp/match/leaguecup/2026/090901/',
-    'https://www.jleague.jp/match/leaguecup/2026/0909/', 'https://www.jleague.jp/club/matsumoto/', '', null]) assert.equal(canonicalMatchPageUrl(u), null);
+    'https://www.jleague.jp/match/leaguecup/2026/090901', 'https://jleague.jp/match/leaguecup/2026/090901/', ' https://www.jleague.jp/match/leaguecup/2026/090901/?a=1 ']) assert.equal(canonicalMatchPageUrl(u), c);
+  for (const u of ['http://www.jleague.jp/match/leaguecup/2026/090901/', 'https://www.jleague.jp/match/leaguecup/2026/0909/', 'https://www.jleague.jp/club/matsumoto/', '', null]) assert.equal(canonicalMatchPageUrl(u), null);
 });
 
 test('試合ページ：試合後の見本を読む', () => {
@@ -202,6 +201,7 @@ test('試合ページ：PK戦は同点のときだけ、0対0は null', () => {
   const html = load('jleague-cup-post.html');
   assert.equal(parseMatchDetails(html.replace('\\"score\\":1,\\"playerScoreList\\":[{\\"name\\":\\"山田', '\\"score\\":2,\\"playerScoreList\\":[{\\"name\\":\\"山田')).penalty, null);
   assert.equal(parseMatchDetails(html.replace('\\"homeTeamScore\\":4,\\"awayTeamScore\\":3', '\\"homeTeamScore\\":0,\\"awayTeamScore\\":0')).penalty, null);
+  assert.equal(parseMatchDetails(html.replace('\\"homeTeamScore\\":4,\\"awayTeamScore\\":3', '\\"homeTeamScore\\":3,\\"awayTeamScore\\":3')).penalty, null);
 });
 
 test('試合ページ：大会・回戦のデータがないページは reason', () => {

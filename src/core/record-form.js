@@ -170,7 +170,7 @@ export function validateFixtureEdit(edit, { homeClubId, awayClubId } = {}) {
       errors.away_pk = 'PK戦は両方のスコアを入れてください';
     } else if (f.home_pk === f.away_pk) {
       errors.home_pk = 'PK戦のスコアが同じです';
-    } else if (f.home_score !== f.away_score) {
+    } else if (f.status !== 'finished' || f.home_score !== f.away_score) {
       errors.home_pk = 'PK戦はスコアが同点のときだけ入れられます';
     }
   }

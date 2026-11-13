@@ -92,12 +92,15 @@ export function renderFixtureUrl(ctx, seasonId) {
     if (!editable || busy) return;
     const url = readValues(form).match_url.trim();
     typed = url;
-    guarded(() => run(() => admin.readMatchPage(url), form.querySelector('button[type="submit"]'), async (res) => {
-      if (typed === url) loaded = { url: res.url ?? url, page: res.page }; // 読み込み中に書き換えられていたら捨てる
-      const day = await admin.loadMatchPagesToday(jstDayStartIso(ctx.nowMs)); // 読んだ分を数え直す
+    guarded(async () => {
+      await run(() => admin.readMatchPage(url), form.querySelector('button[type="submit"]'), async (res) => {
+        if (typed === url) loaded = { url: res.url ?? url, page: res.page }; // 読み込み中に書き換えられていたら捨てる
+      });
+      // 成功でも失敗でも、読みに行った分は数えられるので数え直す
+      const day = await admin.loadMatchPagesToday(jstDayStartIso(ctx.nowMs));
       if (day?.ok) used = day.used;
-      ctx.redraw();
-    }));
+      ctx.redraw(); // 失敗の理由は覚えているので、描き直しても残る
+    });
   });
   if (!loaded) return form;
 

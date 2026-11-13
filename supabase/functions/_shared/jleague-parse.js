@@ -167,7 +167,7 @@ export function canonicalMatchPageUrl(input) {
   } catch {
     return null;
   }
-  if (u.protocol !== 'https:' || u.hostname !== 'www.jleague.jp') return null;
+  if (u.protocol !== 'https:' || (u.hostname !== 'www.jleague.jp' && u.hostname !== 'jleague.jp')) return null;
   const m = /^\/(?:sp\/)?match\/([a-z0-9-]+)\/(\d{4})\/(\d{6})(?:\/.*)?$/.exec(u.pathname);
   return m ? `${ORIGIN}/match/${m[1]}/${m[2]}/${m[3]}/` : null;
 }
@@ -207,7 +207,7 @@ export function parseMatchDetails(html) {
     const away = detailSide(node.awayTeam, finished);
     const ph = num(node.penalty?.homeTeamScore);
     const pa = num(node.penalty?.awayTeamScore);
-    const hasPenalty = finished && ph !== null && pa !== null && (ph > 0 || pa > 0)
+    const hasPenalty = finished && ph !== null && pa !== null && (ph > 0 || pa > 0) && ph !== pa
       && home.score !== null && home.score === away.score;
     const stadium = undecided(node.stadium?.name);
     return {
