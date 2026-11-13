@@ -1,9 +1,9 @@
 // 観戦記録の一覧（集計・直近5試合・行）。#/records と、観戦記録の詳細の左の枠で共通に使う（設計書 3.4.2・3.5）
 import { el, outcomeBadge } from './parts.js';
-import { controlsHref, outcomeCounts, recordHref, recordRows, seasonLabel } from '../../core/record-list.js';
+import { controlsHref, outcomeCounts, recordHref, recordRows, recordsRecentForm, seasonLabel } from '../../core/record-list.js';
 import { fixtureSide, opponentOf } from '../../core/fixture-view.js';
 import { formatDateJa, formatYen } from '../../core/format.js';
-import { OUTCOME_MARK, recentForm } from '../../core/result.js';
+import { OUTCOME_MARK } from '../../core/result.js';
 import { seasonStats } from '../../core/stats.js';
 
 const enc = encodeURIComponent;
@@ -33,9 +33,11 @@ function statsBand(stats, counts) {
     cell(`${counts.win}-${counts.draw}-${counts.lose}`, '勝-分-敗'), cell(formatYen(stats.costTotal), '費用'));
 }
 
-function formLine(form) {
-  return el('div', { class: 'rec-form num', role: 'img', 'aria-label': form.length ? `直近${form.length}試合の結果` : '直近の結果なし' },
-    el('span', null, '直近5試合'),
+// onlyStadium のときは、現地観戦した試合の直近5試合（見出しも「現地の直近5試合」にする）
+function formLine(form, onlyStadium) {
+  const title = onlyStadium ? '現地の直近5試合' : '直近5試合';
+  return el('div', { class: 'rec-form num', role: 'img', 'aria-label': form.length ? `${onlyStadium ? '現地の' : ''}直近${form.length}試合の結果` : '直近の結果なし' },
+    el('span', null, title),
     form.length ? form.map((o) => el('i', { class: `res ${o}` }, OUTCOME_MARK[o])) : el('em', null, 'なし'));
 }
 
@@ -80,7 +82,7 @@ export function renderRecordList(ctx, { seasonId, seasons, onlyStadium = false, 
   const records = personal.data.records.filter((r) => byId[r.fixture_id]);
   allRows = recordRows({ fixtures: own, records, supportClubId, today: ctx.today, onlyStadium: false });
   const rows = onlyStadium ? allRows.filter((r) => r.record?.watch_style === 'stadium') : allRows;
-  root.append(formLine(recentForm(own, supportClubId, ctx.today)), statsBand(seasonStats(records, byId, supportClubId), outcomeCounts(rows)));
+  root.append(formLine(recordsRecentForm({ fixtures: own, records, supportClubId, today: ctx.today, onlyStadium }), onlyStadium), statsBand(seasonStats(records, byId, supportClubId), outcomeCounts(rows)));
 
   const env = { supportClubId, clubsById: masters.clubsById, selectedId, onlyStadium };
   root.append(rows.length === 0

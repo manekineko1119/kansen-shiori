@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { recordRows, outcomeCounts, controlsHref, parseRecordsQuery, recordHref, recordsHref, pickSeason, seasonLabel } from '../src/core/record-list.js';
+import { recordRows, outcomeCounts, recordsRecentForm, controlsHref, parseRecordsQuery, recordHref, recordsHref, pickSeason, seasonLabel } from '../src/core/record-list.js';
 
 const fx = (id, date, home, away, hs, as, extra = {}) => ({
   id, match_date: date, kickoff: '14:00', status: 'finished', home_club_id: home, away_club_id: away, home_score: hs, away_score: as, ...extra,
@@ -112,4 +112,18 @@ test('切り替えの行き先：選んだ試合が絞り込み後の一覧に�
   assert.equal(controlsHref({ ...env, selectedId: null, season: '2026-27', only: true }), '#/records?only=1');
   // 行がまだ読めていない → 詳細のまま
   assert.equal(controlsHref({ ...env, rows: null, selectedId: 'B', season: '2026-27', only: true }), '#/records/B?only=1');
+});
+
+test('直近5試合：絞り込みなしは全試合、現地だけなら現地観戦した試合から（今日より前・古い順）', () => {
+  const fC = fx('C', '2026-10-25', 'matsumoto', 'yamaguchi', 0, 2);
+  const fToday = fx('T', '2026-11-11', 'matsumoto', 'tottori', 3, 0);
+  const fixtures = [fA, fB, fC, fToday, fFuture];
+  const records = [
+    { fixture_id: 'A', watch_style: 'stadium' }, { fixture_id: 'B', watch_style: 'broadcast' },
+    { fixture_id: 'C', watch_style: 'stadium' }, { fixture_id: 'T', watch_style: 'stadium' },
+  ];
+  const env = { fixtures, records, supportClubId: 'matsumoto', today: '2026-11-11' };
+  assert.deepEqual(recordsRecentForm({ ...env, onlyStadium: false }), ['draw', 'win', 'lose']);
+  assert.deepEqual(recordsRecentForm({ ...env, onlyStadium: true }), ['draw', 'lose']);
+  assert.deepEqual(recordsRecentForm({ ...env, records: [], onlyStadium: true }), []);
 });

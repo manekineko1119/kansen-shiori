@@ -1,6 +1,6 @@
 // 観戦記録の一覧の行の判断（設計書 3.4.2）。純粋な関数だけ
 import { fixtureSide } from './fixture-view.js';
-import { matchOutcome, formatScore } from './result.js';
+import { matchOutcome, formatScore, recentForm } from './result.js';
 import { compareFixturesNewestFirst } from './fixture-order.js';
 
 const STYLE_TEXT = { stadium: '現地', public_viewing: 'PV', broadcast: '中継' };
@@ -24,6 +24,14 @@ export function recordRows({ fixtures, records, supportClubId, today, onlyStadiu
       };
     })
     .filter((r) => !onlyStadium || r.record?.watch_style === 'stadium');
+}
+
+// 一覧の上の直近5試合。絞り込みなしは応援クラブの試合すべて、現地だけなら現地観戦した試合だけから選ぶ（2026-11-13）
+// 今日より前・古い順は recentForm と同じ（カレンダーの直近5試合とそろえる）
+export function recordsRecentForm({ fixtures, records, supportClubId, today, onlyStadium }) {
+  const stadium = new Set((records ?? []).filter((r) => r.watch_style === 'stadium').map((r) => r.fixture_id));
+  const list = onlyStadium ? (fixtures ?? []).filter((f) => stadium.has(f.id)) : (fixtures ?? []);
+  return recentForm(list, supportClubId, today);
 }
 
 // 一覧の行の勝-分-敗。絞り込みなしならシーズンの成績、現地だけなら現地観戦の成績になる。結果の入っていない試合は数えない
