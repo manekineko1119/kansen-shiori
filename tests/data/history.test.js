@@ -15,3 +15,26 @@ test('壊れた値は捨てる', () => {
   assert.deepEqual(createHistory(fakeLocal({ 'kansen.history': '[1,"a"]' })).list(), ['a']);
   assert.deepEqual(createHistory(fakeLocal({ 'kansen.history': 'こわれた' })).list(), []);
 });
+
+test('1件ずつ消せる。消したあとも順番はそのまま', () => {
+  const h = createHistory(fakeLocal());
+  for (const q of ['a', 'b', 'c']) h.push(q);
+  assert.deepEqual(h.remove('b'), ['c', 'a']);
+  assert.deepEqual(h.list(), ['c', 'a']);
+  assert.deepEqual(h.remove('z'), ['c', 'a']);
+});
+
+test('壊れた値のときに消すと、空にする', () => {
+  const local = fakeLocal({ 'kansen.history': 'こわれた' });
+  assert.deepEqual(createHistory(local).remove('a'), []);
+  assert.equal(local.getItem('kansen.history'), '[]');
+});
+
+test('保存に失敗しても、消したあとの一覧を返して落ちない', () => {
+  const local = fakeLocal({ 'kansen.history': '["a","b"]' });
+  local.setItem = () => { throw new Error('QuotaExceededError'); };
+  const warn = console.warn; console.warn = () => {};
+  try {
+    assert.deepEqual(createHistory(local).remove('a'), ['b']);
+  } finally { console.warn = warn; }
+});

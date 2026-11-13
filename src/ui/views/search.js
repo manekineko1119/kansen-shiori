@@ -141,12 +141,18 @@ export function renderSearch(ctx) {
   root.append(form);
 
   // ---- 検索履歴 ----
+  // 1件ずつ消せる（確認なし。設計書 3.1・4.5）。削除のボタンは再検索のリンクの外に置き、押し間違えを防ぐ
   const history = ctx.data.history.list();
   if (history.length > 0) {
     root.append(el('h2', null, '最近の検索'), el('div', { class: 'sec hist' },
-      history.map((qs) => el('a', { href: `#/result?${qs}`, onclick: () => ctx.data.history.push(qs) },
-        el('span', null, historyLabel(qs, { fixturesById: masters.fixturesById, clubsById: masters.clubsById, supportClubId })),
-        el('span', { class: 'muted' }, '再検索')))));
+      history.map((qs) => {
+        const label = historyLabel(qs, { fixturesById: masters.fixturesById, clubsById: masters.clubsById, supportClubId });
+        return el('div', { class: 'hist-row' },
+          el('a', { href: `#/result?${qs}`, onclick: () => ctx.data.history.push(qs) },
+            el('span', null, label),
+            el('span', { class: 'muted' }, '再検索')),
+          el('button', { class: 'hist-del', type: 'button', 'aria-label': `「${label}」の履歴を削除`, onclick: () => { ctx.data.history.remove(qs); ctx.redraw(); } }, '削除'));
+      })));
   }
   return root;
 }

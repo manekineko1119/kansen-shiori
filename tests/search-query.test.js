@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildResultQuery, parseResultQuery, pushHistory } from '../src/core/search-query.js';
+import { buildResultQuery, parseResultQuery, pushHistory, removeHistory } from '../src/core/search-query.js';
 
 const FID = '2026-27_J3_15_gifu_matsumoto';
 
@@ -60,6 +60,14 @@ test('履歴は元の配列を書き換えない', () => {
   const h = ['a', 'b'];
   pushHistory(h, 'c');
   assert.deepEqual(h, ['a', 'b']);
+});
+
+test('履歴から1件を除く。順番は変えず、元の配列は書き換えない', () => {
+  const h = ['a', 'b', 'c'];
+  assert.deepEqual(removeHistory(h, 'b'), ['a', 'c']);
+  assert.deepEqual(h, ['a', 'b', 'c']);
+  assert.deepEqual(removeHistory(h, 'z'), ['a', 'b', 'c']); // ないものは何もしない
+  assert.deepEqual(removeHistory([], 'a'), []);
 });
 
 test('parseResultQuery: 日付とキックオフの形が正しくなければ null', () => {

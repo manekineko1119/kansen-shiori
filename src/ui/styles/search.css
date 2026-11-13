@@ -54,4 +54,15 @@
 .hist a { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 48px; border-top: 1px solid var(--rule); font-size: 14px; color: inherit; text-decoration: none; }
 .hist a:first-child { border-top: 0; }
 .hist a .muted { color: var(--theme-primary); font-weight: 700; flex: none; }
+/* 検索画面の履歴：再検索のリンクと削除のボタンを横に並べる（ボタンはリンクの外。タップ領域 48×48px 以上） */
+.hist-row { display: flex; align-items: stretch; border-top: 1px solid var(--rule); }
+.hist-row:first-child { border-top: 0; }
+.hist-row a { flex: 1; min-width: 0; border-top: 0; }
+.hist-del {
+  flex: none; min-width: 48px; min-height: 48px; padding: 0 8px; margin-left: 8px;
+  border: 0; border-left: 1px solid var(--rule); background: transparent;
+  color: var(--ink-2); font: inherit; font-size: 13px; cursor: pointer;
+}
+.hist-del:hover { color: var(--theme-primary); }
+.hist-del:focus-visible { outline: 3px solid var(--theme-primary); outline-offset: -3px; }
 

@@ -53,3 +53,8 @@ export function parseResultQuery(qs) {
 export function pushHistory(history, qs, max = 5) {
   return [qs, ...history.filter((h) => h !== qs)].slice(0, max);
 }
+
+// 履歴から1件を除く（設計書 4.5。順番はそのまま）
+export function removeHistory(history, qs) {
+  return history.filter((h) => h !== qs);
+}
