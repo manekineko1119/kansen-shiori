@@ -34,7 +34,6 @@
     align-items: start;
     gap: 12px 20px;
   }
-  .map-public { grid-template-areas: "a b"; grid-template-rows: auto; }
   .map-c { grid-area: c; }
   .map-n { grid-area: n; }
   .map-a { grid-area: a; }

@@ -17,7 +17,7 @@ function svgEl(tag, attrs, ...children) {
 const PIN_R = 4.6;
 
 // visitedPrefectures：塗る都道府県の名前の配列。pins：[{ stadium, count }]（行った会場）。baseStadiums：薄い印の会場
-// onPick(stadium, count)：一覧で選んだとき。null なら一覧は名前だけ（未ログイン）
+// onPick(stadium, count)：タップした所の近くの会場の一覧で選んだとき
 export function renderJapanMap({ visitedPrefectures, pins, baseStadiums, onPick }) {
   const painted = new Set(visitedPrefectures);
   const counts = new Map(pins.map((p) => [p.stadium.id, p.count]));
@@ -52,9 +52,7 @@ export function renderJapanMap({ visitedPrefectures, pins, baseStadiums, onPick 
     for (const s of near) {
       const count = counts.get(s.id) ?? 0;
       const label = `${s.name}${count ? `（${count}回）` : '（まだ行っていない）'}`;
-      popup.append(onPick
-        ? el('button', { class: 'jmap-pick', type: 'button', onclick: () => { popup.hidden = true; onPick(s, count); } }, label)
-        : el('p', { class: 'jmap-pick' }, label));
+      popup.append(el('button', { class: 'jmap-pick', type: 'button', onclick: () => { popup.hidden = true; onPick(s, count); } }, label));
     }
     if (!popup.hidden) popup.scrollIntoView({ block: 'nearest' }); // 一覧が画面の外に出ないように
   });

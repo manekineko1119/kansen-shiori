@@ -1,5 +1,4 @@
 // 行ったスタジアムの集計（地図の spec 3.2・3.4・10章）。純粋な関数だけ（DOM・通信・現在時刻を使わない）
-import { parseFixtureId } from './fixture-id.js';
 export const PREFECTURE_COUNT = 47;
 
 // 会場の stadium id。fixture-view.js の venueOf と違い、地図では「未定」もホーム会場として数える（spec 10章）。venue_stadium_id があればそれ。会場名が空か「未定」ならホームのクラブのホーム会場。それ以外の名前は null
@@ -100,11 +99,8 @@ export function mapHref({ season = null } = {}) {
   return season ? `#/map?s=${encodeURIComponent(season)}` : '#/map';
 }
 
-// 記録の画面の見出しの地図のアイコンの行き先。記録の画面以外は null
+// 見出しの地図のアイコンの行き先。入口は観戦記録の一覧だけ（一覧で選んでいるシーズンを引き継ぐ）。ほかの画面は null
 export function mapEntryHref(route) {
   if (route.name === 'records') return mapHref(parseMapQuery(route.query));
-  if (route.name === 'record') {
-    return mapHref({ season: parseFixtureId(route.params?.fixtureId)?.seasonId ?? null });
-  }
   return null;
 }

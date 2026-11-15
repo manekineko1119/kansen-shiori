@@ -1,7 +1,7 @@
 // 観戦のしおりの Service Worker（設計書 8章）。画面のファイルは版ごとに丸ごと入れ替える
 // VERSION・ASSETS_SHA256・ASSETS は npm run sw-version が書き換える（手で直さない）
-const VERSION = '2026-11-16.2';
-const ASSETS_SHA256 = 'd232f80bb6a89bf7f25e990f42fea2b3c1194f5db25155cfd0efad792919f834';
+const VERSION = '2026-11-16.3';
+const ASSETS_SHA256 = '197324516c0cce5784b29cbc80446034a5550983cfdf43b67d9f45a27b985b8b';
 const ASSETS = [
   "icons/apple-touch-icon-180.png",
   "icons/icon-192.png",

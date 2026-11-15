@@ -158,10 +158,9 @@ test('mapHref / parseMapQuery：シーズンを URL に出し入れする', () =
   assert.deepEqual(parseMapQuery(''), { season: null });
 });
 
-test('mapEntryHref：記録の画面から地図へ。シーズンを引き継ぐ', () => {
+test('mapEntryHref：入口は観戦記録の一覧だけ。シーズンを引き継ぐ', () => {
   assert.equal(mapEntryHref({ name: 'records', query: 's=2025' }), '#/map?s=2025');
   assert.equal(mapEntryHref({ name: 'records', query: '' }), '#/map');
-  assert.equal(mapEntryHref({ name: 'record', params: { fixtureId: '2026-27_J3_15_sanuki_matsumoto' } }), '#/map?s=2026-27');
-  assert.equal(mapEntryHref({ name: 'record', params: { fixtureId: 'xxx' } }), '#/map');
+  assert.equal(mapEntryHref({ name: 'record', params: { fixtureId: '2026-27_J3_15_sanuki_matsumoto' } }), null);
   assert.equal(mapEntryHref({ name: 'search' }), null);
 });

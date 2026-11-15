@@ -146,14 +146,8 @@ export function renderMap(ctx) {
   if (masters.status === 'offline') root.append(note(masters.label));
   const d = masters.data;
 
-  // 未ログイン：全会場の薄い印と、ログインの案内だけ
-  if (!ctx.user) {
-    const s = summarizeStadiumMap({ scope: 'all', records: [], fixtures: [], clubs: d.clubs, stadiums: d.stadiums, visits: [], seasonClubs: null, supportClubId: null });
-    root.append(el('div', { class: 'map-grid map-public' }, el('div', { class: 'map-a' }, renderJapanMap({ visitedPrefectures: [], pins: [], baseStadiums: d.stadiums.filter((x) => s.baseIds.includes(x.id)), onPick: null })),
-      el('section', { class: 'sec map-b' }, el('p', null, 'ログインすると、行った会場を記録できます。'),
-        el('a', { class: 'btn', href: '#/login', onclick: (e) => { e.preventDefault(); ctx.data.goLogin(); } }, 'ログイン'))));
-    return root;
-  }
+  // ログインが要る画面（route.js の access 'user'）。未ログインのときはここまで来ない
+  if (!ctx.user) return root;
   if (!personal || personal.status === 'loading') { root.append(el('p', { class: 'muted' }, '読み込み中です。')); return root; }
   if (personal.status === 'unavailable') { root.append(note(personal.message)); return root; }
   if (personal.status === 'offline') root.append(note(personal.label));
