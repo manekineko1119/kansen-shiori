@@ -120,10 +120,30 @@ test('地図に出せない観戦は日付の新しい順', () => {
   assert.deepEqual(r.unplaced.map((u) => u.fixtureId), ['f5', 'f4']);
 });
 
-test('試合が見つからない記録は飛ばす。知らない会場の手の記録は数えない', () => {
+test('試合が見つからない現地の記録は unplaced に会場不明で入れる。知らない会場の手の記録は数えない', () => {
   const r = sum({ records: [rec('rx', 'nothing')], visits: [{ id: 'v', stadium_id: 'ZZ', season_id: null }] });
   assert.deepEqual(r.visited, []);
-  assert.deepEqual(r.unplaced, []);
+  assert.deepEqual(r.unplaced, [{ fixtureId: 'nothing', venueName: '' }]);
+});
+
+test('試合が見つからない記録はシーズンの scope では入れない（通算だけ）。現地以外の記録も入れない', () => {
+  const records = [rec('rx', 'nothing'), rec('ry', 'nothing2', 'tv')];
+  assert.deepEqual(sum({ scope: 'S1', records }).unplaced, []);
+  assert.deepEqual(sum({ scope: 'all', records }).unplaced, [{ fixtureId: 'nothing', venueName: '' }]);
+});
+
+test('シーズンの scope では unplaced もそのシーズンの試合だけ', () => {
+  const more = [...fixtures, fx('f6', 'S0', '2025-06-01', 'g', { venue_name_override: 'ヤジン' })];
+  const records = [rec('r4', 'f4'), rec('r6', 'f6')];
+  assert.deepEqual(sum({ fixtures: more, scope: 'S1', records }).unplaced.map((u) => u.fixtureId), ['f4']);
+  assert.deepEqual(sum({ fixtures: more, scope: 'S0', records }).unplaced.map((u) => u.fixtureId), ['f6']);
+});
+
+test('消された会場（venue_stadium_id が stadiums にない）を指す記録は venueName 空で unplaced', () => {
+  const more = [...fixtures, fx('f7', 'S1', '2026-12-01', 'm', { venue_stadium_id: 'GONE' })];
+  const r = sum({ fixtures: more, records: [rec('r7', 'f7')] });
+  assert.deepEqual(r.unplaced, [{ fixtureId: 'f7', venueName: '' }]);
+  assert.deepEqual(r.visited, []);
 });
 
 test('並び順：回数が同じなら stadium.id の順', () => {

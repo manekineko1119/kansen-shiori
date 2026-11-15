@@ -2,7 +2,7 @@
 import { parseFixtureId } from './fixture-id.js';
 export const PREFECTURE_COUNT = 47;
 
-// 会場の stadium id。venue_stadium_id があればそれ。会場名が空か「未定」ならホームのクラブのホーム会場。それ以外の名前は null
+// 会場の stadium id。fixture-view.js の venueOf と違い、地図では「未定」もホーム会場として数える（spec 10章）。venue_stadium_id があればそれ。会場名が空か「未定」ならホームのクラブのホーム会場。それ以外の名前は null
 export function venueOf(fixture, clubsById) {
   if (fixture.venue_stadium_id) return fixture.venue_stadium_id;
   const name = (fixture.venue_name_override ?? '').trim();
@@ -43,7 +43,12 @@ export function summarizeStadiumMap({ scope, records, fixtures, clubs, stadiums,
   for (const r of records) {
     if (r.watch_style !== 'stadium') continue;
     const f = fixturesById.get(r.fixture_id);
-    if (!f || !inScope(f.season_id)) continue;
+    if (!f) {
+      // 試合が見つからない記録は捨てない。どのシーズンの試合か分からないので、通算だけに入れる
+      if (scope === 'all') unplacedRows.push({ date: '', fixtureId: r.fixture_id, venueName: '' });
+      continue;
+    }
+    if (!inScope(f.season_id)) continue;
     const stadium = stadiumsById.get(venueOf(f, clubsById));
     if (!stadium) {
       unplacedRows.push({ date: f.match_date ?? '', fixtureId: f.id, venueName: (f.venue_name_override ?? '').trim() });
