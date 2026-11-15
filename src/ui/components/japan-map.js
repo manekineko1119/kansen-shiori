@@ -13,8 +13,8 @@ function svgEl(tag, attrs, ...children) {
   return node;
 }
 
-// 印の半径（行った回数に応じて）
-export const pinRadius = (count) => 3 + Math.sqrt(count) * 1.6;
+// 行った会場の印の半径。回数に関係なく同じ大きさ（回数は表に出す）
+const PIN_R = 4.6;
 
 // visitedPrefectures：塗る都道府県の名前の配列。pins：[{ stadium, count }]（行った会場）。baseStadiums：薄い印の会場
 // onPick(stadium, count)：一覧で選んだとき。null なら一覧は名前だけ（未ログイン）
@@ -32,9 +32,9 @@ export function renderJapanMap({ visitedPrefectures, pins, baseStadiums, onPick 
   svg.append(svgEl('g', { class: 'jmap-base' },
     baseStadiums.filter((s) => placed(s) && !counts.has(s.id)).map((s) => { const [cx, cy] = at(s); return svgEl('circle', { cx, cy, r: 2.6 }); })));
   svg.append(svgEl('g', { class: 'jmap-pins' },
-    [...pins].sort((a, b) => b.count - a.count).filter((p) => placed(p.stadium)).map((p) => {
+    pins.filter((p) => placed(p.stadium)).map((p) => {
       const [cx, cy] = at(p.stadium);
-      return svgEl('circle', { cx, cy, r: pinRadius(p.count) });
+      return svgEl('circle', { cx, cy, r: PIN_R });
     })));
 
   const popup = el('div', { class: 'jmap-popup', hidden: true });
