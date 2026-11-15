@@ -8,13 +8,14 @@ import { opponentOf } from '../../core/fixture-view.js';
 import { formatDateJa } from '../../core/format.js';
 import { JAPAN_SHAPE } from '../../core/map/japan-shape.js';
 
+const CONFIRM_DELETE = 'この行った会場の記録を削除しますか';
 const enc = encodeURIComponent;
 const note = (text) => el('p', { class: 'note', role: 'status' }, text);
 
-// シーズンの id の一覧（読めないときは今のシーズンだけ。URL のシーズンが一覧にないときは足す）
+// シーズンの id の一覧（読めないときは今のシーズンだけ。読めないときに限り、URL のシーズンが一覧にないなら足す）
 function seasonIds({ scope, seasons, currentId }) {
   const ids = Array.isArray(seasons) ? seasons.map((s) => s.id) : [currentId].filter(Boolean);
-  if (scope !== 'all' && !ids.includes(scope)) ids.push(scope);
+  if (!Array.isArray(seasons) && scope !== 'all' && !ids.includes(scope)) ids.push(scope);
   return ids;
 }
 
@@ -41,6 +42,7 @@ function visitsTable(ctx, { visited, fixturesById, supportClubId }) {
   if (visited.length === 0) { sec.append(el('p', { class: 'muted' }, 'まだありません')); return sec; }
 
   const remove = async (id, button) => {
+    if (!window.confirm(CONFIRM_DELETE)) return;
     errs.clear();
     button.disabled = true;
     let res;
@@ -159,7 +161,9 @@ export function renderMap(ctx) {
   const currentId = d.season?.id ?? null;
   const online = masters.status !== 'offline' && !ctx.user.offline;
   const seasons = online ? ctx.data.seasons() : null;
-  const scope = parseMapQuery(ctx.route.query).season ?? 'all';
+  const wanted = parseMapQuery(ctx.route.query).season ?? 'all';
+  // シーズンの一覧が読めているのに、一覧にない ?s= の値は通算として扱う
+  const scope = Array.isArray(seasons) && wanted !== 'all' && !seasons.some((x) => x.id === wanted) ? 'all' : wanted;
   const supportClubId = ctx.settings?.support_club_id ?? null;
 
   // シーズンの分母のための所属クラブ。今のシーズンは共通データ、ほかは読み込む（undefined＝読み込み中、null＝読めない）

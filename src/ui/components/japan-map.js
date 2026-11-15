@@ -24,7 +24,7 @@ export function renderJapanMap({ visitedPrefectures, pins, baseStadiums, onPick 
   const placed = (s) => Number.isFinite(s.lat) && Number.isFinite(s.lng);
   const at = (s) => project(s.lat, s.lng);
 
-  const svg = svgEl('svg', { class: 'jmap', viewBox: JAPAN_SHAPE.viewBox, role: 'img', 'aria-label': `日本地図。行った会場${pins.length}か所` });
+  const svg = svgEl('svg', { class: 'jmap', viewBox: JAPAN_SHAPE.viewBox, role: 'img', 'aria-label': `日本地図。行った会場${pins.length}か所。行った会場は下の表にもあります。` });
   svg.append(svgEl('g', { class: 'jmap-land' },
     JAPAN_SHAPE.prefectures.map((p) => svgEl('path', { d: p.d, class: painted.has(p.name) ? 'pref visited' : 'pref' }, svgEl('title', null, p.name)))));
   const { x, y, w, h } = JAPAN_SHAPE.inset;
@@ -56,6 +56,7 @@ export function renderJapanMap({ visitedPrefectures, pins, baseStadiums, onPick 
         ? el('button', { class: 'jmap-pick', type: 'button', onclick: () => { popup.hidden = true; onPick(s, count); } }, label)
         : el('p', { class: 'jmap-pick' }, label));
     }
+    if (!popup.hidden) popup.scrollIntoView({ block: 'nearest' }); // 一覧が画面の外に出ないように
   });
 
   return el('div', { class: 'jmap-wrap' }, svg, popup, el('p', { class: 'jmap-credit muted' }, ATTRIBUTION));
