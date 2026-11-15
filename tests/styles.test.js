@@ -115,3 +115,13 @@ test('ブラウザの帯の色は公式の緑、起動画面の背景はアイ�
   assert.equal(m.theme_color, '#00823E');
   assert.equal(m.background_color, '#0E5A3A');
 });
+
+test('グラデーションはきっぷだけ。斜めの模様は残す（設計書 3.1・3.6）', () => {
+  const ticket = read('search.css').match(/\.ticket\s*\{[^}]*\}/)[0];
+  assert.match(ticket, /linear-gradient\(to right in oklab,\s*var\(--theme-primary\),\s*var\(--theme-shade\)\)/);
+  assert.equal((ticket.match(/repeating-linear-gradient/g) ?? []).length, 2);
+  for (const name of cssFiles) {
+    const n = (read(name).match(/(^|[^-])linear-gradient\([^;]*--theme-shade/g) ?? []).length;
+    assert.equal(n, name === 'search.css' ? 1 : 0, name);
+  }
+});

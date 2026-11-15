@@ -10,7 +10,7 @@
   background:
     repeating-linear-gradient(60deg, color-mix(in srgb, var(--theme-on-primary) 7%, transparent) 0 1px, transparent 1px 7px),
     repeating-linear-gradient(-60deg, color-mix(in srgb, var(--theme-on-primary) 7%, transparent) 0 1px, transparent 1px 7px),
-    var(--theme-primary);
+    linear-gradient(to right in oklab, var(--theme-primary), var(--theme-shade));
 }
 .ticket::before, .ticket::after { content: ""; position: absolute; right: 86px; width: 20px; height: 20px; border-radius: 50%; background: var(--bg); }
 .ticket::before { top: -10px; }
