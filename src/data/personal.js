@@ -20,11 +20,18 @@ function check({ data, error }) {
   return data;
 }
 
+// 表がない（PostgreSQL 42P01、PostgREST PGRST205）。地図の表を本番に入れる前の app でも、遠征予定・観戦記録は読めるようにする
+const MISSING_TABLE_CODES = ['42P01', 'PGRST205'];
+function checkVisits({ data, error }) {
+  if (error && MISSING_TABLE_CODES.includes(error.code)) return [];
+  return check({ data, error });
+}
+
 async function fetchPersonal(client, knownFixtureIds) {
   const [trips, records, visits] = await Promise.all([
     client.from('trips').select('*').then(check),
     client.from('match_records').select('*').then(check),
-    client.from('stadium_visits').select('*').then(check),
+    client.from('stadium_visits').select('*').then(checkVisits),
   ]);
   // 今のシーズンにない試合だけを ID で読む（D28）
   const missing = [...new Set([...trips, ...records].map((r) => r.fixture_id).filter((id) => id != null && !knownFixtureIds.has(id)))];

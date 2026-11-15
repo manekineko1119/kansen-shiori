@@ -74,3 +74,21 @@ test('visits を持たない古い写しは捨てずに返し、visits は [] �
   await snapshot.save('personal:u1', { trips: [], records: [], extraFixtures: [], visits: 'x' }, T);
   assert.equal(await readPersonalSnapshot(snapshot, 'u1'), null);
 });
+
+test('stadium_visits の表がない（42P01・PGRST205）ときだけ visits: [] で続ける', async () => {
+  for (const code of ['42P01', 'PGRST205']) {
+    const snapshot = createSnapshot(fakeKv());
+    const client = fakeClient(mk(), { failOn: { stadium_visits: { message: 'no table', code } } });
+    const r = await refreshPersonal({ client, snapshot, userId: 'u1', nowMs: T, knownFixtureIds: known() });
+    assert.equal(r.status, 'fresh', code);
+    assert.deepEqual(r.data.visits, [], code);
+    assert.deepEqual(r.data.records.map((x) => x.id), ['r1'], code);
+  }
+});
+
+test('stadium_visits のほかのエラーは今までどおり（写しがなければ unavailable）', async () => {
+  const snapshot = createSnapshot(fakeKv());
+  const client = fakeClient(mk(), { failOn: { stadium_visits: { message: 'denied', code: '42501' } } });
+  const r = await refreshPersonal({ client, snapshot, userId: 'u1', nowMs: T, knownFixtureIds: known() });
+  assert.equal(r.status, 'unavailable');
+});
