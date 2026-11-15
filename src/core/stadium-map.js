@@ -1,5 +1,6 @@
 // 行ったスタジアムの集計（地図の spec 3.2・3.4・10章）。純粋な関数だけ（DOM・通信・現在時刻を使わない）
 import { JAPAN_SHAPE } from './map/japan-shape.js';
+import { seasonLabel } from './record-list.js';
 
 export const PREFECTURE_COUNT = 47;
 // 都道府県の番号（JIS。北から南）。行った会場の表の並びに使う
@@ -117,4 +118,9 @@ export function stadiumsInPrefecture(stadiums, prefecture) {
   if (!prefecture) return [];
   const seen = new Set();
   return stadiums.filter((s) => s.prefecture === prefecture && !seen.has(s.id) && seen.add(s.id));
+}
+
+// 手で足した記録の表の文（地図の spec 4.2）。シーズンなしは「以前に行った」、ありは「〇〇シーズンに行った」（2026-11-16 ユーザーが決定）
+export function visitLabel(seasonId) {
+  return seasonId ? `${seasonLabel(seasonId)}に行った` : '以前に行った';
 }

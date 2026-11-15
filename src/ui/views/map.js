@@ -2,7 +2,7 @@
 import { el, section } from '../components/parts.js';
 import { renderJapanMap } from '../components/japan-map.js';
 import { bindErrors, createRunner, readValues } from '../components/form-util.js';
-import { summarizeStadiumMap, parseMapQuery, mapHref } from '../../core/stadium-map.js';
+import { summarizeStadiumMap, parseMapQuery, mapHref, visitLabel } from '../../core/stadium-map.js';
 import { seasonLabel } from '../../core/record-list.js';
 import { opponentOf } from '../../core/fixture-view.js';
 import { formatDateJa } from '../../core/format.js';
@@ -63,8 +63,8 @@ function visitsTable(ctx, { visited, fixturesById, supportClubId }) {
       el('div', { class: 'vr-head' }, el('b', null, stadium.name), el('span', { class: 'muted' }, stadium.prefecture ?? '')),
       matches.map(matchLink),
       visits.map((v) => el('div', { class: 'vr-hand' },
-        el('span', { class: 'muted' }, `手で足した記録：${v.season_id ? seasonLabel(v.season_id) : 'シーズンなし'}`),
-        el('button', { class: 'btn btn-sub btn-small', type: 'button', 'aria-label': `${stadium.name}の手で足した記録を削除`, onclick: (e) => remove(v.id, e.currentTarget) }, '削除'))));
+        el('span', { class: 'muted' }, visitLabel(v.season_id)),
+        el('button', { class: 'btn btn-sub btn-small', type: 'button', 'aria-label': `${stadium.name}の「${visitLabel(v.season_id)}」を削除`, onclick: (e) => remove(v.id, e.currentTarget) }, '削除'))));
   })));
   return sec;
 }

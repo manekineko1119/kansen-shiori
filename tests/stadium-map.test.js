@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { venueOf, summarizeStadiumMap, parseMapQuery, mapHref, mapEntryHref, stadiumsInPrefecture } from '../src/core/stadium-map.js';
+import { venueOf, summarizeStadiumMap, parseMapQuery, mapHref, mapEntryHref, stadiumsInPrefecture, visitLabel } from '../src/core/stadium-map.js';
 
 const stadiums = [
   { id: 'A', name: 'アルウィン', prefecture: '長野県' },
@@ -173,4 +173,11 @@ test('stadiumsInPrefecture：タップした県の会場だけを、渡した順
   assert.deepEqual(stadiumsInPrefecture([a, c, b, a], '長野県'), [a, b]);
   assert.deepEqual(stadiumsInPrefecture([a, b, c], '沖縄県'), []);
   assert.deepEqual(stadiumsInPrefecture([a, b, c], null), []);
+});
+
+test('visitLabel：手で足した記録の文。シーズンなしは「以前に行った」、ありは「〇〇に行った」', () => {
+  assert.equal(visitLabel(null), '以前に行った');
+  assert.equal(visitLabel(undefined), '以前に行った');
+  assert.equal(visitLabel('2025'), '2025シーズンに行った');
+  assert.equal(visitLabel('2026-special'), '2026 特別大会に行った');
 });
