@@ -156,7 +156,8 @@ test('J3 の20クラブ・ホームスタジアム・所属は、J1・J2 を足�
   });
   // J3 のデータの SHA-256。J3 の行を直したときは、この値も直す
   // 2026-11-12：d949fd1 の時点 → 白波スタジアムのアクセス先・駐車場・バス停を直した（research 奈良・鹿児島のスタジアムの確認）
-  assert.equal(createHash('sha256').update(snap).digest('hex'), '65353418e51eb9d009ed6e0b1df4e05e93530a8cd645ae65ff4730e739be3ebc');
+  // 2026-11-16：松本山雅FCの theme_colors を公式のクラブカラーにした（設計書 3.6）
+  assert.equal(createHash('sha256').update(snap).digest('hex'), '9bab2e4c4d16477beb0d1cf12a0396705d8095a2716582a7bacd4618f6c4ed5f');
 });
 
 test('J1・J2 のクラブには theme_colors と試合動画の取得元を入れない（応援クラブにしたときに足す）', () => {
@@ -165,4 +166,9 @@ test('J1・J2 のクラブには theme_colors と試合動画の取得元を入�
     assert.equal(c.theme_colors ?? null, null, id);
     assert.deepEqual(c.video_sources, [], id); // DB は not null なので空の配列を入れる
   }
+});
+
+test('松本山雅FCの theme_colors は公式のクラブカラー（設計書 3.6）', () => {
+  const c = data.clubs.find((x) => x.id === 'matsumoto');
+  assert.deepEqual(c.theme_colors, { primary: '#00823E', on_primary: '#FFFFFF', accent: '#F2B01E', tint: '#D9ECE2', shade: '#005612' });
 });

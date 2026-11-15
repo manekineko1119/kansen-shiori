@@ -2301,10 +2301,11 @@
       "jleague_url": "https://www.jleague.jp/club/matsumoto/",
       "home_stadium_id": "sunpro-alwin",
       "theme_colors": {
-        "primary": "#0E5A3A",
+        "primary": "#00823E",
         "on_primary": "#FFFFFF",
         "accent": "#F2B01E",
-        "tint": "#D9E8DF"
+        "tint": "#D9ECE2",
+        "shade": "#005612"
       },
       "video_sources": [
         {
