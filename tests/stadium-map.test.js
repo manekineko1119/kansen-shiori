@@ -179,5 +179,5 @@ test('visitLabel：手で足した記録の文。シーズンなしは「以前�
   assert.equal(visitLabel(null), '以前に行った');
   assert.equal(visitLabel(undefined), '以前に行った');
   assert.equal(visitLabel('2025'), '2025シーズンに行った');
-  assert.equal(visitLabel('2026-special'), '2026 特別大会に行った');
+  assert.equal(visitLabel('2026-special'), '2026 百年構想リーグに行った');
 });
