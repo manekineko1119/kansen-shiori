@@ -51,14 +51,14 @@
 .jmap { display: block; width: 100%; height: auto; max-height: 80vh; cursor: pointer; }
 .jmap .pref { fill: var(--map-land); stroke: var(--map-border); stroke-width: 0.5; }
 .jmap .pref.visited { fill: var(--map-visited); stroke: var(--map-visited-border); }
-.jmap-inset { fill: none; stroke: var(--map-border); stroke-width: 0.8; }
+.jmap-inset { fill: none; stroke: var(--map-border); stroke-width: 0.8; pointer-events: all; } /* 枠の中の海を押しても沖縄県の一覧を出す */
 .jmap-base circle { fill: none; stroke: var(--map-pin-base); stroke-width: 0.9; }
 .jmap-pins circle { fill: var(--map-pin); stroke: var(--paper); stroke-width: 0.8; }
 .jmap-credit { margin-top: 4px; font-size: 11px; }
 .jmap-popup { display: grid; gap: 4px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--rule); }
 .jmap-pick { display: flex; align-items: center; min-height: 48px; padding: 0 12px; border: 1px solid var(--rule); border-radius: var(--r-s); background: var(--paper); color: var(--theme-primary); font-weight: 700; text-align: left; }
 button.jmap-pick:hover { background: var(--theme-tint); }
-p.jmap-pick { color: var(--ink); font-weight: 400; border: 0; }
+.jmap-pref { margin: 0; font-weight: 700; }
 
 /* 表・地図に出せない観戦 */
 .map-rows { display: grid; }

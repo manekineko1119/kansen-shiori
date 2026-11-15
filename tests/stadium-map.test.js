@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { venueOf, summarizeStadiumMap, parseMapQuery, mapHref, mapEntryHref } from '../src/core/stadium-map.js';
+import { venueOf, summarizeStadiumMap, parseMapQuery, mapHref, mapEntryHref, stadiumsInPrefecture } from '../src/core/stadium-map.js';
 
 const stadiums = [
   { id: 'A', name: 'アルウィン', prefecture: '長野県' },
@@ -163,4 +163,13 @@ test('mapEntryHref：入口は観戦記録の一覧だけ。シーズンを引�
   assert.equal(mapEntryHref({ name: 'records', query: '' }), '#/map');
   assert.equal(mapEntryHref({ name: 'record', params: { fixtureId: '2026-27_J3_15_sanuki_matsumoto' } }), null);
   assert.equal(mapEntryHref({ name: 'search' }), null);
+});
+
+test('stadiumsInPrefecture：タップした県の会場だけを、渡した順のまま返す。同じ会場は1つ', () => {
+  const a = { id: 'alwin', prefecture: '長野県' };
+  const b = { id: 'u-stadium', prefecture: '長野県' };
+  const c = { id: 'bigswan', prefecture: '新潟県' };
+  assert.deepEqual(stadiumsInPrefecture([a, c, b, a], '長野県'), [a, b]);
+  assert.deepEqual(stadiumsInPrefecture([a, b, c], '沖縄県'), []);
+  assert.deepEqual(stadiumsInPrefecture([a, b, c], null), []);
 });

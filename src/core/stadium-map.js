@@ -104,3 +104,10 @@ export function mapEntryHref(route) {
   if (route.name === 'records') return mapHref(parseMapQuery(route.query));
   return null;
 }
+
+// 地図でタップした県の会場（地図の spec 4.2）。渡した順のまま、同じ会場は1つにする。県が分からないときは空
+export function stadiumsInPrefecture(stadiums, prefecture) {
+  if (!prefecture) return [];
+  const seen = new Set();
+  return stadiums.filter((s) => s.prefecture === prefecture && !seen.has(s.id) && seen.add(s.id));
+}

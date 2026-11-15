@@ -2,9 +2,11 @@
 import { el } from './parts.js';
 import { JAPAN_SHAPE, ATTRIBUTION } from '../../core/map/japan-shape.js';
 import { project } from '../../core/map/project.js';
+import { stadiumsInPrefecture } from '../../core/stadium-map.js';
+
+const OKINAWA = '沖縄県';
 
 const NS = 'http://www.w3.org/2000/svg';
-const TAP_RADIUS = 12; // タップした所から、この距離（地図の座標）以内の会場を一覧に出す
 
 function svgEl(tag, attrs, ...children) {
   const node = document.createElementNS(NS, tag);
@@ -26,30 +28,31 @@ export function renderJapanMap({ visitedPrefectures, pins, baseStadiums, onPick 
 
   const svg = svgEl('svg', { class: 'jmap', viewBox: JAPAN_SHAPE.viewBox, role: 'img', 'aria-label': `日本地図。行った会場${pins.length}か所。行った会場は下の表にもあります。` });
   svg.append(svgEl('g', { class: 'jmap-land' },
-    JAPAN_SHAPE.prefectures.map((p) => svgEl('path', { d: p.d, class: painted.has(p.name) ? 'pref visited' : 'pref' }, svgEl('title', null, p.name)))));
+    JAPAN_SHAPE.prefectures.map((p) => svgEl('path', { d: p.d, class: painted.has(p.name) ? 'pref visited' : 'pref', 'data-pref': p.name }, svgEl('title', null, p.name)))));
   const { x, y, w, h } = JAPAN_SHAPE.inset;
-  svg.append(svgEl('rect', { class: 'jmap-inset', x, y, width: w, height: h }));
+  svg.append(svgEl('rect', { class: 'jmap-inset', x, y, width: w, height: h, 'data-pref': OKINAWA })); // 枠の中は沖縄県として扱う
   svg.append(svgEl('g', { class: 'jmap-base' },
-    baseStadiums.filter((s) => placed(s) && !counts.has(s.id)).map((s) => { const [cx, cy] = at(s); return svgEl('circle', { cx, cy, r: 2.6 }); })));
+    baseStadiums.filter((s) => placed(s) && !counts.has(s.id)).map((s) => { const [cx, cy] = at(s); return svgEl('circle', { cx, cy, r: 2.6, 'data-pref': s.prefecture }); })));
   svg.append(svgEl('g', { class: 'jmap-pins' },
     pins.filter((p) => placed(p.stadium)).map((p) => {
       const [cx, cy] = at(p.stadium);
-      return svgEl('circle', { cx, cy, r: PIN_R });
+      return svgEl('circle', { cx, cy, r: PIN_R, 'data-pref': p.stadium.prefecture });
     })));
 
   const popup = el('div', { class: 'jmap-popup', hidden: true });
   const known = new Map([...baseStadiums, ...pins.map((p) => p.stadium)].filter(placed).map((s) => [s.id, s]));
 
+  // タップした所の県（印を押したときはその会場の県）の会場を一覧に出す。県の外（海）なら閉じる
   svg.addEventListener('click', (e) => {
-    const m = svg.getScreenCTM();
-    if (!m) return;
-    const pt = svg.createSVGPoint();
-    pt.x = e.clientX; pt.y = e.clientY;
-    const p = pt.matrixTransform(m.inverse());
-    const near = [...known.values()].filter((s) => { const [sx, sy] = at(s); return Math.hypot(sx - p.x, sy - p.y) <= TAP_RADIUS; });
+    const hit = document.elementsFromPoint(e.clientX, e.clientY).find((n) => svg.contains(n) && n.dataset?.pref);
+    const pref = hit?.dataset.pref ?? null;
+    const list = stadiumsInPrefecture([...known.values()], pref);
     popup.replaceChildren();
-    popup.hidden = near.length === 0;
-    for (const s of near) {
+    popup.hidden = !pref;
+    if (!pref) return;
+    popup.append(el('p', { class: 'jmap-pref' }, pref));
+    if (list.length === 0) popup.append(el('p', { class: 'muted' }, 'この県の会場はありません。'));
+    for (const s of list) {
       const count = counts.get(s.id) ?? 0;
       const label = `${s.name}${count ? `（${count}回）` : '（まだ行っていない）'}`;
       popup.append(el('button', { class: 'jmap-pick', type: 'button', onclick: () => { popup.hidden = true; onPick(s, count); } }, label));
