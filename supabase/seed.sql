@@ -143,9 +143,9 @@ insert into public.clubs (id, name, short_name, aliases, official_url, jleague_u
 insert into public.clubs (id, name, short_name, aliases, official_url, jleague_url, home_stadium_id, theme_colors, video_sources) values ('kofu', 'ヴァンフォーレ甲府', '甲府', array['VENTFORET KOFU']::text[], 'https://www.ventforet.jp/', 'https://www.jleague.jp/club/kofu/', 'jit-recycle-ink-stadium', null, '[]'::jsonb) on conflict do nothing;
 
 -- seasons
-insert into public.seasons (id, starts_on, ends_on, is_current) values ('2026-27', '2026-08-08', '2027-05-23', true) on conflict do nothing;
-insert into public.seasons (id, starts_on, ends_on, is_current) values ('2025', '2025-02-14', '2025-12-14', false) on conflict do nothing;
-insert into public.seasons (id, starts_on, ends_on, is_current) values ('2026-special', '2026-02-06', '2026-06-07', false) on conflict do nothing;
+insert into public.seasons (id, starts_on, ends_on, is_current, map_only) values ('2026-27', '2026-08-08', '2027-05-23', true, false) on conflict do nothing;
+insert into public.seasons (id, starts_on, ends_on, is_current, map_only) values ('2025', '2025-02-14', '2025-12-14', false, true) on conflict do nothing;
+insert into public.seasons (id, starts_on, ends_on, is_current, map_only) values ('2026-special', '2026-02-06', '2026-06-07', false, true) on conflict do nothing;
 
 -- season_clubs
 insert into public.season_clubs (season_id, competition, club_id) values ('2026-27', 'J3', 'matsumoto') on conflict do nothing;

@@ -113,7 +113,8 @@ function draw(route) {
       visits: createVisitStore({ client: getClient() }), // 手で足した行った会場の追加・削除
       fetchFixture: (id) => fixtureCache.get(id), // 共通データにない試合を ID で1件読む（undefined＝読み込み中、null＝なし）
       forgetFixture: (id) => fixtureCache.forget(id),
-      seasons: () => seasonCache.seasons(), // シーズンの選択肢（undefined＝読み込み中、null＝読めない）
+      seasons: () => seasonCache.seasons(), // シーズンの選択肢。地図だけのシーズンを除く（undefined＝読み込み中、null＝読めない）
+      mapSeasons: () => seasonCache.mapSeasons(), // 地図のシーズンの選択肢。地図だけのシーズンも含む（同上）
       seasonFixtures: (id) => seasonCache.fixtures(id), // 今のシーズン以外の試合（同上）
       seasonClubs: (id) => seasonCache.seasonClubs(id), // シーズンの所属クラブ（管理画面。同上）
       resetSeasons: () => seasonCache.resetSeasons(), // シーズンを作った・所属クラブを変えたあとに、覚えたものを捨てる

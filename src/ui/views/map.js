@@ -154,7 +154,7 @@ export function renderMap(ctx) {
 
   const currentId = d.season?.id ?? null;
   const online = masters.status !== 'offline' && !ctx.user.offline;
-  const seasons = online ? ctx.data.seasons() : null;
+  const seasons = online ? ctx.data.mapSeasons() : null; // 地図だけのシーズン（昔のシーズン）も選べる
   const wanted = parseMapQuery(ctx.route.query).season ?? 'all';
   // シーズンの一覧が読めているのに、一覧にない ?s= の値は通算として扱う
   const scope = Array.isArray(seasons) && wanted !== 'all' && !seasons.some((x) => x.id === wanted) ? 'all' : wanted;

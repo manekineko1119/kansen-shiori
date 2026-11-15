@@ -71,3 +71,16 @@ test('resetSeasons：シーズンの選択肢・所属クラブ・試合をす�
   assert.equal(cache.seasons().length, 2);
   assert.equal(client.calls.filter((c) => c.table === 'season_clubs').length, 2);
 });
+
+test('シーズンの選択肢：seasons() は地図だけのシーズンを除き、mapSeasons() は全部。通信は合わせて1回', async () => {
+  const t = tables();
+  t.seasons = [{ id: '2025', starts_on: '2025-02-14', map_only: true }, { id: '2026-27', starts_on: '2026-08-08', map_only: false }];
+  const client = fakeClient(t);
+  const cache = createSeasonCache({ client: () => client, onChange: () => {} });
+  assert.equal(cache.seasons(), undefined);
+  assert.equal(cache.mapSeasons(), undefined);
+  await tick();
+  assert.deepEqual(cache.seasons().map((s) => s.id), ['2026-27']);
+  assert.deepEqual(cache.mapSeasons().map((s) => s.id), ['2026-27', '2025']);
+  assert.equal(client.calls.filter((c) => c.table === 'seasons').length, 1);
+});
