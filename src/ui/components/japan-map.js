@@ -54,7 +54,7 @@ export function renderJapanMap({ visitedPrefectures, pins, baseStadiums, onPick 
     if (list.length === 0) popup.append(el('p', { class: 'muted' }, 'この県の会場はありません。'));
     for (const s of list) {
       const count = counts.get(s.id) ?? 0;
-      const label = `${s.name}${count ? `（${count}回）` : '（まだ行っていない）'}`;
+      const label = `${s.name}${count ? '（行った）' : '（まだ行っていない）'}`;
       popup.append(el('button', { class: 'jmap-pick', type: 'button', onclick: () => { popup.hidden = true; onPick(s, count); } }, label));
     }
     if (!popup.hidden) popup.scrollIntoView({ block: 'nearest' }); // 一覧が画面の外に出ないように

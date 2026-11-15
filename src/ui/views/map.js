@@ -56,11 +56,11 @@ function visitsTable(ctx, { visited, fixturesById, supportClubId }) {
     if (!f) return null;
     return el('a', { class: 'vr-match num', href: `#/records/${enc(id)}` }, `${formatDateJa(f.match_date)} vs ${opponentOf(f, supportClubId, ctx.masters.clubsById).short_name}`);
   };
-  sec.append(el('div', { class: 'map-rows' }, visited.map(({ stadium, count, fixtureIds, visits }) => {
+  sec.append(el('div', { class: 'map-rows' }, visited.map(({ stadium, fixtureIds, visits }) => {
     const dates = (id) => fixturesById.get(id)?.match_date ?? '';
     const matches = [...fixtureIds].sort((a, b) => (dates(a) < dates(b) ? 1 : dates(a) > dates(b) ? -1 : 0));
     return el('div', { class: 'map-row', id: `v-${stadium.id}`, tabindex: '-1' },
-      el('div', { class: 'vr-head' }, el('b', null, stadium.name), el('span', { class: 'muted' }, stadium.prefecture ?? ''), el('span', { class: 'num vr-count' }, `${count}回`)),
+      el('div', { class: 'vr-head' }, el('b', null, stadium.name), el('span', { class: 'muted' }, stadium.prefecture ?? '')),
       matches.map(matchLink),
       visits.map((v) => el('div', { class: 'vr-hand' },
         el('span', { class: 'muted' }, `手で足した記録：${v.season_id ? seasonLabel(v.season_id) : 'シーズンなし'}`),

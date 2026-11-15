@@ -1,5 +1,9 @@
 // 行ったスタジアムの集計（地図の spec 3.2・3.4・10章）。純粋な関数だけ（DOM・通信・現在時刻を使わない）
+import { JAPAN_SHAPE } from './map/japan-shape.js';
+
 export const PREFECTURE_COUNT = 47;
+// 都道府県の番号（JIS。北から南）。行った会場の表の並びに使う
+const PREF_CODE = new Map(JAPAN_SHAPE.prefectures.map((p) => [p.name, p.code]));
 
 // 会場の stadium id。fixture-view.js の venueOf と違い、地図では「未定」もホーム会場として数える（spec 10章）。venue_stadium_id があればそれ。会場名が空か「未定」ならホームのクラブのホーム会場。それ以外の名前は null
 export function venueOf(fixture, clubsById) {
@@ -67,7 +71,10 @@ export function summarizeStadiumMap({ scope, records, fixtures, clubs, stadiums,
     e.visits.push({ id: v.id, season_id: v.season_id });
   }
 
-  const visited = [...byStadium.values()].sort((a, b) => b.count - a.count || (a.stadium.id < b.stadium.id ? -1 : a.stadium.id > b.stadium.id ? 1 : 0));
+  // 並びは北から南の県の順。同じ県なら会場の登録順（回数は出さないので並びにも使わない。2026-11-16 ユーザーが決定）
+  const stadiumIndex = new Map(stadiums.map((s, i) => [s.id, i]));
+  const rank = (e) => [PREF_CODE.get(e.stadium.prefecture) ?? 99, stadiumIndex.get(e.stadium.id) ?? Infinity];
+  const visited = [...byStadium.values()].sort((a, b) => { const [pa, ia] = rank(a); const [pb, ib] = rank(b); return pa - pb || ia - ib; });
   const prefectures = [...new Set(visited.map((e) => e.stadium.prefecture).filter(Boolean))];
 
   const baseIds = baseStadiumIds({ scope, stadiums, clubsById, seasonClubs, supportClubId });

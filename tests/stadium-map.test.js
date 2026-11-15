@@ -62,7 +62,7 @@ test('シーズン S1：シーズンなしの手の記録と S0 の試合は数�
     records: [rec('r1', 'f1'), rec('r3', 'f3')],
     visits: [{ id: 'v1', stadium_id: 'B', season_id: null }, { id: 'v2', stadium_id: 'D', season_id: 'S1' }],
   });
-  assert.deepEqual(r.visited.map((v) => v.stadium.id), ['A', 'D']);
+  assert.deepEqual(r.visited.map((v) => v.stadium.id), ['D', 'A']); // 県の順（東京都→長野県）
 });
 
 test('シーズンの分母：応援クラブの大会のホーム会場', () => {
@@ -146,9 +146,10 @@ test('消された会場（venue_stadium_id が stadiums にない）を指す�
   assert.deepEqual(r.visited, []);
 });
 
-test('並び順：回数が同じなら stadium.id の順', () => {
-  const r = sum({ visits: [{ id: 'v1', stadium_id: 'D', season_id: null }, { id: 'v2', stadium_id: 'B', season_id: null }, { id: 'v3', stadium_id: 'C', season_id: null }, { id: 'v4', stadium_id: 'C', season_id: null }] });
-  assert.deepEqual(r.visited.map((v) => v.stadium.id), ['C', 'B', 'D']);
+test('並び順：回数ではなく、北から南の県の順（都道府県の番号）。同じ県なら会場の登録順', () => {
+  // C・D は東京都（13）、A は長野県（20）、B は岐阜県（21）。C を2回足しても先頭にはならない
+  const r = sum({ visits: [{ id: 'v1', stadium_id: 'D', season_id: null }, { id: 'v2', stadium_id: 'B', season_id: null }, { id: 'v3', stadium_id: 'A', season_id: null }, { id: 'v4', stadium_id: 'C', season_id: null }, { id: 'v5', stadium_id: 'B', season_id: null }] });
+  assert.deepEqual(r.visited.map((v) => v.stadium.id), ['C', 'D', 'A', 'B']);
 });
 
 test('mapHref / parseMapQuery：シーズンを URL に出し入れする', () => {
