@@ -51,7 +51,7 @@
   }
   .menu a .ic { width: 20px; height: 20px; }
   .menu a:hover { background: var(--bg); color: var(--ink); }
-  .menu a[aria-current] { background: var(--theme-tint); color: var(--theme-primary); }
+  .menu a[aria-current] { background: var(--theme-tint); color: var(--theme-text); }
   .menu a[aria-current]::before { display: none; }
   .menu a.menu-settings { display: flex; }
   .gearbtn { display: none; }

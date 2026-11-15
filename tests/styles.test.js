@@ -89,9 +89,29 @@ test('src/ 以下の JS と index.html に色の値がない（theme-color の m
 test(':root に切り替える色と結果の色がある', () => {
   const r = rootMatch[0];
   for (const [name, value] of [
-    ['--theme-primary', '#0E5A3A'], ['--theme-on-primary', '#FFFFFF'], ['--theme-accent', '#F2B01E'],
-    ['--theme-tint', '#D9E8DF'], ['--win', '#1565C0'], ['--lose', '#C62828'], ['--draw', '#616161'],
+    ['--theme-primary', '#00823E'], ['--theme-on-primary', '#FFFFFF'], ['--theme-accent', '#F2B01E'],
+    ['--theme-tint', '#D9ECE2'], ['--theme-shade', '#005612'],
+    ['--win', '#1565C0'], ['--lose', '#C62828'], ['--draw', '#616161'],
   ]) {
     assert.match(r, new RegExp(`${name}\\s*:\\s*${value}\\b`, 'i'), name);
   }
+});
+
+test('文字の緑は --theme-text、押したときの色は --theme-shade から作る（設計書 3.6）', () => {
+  assert.match(rootMatch[0], /--theme-text\s*:\s*var\(--theme-shade\)/);
+  assert.match(rootMatch[0], /--theme-deep\s*:\s*var\(--theme-shade\)/);
+});
+
+test('CSS で主な色を文字の色に使わない（明るい背景で 4.5:1 を下回るため。設計書 3.6）', () => {
+  for (const name of cssFiles) {
+    assert.deepEqual(read(name).match(/(^|[^-\w])color\s*:\s*var\(--theme-primary\)/gm) ?? [], [], name);
+  }
+});
+
+test('ブラウザの帯の色は公式の緑、起動画面の背景はアイコンに合わせて前の緑のまま', () => {
+  const root = fileURLToPath(new URL('..', import.meta.url));
+  assert.match(readFileSync(join(root, 'index.html'), 'utf8'), /<meta name="theme-color" content="#00823E">/);
+  const m = JSON.parse(readFileSync(join(root, 'manifest.webmanifest'), 'utf8'));
+  assert.equal(m.theme_color, '#00823E');
+  assert.equal(m.background_color, '#0E5A3A');
 });

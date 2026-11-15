@@ -47,7 +47,7 @@ input.input::-webkit-date-and-time-value { text-align: left; }
   font: inherit; font-weight: 700; cursor: pointer;
 }
 .btn:hover { background: var(--theme-deep); }
-.btn-sub { background: var(--paper); color: var(--theme-primary); border: 1px solid var(--rule); }
+.btn-sub { background: var(--paper); color: var(--theme-text); border: 1px solid var(--rule); }
 .btn-sub:hover { background: var(--theme-tint); }
 .err { color: var(--lose); font-size: 13px; }
 .note { background: var(--note-bg); border-radius: var(--r-s); padding: 10px 12px; margin-top: 12px; }
@@ -63,7 +63,7 @@ input.input::-webkit-date-and-time-value { text-align: left; }
 .toplinks { display: flex; align-items: center; gap: 4px; margin-left: auto; }
 .toplink {
   display: inline-flex; align-items: center; min-height: 48px; padding: 0 10px;
-  border: 0; background: none; color: var(--theme-primary); font: inherit; font-size: 13px; font-weight: 700;
+  border: 0; background: none; color: var(--theme-text); font: inherit; font-size: 13px; font-weight: 700;
   text-decoration: none; cursor: pointer;
 }
 
@@ -88,7 +88,7 @@ input.input::-webkit-date-and-time-value { text-align: left; }
 }
 .row:first-of-type { border-top: 0; }
 .row-main { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-.row-label { font-weight: 700; color: var(--theme-primary); }
+.row-label { font-weight: 700; color: var(--theme-text); }
 .row-mark { flex: none; color: var(--ink-2); font-weight: 700; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 

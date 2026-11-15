@@ -18,7 +18,7 @@
 .sb-team.home { text-align: right; }
 .sb-team.away { text-align: left; }
 .sb-team small { display: block; font-size: 11px; font-weight: 400; color: var(--ink-2); }
-.sb-team.me { color: var(--theme-primary); font-weight: 800; }
+.sb-team.me { color: var(--theme-text); font-weight: 800; }
 .sb-score { font-size: 60px; line-height: 1; white-space: nowrap; color: var(--ink); }
 .sb-score i { font-style: normal; font-size: 32px; color: var(--rule); margin: 0 8px; vertical-align: 10px; }
 .sb-pk { display: block; margin-top: 6px; font-size: 16px; font-weight: 700; color: var(--ink); }

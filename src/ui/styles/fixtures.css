@@ -13,13 +13,13 @@
 .fixtures .item.sel { background: var(--theme-tint); box-shadow: inset 4px 0 0 var(--theme-primary); margin: 0 -16px; padding-left: 16px; padding-right: 16px; }
 .fixtures .res-wrap { display: inline-flex; align-items: center; gap: 6px; flex: none; }
 .fixtures .score { font-weight: 800; }
-.fixtures .item-rec { flex: none; margin-left: auto; font-size: 13px; font-weight: 700; color: var(--theme-primary); padding: 12px 4px; text-decoration: none; }
+.fixtures .item-rec { flex: none; margin-left: auto; font-size: 13px; font-weight: 700; color: var(--theme-text); padding: 12px 4px; text-decoration: none; }
 .ha { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 6px; font-size: 13px; font-weight: 800; flex: none; }
 .ha.a { background: var(--theme-accent); color: var(--on-accent); }
-.ha.h { background: var(--theme-tint); color: var(--theme-primary); }
+.ha.h { background: var(--theme-tint); color: var(--theme-text); }
 /* 選んだ行の背景も --theme-tint なので、H の印は白地にして見分ける（カレンダーの .cal-cell.sel .ev.h と同じ） */
 .item.sel .ha.h { background: var(--paper); }
-.fx-detail .back { display: inline-block; padding: 8px 0; font-weight: 700; color: var(--theme-primary); text-decoration: none; }
+.fx-detail .back { display: inline-block; padding: 8px 0; font-weight: 700; color: var(--theme-text); text-decoration: none; }
 .fx-title { font-size: 20px; font-weight: 800; margin: 2px 0 10px; overflow-wrap: anywhere; }
 .fx-result { display: flex; align-items: center; gap: 8px; margin: 0; }
 .fx-detail .kv + .row { margin-top: 8px; border-top: 0; }
