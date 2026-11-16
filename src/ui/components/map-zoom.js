@@ -47,6 +47,8 @@ export function attachZoom(svg, { onScale }) {
   };
   svg.addEventListener('pointerdown', (e) => {
     if (e.pointerType === 'mouse' && e.button !== 0) return;
+    // マウスは地図の外に出てもドラッグを続ける（離したときに pointerup が地図に届く）
+    if (e.pointerType === 'mouse') svg.setPointerCapture?.(e.pointerId);
     pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (pts.size === 1) moved = 0;
     if (pts.size === 2) { pinch = pair(); moved = TAP_SLOP + 1; }
@@ -82,7 +84,7 @@ export function attachZoom(svg, { onScale }) {
   };
   svg.addEventListener('pointerup', up);
   svg.addEventListener('pointercancel', up);
-  svg.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') up(e); });
+  svg.addEventListener('lostpointercapture', up);
   // なぞった・つまんだあとの click は、県の一覧を出さない（先に受けて止める）
   svg.addEventListener('click', (e) => {
     if (moved > TAP_SLOP) { e.stopImmediatePropagation(); e.preventDefault(); }
