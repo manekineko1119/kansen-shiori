@@ -3,6 +3,7 @@ import { el } from './parts.js';
 import { JAPAN_SHAPE, ATTRIBUTION } from '../../core/map/japan-shape.js';
 import { project } from '../../core/map/project.js';
 import { stadiumsInPrefecture } from '../../core/stadium-map.js';
+import { attachZoom } from './map-zoom.js';
 
 const OKINAWA = '沖縄県';
 
@@ -15,8 +16,9 @@ function svgEl(tag, attrs, ...children) {
   return node;
 }
 
-// 行った会場の印の半径。回数に関係なく同じ大きさ（回数は表に出す）
+// 印の半径。行った会場は回数に関係なく同じ大きさ。拡大しても画面の上の大きさは変えない（倍率で割る）
 const PIN_R = 4.6;
+const BASE_R = 2.6;
 
 // visitedPrefectures：塗る都道府県の名前の配列。pins：[{ stadium, count }]（行った会場）。baseStadiums：薄い印の会場
 // onPick(stadium, count)：タップした所の近くの会場の一覧で選んだとき
@@ -32,12 +34,15 @@ export function renderJapanMap({ visitedPrefectures, pins, baseStadiums, onPick 
   const { x, y, w, h } = JAPAN_SHAPE.inset;
   svg.append(svgEl('rect', { class: 'jmap-inset', x, y, width: w, height: h, 'data-pref': OKINAWA })); // 枠の中は沖縄県として扱う
   svg.append(svgEl('g', { class: 'jmap-base' },
-    baseStadiums.filter((s) => placed(s) && !counts.has(s.id)).map((s) => { const [cx, cy] = at(s); return svgEl('circle', { cx, cy, r: 2.6, 'data-pref': s.prefecture }); })));
+    baseStadiums.filter((s) => placed(s) && !counts.has(s.id)).map((s) => { const [cx, cy] = at(s); return svgEl('circle', { cx, cy, r: BASE_R, 'data-r': BASE_R, 'data-pref': s.prefecture }); })));
   svg.append(svgEl('g', { class: 'jmap-pins' },
     pins.filter((p) => placed(p.stadium)).map((p) => {
       const [cx, cy] = at(p.stadium);
-      return svgEl('circle', { cx, cy, r: PIN_R, 'data-pref': p.stadium.prefecture });
+      return svgEl('circle', { cx, cy, r: PIN_R, 'data-r': PIN_R, 'data-pref': p.stadium.prefecture });
     })));
+
+  const circles = [...svg.querySelectorAll('circle')];
+  const zoom = attachZoom(svg, { onScale: (scale) => { for (const c of circles) c.setAttribute('r', String(Number(c.dataset.r) / scale)); } });
 
   const popup = el('div', { class: 'jmap-popup', hidden: true });
   const known = new Map([...baseStadiums, ...pins.map((p) => p.stadium)].filter(placed).map((s) => [s.id, s]));
@@ -60,5 +65,5 @@ export function renderJapanMap({ visitedPrefectures, pins, baseStadiums, onPick 
     if (!popup.hidden) popup.scrollIntoView({ block: 'nearest' }); // 一覧が画面の外に出ないように
   });
 
-  return el('div', { class: 'jmap-wrap' }, svg, popup, el('p', { class: 'jmap-credit muted' }, ATTRIBUTION));
+  return el('div', { class: 'jmap-wrap' }, el('div', { class: 'jmap-stage' }, svg, zoom), popup, el('p', { class: 'jmap-credit muted' }, ATTRIBUTION));
 }
