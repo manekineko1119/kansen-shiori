@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { recordRows, outcomeCounts, recordsRecentForm, controlsHref, parseRecordsQuery, recordHref, recordsHref, pickSeason, seasonLabel } from '../src/core/record-list.js';
+import { recordRows, outcomeCounts, recordsRecentForm, controlsHref, parseRecordsQuery, recordHref, recordsHref, pickSeason, seasonLabel, recordSeasons } from '../src/core/record-list.js';
 
 const fx = (id, date, home, away, hs, as, extra = {}) => ({
   id, match_date: date, kickoff: '14:00', status: 'finished', home_club_id: home, away_club_id: away, home_score: hs, away_score: as, ...extra,
@@ -81,6 +81,7 @@ test('シーズンの選び：なし・今のシーズン→今のシーズン�
 
 test('シーズンの名前', () => {
   assert.equal(seasonLabel('2026-27'), '2026-27シーズン');
+  assert.equal(seasonLabel('2026-special'), '2026 百年構想リーグ');
 });
 
 test('試合当日に終わった試合（結果登録済み）も一覧に出る。まだ終わっていない当日の試合は出ない（M-1）', () => {
@@ -88,6 +89,13 @@ test('試合当日に終わった試合（結果登録済み）も一覧に出�
   const todayScheduled = fx('S', '2026-11-11', 'matsumoto', 'nara', null, null, { status: 'scheduled' });
   const rows = recordRows({ ...base, fixtures: [fA, todayDone, todayScheduled] });
   assert.deepEqual(rows.map((r) => r.fixture.id), ['T', 'A']);
+});
+
+test('recordSeasons：地図だけのシーズン（map_only）を除く。読み込み中・読めないはそのまま', () => {
+  const list = [{ id: '2026-27', map_only: false }, { id: '2026-special', map_only: true }, { id: '2025', map_only: true }, { id: '2024' }];
+  assert.deepEqual(recordSeasons(list).map((s) => s.id), ['2026-27', '2024']);
+  assert.equal(recordSeasons(undefined), undefined);
+  assert.equal(recordSeasons(null), null);
 });
 
 test('観戦記録の詳細の URL：現地だけに絞っているときは ?only=1 を付けて、詳細を開いても絞り込みを残す', () => {

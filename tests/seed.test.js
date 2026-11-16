@@ -168,6 +168,15 @@ test('J1・J2 のクラブには theme_colors と試合動画の取得元を入�
   }
 });
 
+test('昔のシーズン（2025・2026-special）は地図だけ（map_only）で、今のシーズンにしない。ほかは map_only が false', () => {
+  const mapOnly = data.seasons.filter((s) => s.map_only === true).map((s) => s.id).sort();
+  assert.deepEqual(mapOnly, ['2025', '2026-special']);
+  for (const s of data.seasons) {
+    assert.equal(typeof s.map_only, 'boolean', `${s.id} の map_only がない`);
+    assert.ok(!(s.map_only && s.is_current), `${s.id} は地図だけなのに今のシーズン`);
+  }
+});
+
 test('松本山雅FCの theme_colors は公式のクラブカラー（設計書 3.6）', () => {
   const c = data.clubs.find((x) => x.id === 'matsumoto');
   assert.deepEqual(c.theme_colors, { primary: '#00823E', on_primary: '#FFFFFF', accent: '#F2B01E', tint: '#D9ECE2', shade: '#005612' });

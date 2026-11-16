@@ -10,6 +10,7 @@ export const ROUTES = [
   { name: 'trip', path: '/trips/:id', access: 'user' },
   { name: 'records', path: '/records', access: 'user' },
   { name: 'record', path: '/records/:fixtureId', access: 'public' },
+  { name: 'map', path: '/map', access: 'user' },
   { name: 'settings', path: '/settings', access: 'public' },
   { name: 'login', path: '/login', access: 'public' },
   { name: 'welcome', path: '/welcome', access: 'user' },

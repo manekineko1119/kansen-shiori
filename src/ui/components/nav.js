@@ -8,6 +8,8 @@ export const ICONS = {
   calendar: SVG('<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>'),
   trips: SVG('<path d="M4 19h16M6 15l2-9h8l2 9M9 6V4h6v2"/>'),
   records: SVG('<path d="M5 3h11l3 3v15H5z"/><path d="M9 10h6M9 14h6M9 18h3"/>'),
+  // 折った地図とピン（行ったスタジアムの地図の入口）
+  map: SVG('<path d="M9 4 3 6v14l6-2 6 2 6-2V9"/><path d="M9 4v14"/><path d="M15 13v7"/><path d="M18 2.5a3 3 0 0 0-3 3c0 2.2 3 5 3 5s3-2.8 3-5a3 3 0 0 0-3-3z"/><circle cx="18" cy="5.5" r=".8"/>'),
   // 歯車：輪と、外側の8つの歯（太い短い線）と、中心の穴
   settings: SVG('<circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="2.5"/><path stroke-width="3.4" stroke-linecap="butt" d="M12 2.2v3.6M12 18.2v3.6M2.2 12h3.6M18.2 12h3.6M5.1 5.1l2.5 2.5M16.4 16.4l2.5 2.5M5.1 18.9l2.5-2.5M16.4 7.6l2.5-2.5"/>'),
 };
@@ -23,7 +25,7 @@ export const NAV_ITEMS = [
 export function navKeyOf(routeName) {
   return {
     search: 'search', result: 'search', calendar: 'calendar', trips: 'trips', trip: 'trips', 'trip-new': 'trips',
-    records: 'records', record: 'records', settings: 'settings',
+    records: 'records', record: 'records', map: 'records', settings: 'settings',
   }[routeName] ?? null;
 }
 

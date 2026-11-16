@@ -13,6 +13,7 @@ test('ROUTES は設計書 3章の表のとおり', () => {
     ['trip', '/trips/:id', 'user'],
     ['records', '/records', 'user'],
     ['record', '/records/:fixtureId', 'public'],
+    ['map', '/map', 'user'],
     ['settings', '/settings', 'public'],
     ['login', '/login', 'public'],
     ['welcome', '/welcome', 'user'],
@@ -57,4 +58,14 @@ test('parseRoute：/trips/new は trip より前に合う', () => {
   assert.equal(r.name, 'trip-new');
   assert.equal(r.query, 'f=x');
   assert.equal(parseRoute('#/trips/abc').name, 'trip');
+});
+
+test('#/map は map に振り分けられ、ログインが要る（入口の観戦記録の一覧と同じ）', () => {
+  assert.equal(parseRoute('#/map').name, 'map');
+  const r = parseRoute('#/map?s=2025');
+  assert.equal(r.name, 'map');
+  assert.equal(r.query, 's=2025');
+  assert.equal(ROUTES.find((x) => x.name === 'map').access, 'user');
+  assert.equal(routeAccess('map', null), 'login');
+  assert.equal(routeAccess('map', { id: 'u' }), 'ok');
 });

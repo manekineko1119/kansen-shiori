@@ -50,7 +50,7 @@ test('sqlTextArray：空なら {}、それ以外は array[...]', () => {
 const data = {
   stadiums: [{ id: 't-st', name: "テスト'競技場", prefecture: '長野県', address: '長野県テスト市1', lat: 36.2, lng: 137.9, stations: [{ name: '松本', kind: 'nearest', toyoko: [] }], airports: [] }],
   clubs: [{ id: 't-club', name: 'テストFC', short_name: 'テスト', aliases: ['TEST FC'], home_stadium_id: 't-st', video_sources: [] }],
-  seasons: [{ id: '2026-27', starts_on: '2026-08-08', ends_on: '2027-05-23', is_current: true }],
+  seasons: [{ id: '2026-27', starts_on: '2026-08-08', ends_on: '2027-05-23', is_current: true, map_only: false }],
   season_clubs: [{ season_id: '2026-27', competition: 'J3', club_id: 't-club' }],
 };
 
@@ -79,7 +79,8 @@ test('buildSeedSql：列の型ごとに書き方を変え、JSON にない列は
   assert.match(club, /\(id, name, short_name, aliases, official_url, jleague_url, home_stadium_id, theme_colors, video_sources\)/);
   assert.match(club, /'t-club', 'テストFC', 'テスト', array\['TEST FC'\]::text\[\], null, null, 't-st', null, '\[\]'::jsonb\)/);
   const season = sql.split('\n').find((l) => l.startsWith('insert into public.seasons '));
-  assert.match(season, /'2026-27', '2026-08-08', '2027-05-23', true\)/);
+  assert.match(season, /\(id, starts_on, ends_on, is_current, map_only\)/);
+  assert.match(season, /'2026-27', '2026-08-08', '2027-05-23', true, false\)/);
 });
 
 test('buildSeedSql：改行は \\n だけで、最後も改行で終わる', () => {

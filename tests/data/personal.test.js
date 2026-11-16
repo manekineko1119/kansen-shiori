@@ -57,3 +57,38 @@ test('写しを保存できなくても最新を捨てない。足りない試�
   }
   assert.equal(client.calls.some((c) => c.table === 'fixtures'), false);
 });
+
+test('手で足した行った会場（stadium_visits）を visits に入れ、写しにも保存する', async () => {
+  const snapshot = createSnapshot(fakeKv());
+  const tables = { ...mk(), stadium_visits: [{ id: 'v1', stadium_id: 'gosta', season_id: null, created_at: '2026-11-01T00:00:00Z' }] };
+  const r = await refreshPersonal({ client: fakeClient(tables), snapshot, userId: 'u1', nowMs: T, knownFixtureIds: known() });
+  assert.deepEqual(r.data.visits.map((v) => v.id), ['v1']);
+  assert.deepEqual((await snapshot.load('personal:u1')).data.visits, r.data.visits);
+});
+
+test('visits を持たない古い写しは捨てずに返し、visits は [] にする。配列でなければ壊れた写し', async () => {
+  const snapshot = createSnapshot(fakeKv());
+  await snapshot.save('personal:u1', { trips: [{ id: 't1' }], records: [], extraFixtures: [] }, T);
+  const old = await readPersonalSnapshot(snapshot, 'u1');
+  assert.deepEqual(old.data, { trips: [{ id: 't1' }], records: [], extraFixtures: [], visits: [] });
+  await snapshot.save('personal:u1', { trips: [], records: [], extraFixtures: [], visits: 'x' }, T);
+  assert.equal(await readPersonalSnapshot(snapshot, 'u1'), null);
+});
+
+test('stadium_visits の表がない（42P01・PGRST205）ときだけ visits: [] で続ける', async () => {
+  for (const code of ['42P01', 'PGRST205']) {
+    const snapshot = createSnapshot(fakeKv());
+    const client = fakeClient(mk(), { failOn: { stadium_visits: { message: 'no table', code } } });
+    const r = await refreshPersonal({ client, snapshot, userId: 'u1', nowMs: T, knownFixtureIds: known() });
+    assert.equal(r.status, 'fresh', code);
+    assert.deepEqual(r.data.visits, [], code);
+    assert.deepEqual(r.data.records.map((x) => x.id), ['r1'], code);
+  }
+});
+
+test('stadium_visits のほかのエラーは今までどおり（写しがなければ unavailable）', async () => {
+  const snapshot = createSnapshot(fakeKv());
+  const client = fakeClient(mk(), { failOn: { stadium_visits: { message: 'denied', code: '42501' } } });
+  const r = await refreshPersonal({ client, snapshot, userId: 'u1', nowMs: T, knownFixtureIds: known() });
+  assert.equal(r.status, 'unavailable');
+});

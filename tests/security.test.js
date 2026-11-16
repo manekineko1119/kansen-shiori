@@ -24,7 +24,7 @@ test('safeHttpsUrl：https の URL だけを通す', () => {
 });
 
 // src/ の innerHTML・insertAdjacentHTML の右辺の ${…} は、許した定数だけ（DB・URL・入力の値を入れない）
-const ALLOWED = new Set(['ICONS[key]', 'ICONS.settings', 'i']);
+const ALLOWED = new Set(['ICONS[key]', 'ICONS.settings', 'ICONS.map', 'i']);
 const srcDir = fileURLToPath(new URL('../src/', import.meta.url));
 const walk = (dir) => readdirSync(dir).flatMap((n) => {
   const p = join(dir, n);

@@ -80,4 +80,9 @@ export function pickSeason({ requested, currentId, seasons }) {
   return requested;
 }
 
-export const seasonLabel = (id) => `${id}シーズン`;
+// シーズンの表示名。2026年前半の特別大会（公式は「明治安田Ｊ１百年構想リーグ」「明治安田Ｊ２・Ｊ３百年構想リーグ」）だけ別の名前、ほかは「<id>シーズン」
+export const seasonLabel = (id) => (id === '2026-special' ? '2026 百年構想リーグ' : `${id}シーズン`);
+
+// 観戦記録・管理画面で選べるシーズン。地図だけのシーズン（map_only。手で足す昔のシーズン）を除く（地図の spec 3.3）。
+// undefined（読み込み中）・null（読めない）はそのまま返す
+export const recordSeasons = (seasons) => (Array.isArray(seasons) ? seasons.filter((s) => !s.map_only) : seasons);

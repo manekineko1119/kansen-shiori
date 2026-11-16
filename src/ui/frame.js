@@ -2,6 +2,7 @@
 import { renderNav, navKeyOf, ICONS } from './components/nav.js';
 import { TITLES } from './views/placeholder.js';
 import { el } from './components/parts.js';
+import { mapEntryHref } from '../core/stadium-map.js';
 
 // ログアウトは設定画面の下に置く（見出しの右には出さない）
 function topLinks({ user, onLogin }) {
@@ -15,6 +16,13 @@ function topLinks({ user, onLogin }) {
 // onLogin：ログインのリンクを押したとき（戻り先を覚える）
 export function renderFrame({ route, user, notices = [], banners = [], body, onLogin }) {
   const header = el('header', { class: 'top' }, el('h1', null, TITLES[route.name] ?? '観戦のしおり'), topLinks({ user, onLogin }));
+  const mapLink = mapEntryHref(route);
+  if (mapLink) {
+    // href は URL の値なので DOM で入れる。アイコンは定数だけを HTML で入れる（11章）
+    const a = el('a', { class: 'mapbtn', href: mapLink, 'aria-label': '地図（行ったスタジアム）' });
+    a.insertAdjacentHTML('beforeend', `${ICONS.map}<span>地図</span>`);
+    header.append(a);
+  }
   header.insertAdjacentHTML('beforeend', `<a class="gearbtn" href="#/settings" aria-label="設定">${ICONS.settings}</a>`);
   const main = el('main', null, banners,
     notices.filter(Boolean).map((t) => el('p', { class: 'note', role: 'status' }, t)), body);

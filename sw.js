@@ -1,7 +1,7 @@
 // 観戦のしおりの Service Worker（設計書 8章）。画面のファイルは版ごとに丸ごと入れ替える
 // VERSION・ASSETS_SHA256・ASSETS は npm run sw-version が書き換える（手で直さない）
-const VERSION = '2026-11-16.2';
-const ASSETS_SHA256 = '00fe1a953137ffe36d7b932b81fd8f404cc59ba6a96b10b9f0f13fd95d8cf0d6';
+const VERSION = '2026-11-16.4';
+const ASSETS_SHA256 = '4c85a2d6bb8b399caa670b68c9ea5a14c7b41b5953d7f1f020225aa0dbfd8833';
 const ASSETS = [
   "icons/apple-touch-icon-180.png",
   "icons/icon-192.png",
@@ -36,6 +36,8 @@ const ASSETS = [
   "src/core/links/toyoko-inn.js",
   "src/core/links/yahoo-transit.js",
   "src/core/lodging.js",
+  "src/core/map/japan-shape.js",
+  "src/core/map/project.js",
   "src/core/match-import.js",
   "src/core/photo.js",
   "src/core/pwa.js",
@@ -50,6 +52,7 @@ const ASSETS = [
   "src/core/search-query.js",
   "src/core/season-clubs.js",
   "src/core/settings-form.js",
+  "src/core/stadium-map.js",
   "src/core/stats.js",
   "src/core/sync-status.js",
   "src/core/time.js",
@@ -81,9 +84,11 @@ const ASSETS = [
   "src/data/snapshot.js",
   "src/data/trips.js",
   "src/data/video-meta.js",
+  "src/data/visits.js",
   "src/main.js",
   "src/router.js",
   "src/ui/components/form-util.js",
+  "src/ui/components/japan-map.js",
   "src/ui/components/nav.js",
   "src/ui/components/parts.js",
   "src/ui/components/record-list.js",
@@ -102,6 +107,7 @@ const ASSETS = [
   "src/ui/styles/calendar.css",
   "src/ui/styles/fixtures.css",
   "src/ui/styles/layout.css",
+  "src/ui/styles/map.css",
   "src/ui/styles/parts.css",
   "src/ui/styles/pwa.css",
   "src/ui/styles/record.css",
@@ -126,6 +132,7 @@ const ASSETS = [
   "src/ui/views/fixtures.js",
   "src/ui/views/index.js",
   "src/ui/views/login.js",
+  "src/ui/views/map.js",
   "src/ui/views/placeholder.js",
   "src/ui/views/record-edit.js",
   "src/ui/views/record-fixture-edit.js",

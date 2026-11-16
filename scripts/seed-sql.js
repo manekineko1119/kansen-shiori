@@ -15,7 +15,7 @@ const TABLES = [
     ['theme_colors', 'jsonb'], ['video_sources', 'jsonb'],
   ]],
   ['seasons', [
-    ['id', 'text'], ['starts_on', 'date'], ['ends_on', 'date'], ['is_current', 'bool'],
+    ['id', 'text'], ['starts_on', 'date'], ['ends_on', 'date'], ['is_current', 'bool'], ['map_only', 'bool'],
   ]],
   ['season_clubs', [
     ['season_id', 'text'], ['competition', 'text'], ['club_id', 'text'],
