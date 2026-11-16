@@ -48,12 +48,18 @@
 
 /* 地図 */
 .jmap-wrap { background: var(--paper); border-radius: var(--r-m); padding: 8px; }
-.jmap { display: block; width: 100%; height: auto; max-height: 80vh; cursor: pointer; }
-.jmap .pref { fill: var(--map-land); stroke: var(--map-border); stroke-width: 0.5; }
+.jmap-stage { position: relative; overflow: hidden; }
+.jmap { display: block; width: 100%; height: auto; max-height: 80vh; cursor: pointer; touch-action: pan-x pan-y; } /* 2本の指はページではなく地図の拡大に使う（設計書 3.8） */
+.jmap.zoomed { touch-action: none; cursor: grab; } /* 拡大中は1本の指で地図を動かす */
+.jmap path, .jmap rect, .jmap circle { vector-effect: non-scaling-stroke; } /* 拡大しても線の太さは変えない */
+.jmap-zoom { position: absolute; top: 4px; right: 4px; display: flex; gap: 4px; }
+.jmap-zbtn { min-width: 40px; min-height: 40px; padding: 0 8px; border: 1px solid var(--rule); border-radius: var(--r-s); background: var(--paper); color: var(--theme-text); font-weight: 700; }
+.jmap-zbtn:disabled { opacity: 0.4; }
+.jmap .pref { fill: var(--map-land); stroke: var(--map-border); stroke-width: 0.7; } /* 線の太さは画面の px（non-scaling-stroke） */
 .jmap .pref.visited { fill: var(--map-visited); stroke: var(--map-visited-border); }
-.jmap-inset { fill: none; stroke: var(--map-border); stroke-width: 0.8; pointer-events: all; } /* 枠の中の海を押しても沖縄県の一覧を出す */
-.jmap-base circle { fill: none; stroke: var(--map-pin-base); stroke-width: 0.9; }
-.jmap-pins circle { fill: var(--map-pin); stroke: var(--paper); stroke-width: 0.8; }
+.jmap-inset { fill: none; stroke: var(--map-border); stroke-width: 1.1; pointer-events: all; } /* 枠の中の海を押しても沖縄県の一覧を出す */
+.jmap-base circle { fill: none; stroke: var(--map-pin-base); stroke-width: 1.2; }
+.jmap-pins circle { fill: var(--map-pin); stroke: var(--paper); stroke-width: 1.1; }
 .jmap-credit { margin-top: 4px; font-size: 11px; }
 .jmap-popup { display: grid; gap: 4px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--rule); }
 .jmap-pick { display: flex; align-items: center; min-height: 48px; padding: 0 12px; border: 1px solid var(--rule); border-radius: var(--r-s); background: var(--paper); color: var(--theme-text); font-weight: 700; text-align: left; }
