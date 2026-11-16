@@ -28,7 +28,11 @@ test('テーマカラーは index.html の theme-color と同じ', () => {
   const m = html.match(/<meta name="theme-color" content="([^"]+)">/);
   assert.ok(m);
   assert.equal(manifest.theme_color, m[1]);
-  assert.equal(manifest.background_color, m[1]);
+});
+
+test('起動画面の背景はアイコンの地の色と同じ（アイコンは公式の緑に変えていないため。設計書 3.6）', () => {
+  const svg = readFileSync(new URL('../icons/icon.svg', import.meta.url), 'utf8');
+  assert.ok(svg.includes(`fill="${manifest.background_color}"`), manifest.background_color);
 });
 
 test('アイコン：192・512 の any と maskable。ファイルの大きさが sizes と同じ', () => {
@@ -41,6 +45,10 @@ test('アイコン：192・512 の any と maskable。ファイルの大きさ�
     assert.equal(pngSize(icon.src), sizes);
   }
   assert.equal(pngSize('icons/apple-touch-icon-180.png'), '180x180');
+});
+
+test('GitHub Pages で Jekyll を通さない（_shared のような _ で始まるフォルダも公開する。設計書 11.1）', () => {
+  assert.ok(existsSync(new URL('.nojekyll', root)), '.nojekyll がない');
 });
 
 test('index.html に manifest と iPhone 用の指定がある', () => {

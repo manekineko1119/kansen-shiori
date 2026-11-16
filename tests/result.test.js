@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   ownScore, oppScore, matchOutcome, OUTCOME_MARK, OUTCOME_LABEL, formatScore, recentForm,
+  isPkDecided, outcomeLabel,
 } from '../src/core/result.js';
 
 const away = { home_club_id: 'osaka', away_club_id: 'matsumoto', status: 'finished', home_score: 1, away_score: 3, match_date: '2026-10-25' };
@@ -76,4 +77,39 @@ test('recentForm: 並びが古い順でなくても日付順に数える', () =>
 test('recentForm: n が 0 以下なら空', () => {
   assert.deepEqual(recentForm(list, 'matsumoto', '2026-11-15', 0), []);
   assert.deepEqual(recentForm(list, 'matsumoto', '2026-11-15', -2), []);
+});
+
+// PK戦：同点のときだけ PK を見る。PK 勝ちは勝ち、PK 負けは負け
+const pk = { status: 'finished', home_club_id: 'matsumoto', away_club_id: 'shonan', home_score: 3, away_score: 3, home_pk: 3, away_pk: 4, match_date: '2026-11-01' };
+
+test('PK戦: 勝ち・負けとして判定し、スコアに PK を添える（応援クラブが先）', () => {
+  assert.equal(matchOutcome(pk, 'matsumoto'), 'lose');
+  assert.equal(matchOutcome(pk, 'shonan'), 'win');
+  assert.equal(formatScore(pk, 'matsumoto'), '3-3（PK 3-4）');
+  assert.equal(formatScore(pk, 'shonan'), '3-3（PK 4-3）');
+  assert.equal(ownScore(pk, 'matsumoto'), 3);
+  assert.equal(oppScore(pk, 'matsumoto'), 3);
+});
+
+test('PK戦: outcomeLabel は PK勝ち・PK負け・引き分け', () => {
+  assert.equal(outcomeLabel(pk, 'shonan'), 'PK勝ち');
+  assert.equal(outcomeLabel(pk, 'matsumoto'), 'PK負け');
+  assert.equal(outcomeLabel({ ...pk, home_pk: null, away_pk: null }, 'matsumoto'), '引き分け');
+  assert.equal(outcomeLabel(away, 'matsumoto'), '勝ち');
+  assert.equal(outcomeLabel({ ...pk, status: 'scheduled' }, 'matsumoto'), null);
+});
+
+test('PK戦: isPkDecided は同点・両方が整数のときだけ true', () => {
+  assert.equal(isPkDecided(pk), true);
+  assert.equal(isPkDecided({ ...pk, home_pk: null, away_pk: null }), false);
+  assert.equal(isPkDecided({ ...pk, home_score: 2 }), false);
+});
+
+test('PK戦: PK がなければ同点は引き分けのまま', () => {
+  assert.equal(matchOutcome({ ...pk, home_pk: null, away_pk: null }, 'matsumoto'), 'draw');
+  assert.equal(formatScore({ ...pk, home_pk: null, away_pk: null }, 'matsumoto'), '3-3');
+});
+
+test('PK戦: recentForm は PK 負けを負けとして数える', () => {
+  assert.deepEqual(recentForm([pk], 'matsumoto', '2026-11-15'), ['lose']);
 });

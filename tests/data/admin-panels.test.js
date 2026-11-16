@@ -111,3 +111,8 @@ test('写真の使用量：admin_photo_usage の数（null は 0、文字列の 
   assert.deepEqual(await usage('789'), { ok: true, bytes: 789 });
   assert.deepEqual(await usage(null), { ok: true, bytes: 0 });
 });
+
+test('テスターの削除の通信の失敗は、削除の文を返す', async () => {
+  const store = createAdminStore({ client: fakeClient({ allowed_emails: [{ email: 'a@example.test' }] }, { throwOn: ['allowed_emails'] }) });
+  assert.deepEqual(await store.removeTester('a@example.test'), { ok: false, errors: { _form: '削除できませんでした。通信できる場所でもう一度削除してください' } });
+});

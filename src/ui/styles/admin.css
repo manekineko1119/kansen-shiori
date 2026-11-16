@@ -1,11 +1,11 @@
 /* 管理画面（#/admin。設計書 3.4）。色は base.css の変数で指定する（設計書 3.6） */
 
 /* ---------- 管理画面（クラブ・スタジアム・シーズン。設計書 3.4） ---------- */
-.admin .back { display: inline-block; padding: 8px 0; font-weight: 700; color: var(--theme-primary); text-decoration: none; }
+.admin .back { display: inline-block; padding: 8px 0; font-weight: 700; color: var(--theme-text); text-decoration: none; }
 .admin .row[aria-current="true"] { background: var(--theme-tint); box-shadow: inset 4px 0 0 var(--theme-primary); padding-left: 8px; }
-.admin .cur { flex: none; font-size: 13px; font-weight: 700; color: var(--theme-primary); }
+.admin .cur { flex: none; font-size: 13px; font-weight: 700; color: var(--theme-text); }
 .admin .sec > .btn { margin-top: 12px; }
-.admin textarea.input { min-height: 84px; resize: vertical; font: inherit; }
+.admin textarea.input { min-height: 84px; resize: vertical; }
 .admin .hint { margin: 0; color: var(--ink-2); font-size: 13px; overflow-wrap: anywhere; }
 .admin .hint:empty { display: none; }
 .admin .row-actions { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -23,7 +23,7 @@
 .admin .tester-row .row-main { flex-basis: 12em; }
 .admin .tester-email { overflow-wrap: anywhere; color: var(--ink); }
 .admin .acct { flex: none; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
-.admin .acct-yes { background: var(--theme-tint); color: var(--theme-primary); }
+.admin .acct-yes { background: var(--theme-tint); color: var(--theme-text); }
 .admin .acct-no { background: var(--bg); color: var(--ink-2); }
 .admin .row > .btn-small { flex: none; }
 .admin .row > a.row-main { color: inherit; text-decoration: none; }

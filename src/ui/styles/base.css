@@ -1,10 +1,11 @@
 /* 色の変数（:root）・書体・骨組み・メニュー（設計書 3.5・3.6・3.7）。色の値は、このファイルの最初の :root の中だけに書く */
 :root {
   /* 応援クラブのチームカラーに切り替える色 */
-  --theme-primary: #0E5A3A;
+  --theme-primary: #00823E;
   --theme-on-primary: #FFFFFF;
   --theme-accent: #F2B01E;
-  --theme-tint: #D9E8DF;
+  --theme-tint: #D9ECE2;
+  --theme-shade: #005612;
   /* 切り替えない色 */
   --bg: #E9EEEA;
   --paper: #FFFFFF;
@@ -17,8 +18,9 @@
   --lose: #C62828;
   --draw: #616161;
   --on-result: #FFFFFF;
-  /* 派生色（primary・accent から作るので、チームカラーの切り替えに追従する） */
-  --theme-deep: color-mix(in srgb, var(--theme-primary) 78%, #000);
+  /* 派生色（primary・accent・shade から作るので、チームカラーの切り替えに追従する） */
+  --theme-deep: var(--theme-shade);
+  --theme-text: var(--theme-shade);
   --paper-2: color-mix(in srgb, var(--theme-tint) 25%, var(--paper));
   --note-bg: color-mix(in srgb, var(--theme-accent) 16%, var(--paper));
   /* 行ったスタジアムの地図（テーマの色から作る） */
@@ -54,7 +56,7 @@ body {
 }
 button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
-a { color: var(--theme-primary); }
+a { color: var(--theme-text); }
 img, svg { max-width: 100%; }
 /* hidden 属性は .btn などの display の指定より強くする（隠したボタンが出ないように） */
 [hidden] { display: none !important; }
@@ -98,7 +100,7 @@ img, svg { max-width: 100%; }
   place-items: center;
   color: var(--ink-2);
 }
-.gearbtn:hover { background: var(--theme-tint); color: var(--theme-primary); }
+.gearbtn:hover { background: var(--theme-tint); color: var(--theme-text); }
 main {
   flex: 1;
   padding: 4px 16px calc(var(--tabs-h) + 24px + env(safe-area-inset-bottom));
@@ -132,7 +134,7 @@ main {
   color: var(--ink-2);
   text-decoration: none;
 }
-.menu a[aria-current] { color: var(--theme-primary); font-weight: 700; }
+.menu a[aria-current] { color: var(--theme-text); font-weight: 700; }
 .menu a[aria-current]::before {
   content: "";
   position: absolute;

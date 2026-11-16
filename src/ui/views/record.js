@@ -6,25 +6,27 @@ import { renderScoreboard } from '../components/scoreboard.js';
 import { renderRecordForm } from './record-edit.js';
 import { photoView } from './record-photo.js';
 import { renderRecordList } from '../components/record-list.js';
-import { recordsHref } from '../../core/record-list.js';
+import { parseRecordsQuery, recordsHref } from '../../core/record-list.js';
 import { renderFixtureEdit } from './record-fixture-edit.js';
 import { routeKey } from '../view-state.js';
 import { mergeFixtures, tripView } from '../../core/trip-view.js';
 import { formatYen, formatDateTimeJst } from '../../core/format.js';
 import { costTotal, COST_KEYS, COST_LABELS, WATCH_LABELS, VIDEO_KINDS, youtubeId, thumbnailUrl, sourceLabel } from '../../core/record-form.js';
+import { safeHttpsUrl } from '../../core/safe-url.js';
 
 const enc = encodeURIComponent;
 
 function videoRow(kind, video) {
   const label = VIDEO_KINDS[kind];
-  if (!video || !/^https:\/\//.test(video.url ?? '')) {
+  const url = safeHttpsUrl(video?.url); // https の URL だけをリンクにする（設計書 11.6）
+  if (!url) {
     return el('div', { class: 'yt off' }, el('div', { class: 'th none' }), el('div', null, el('span', { class: 'muted' }, label), el('b', null, '未登録')));
   }
-  const id = youtubeId(video.url);
+  const id = youtubeId(url);
   const thumb = id
     ? el('div', { class: 'th' }, el('img', { src: thumbnailUrl(id), alt: '', loading: 'lazy' }))
     : el('div', { class: `th${kind === 'inside' ? ' inside' : ''}` }, el('i'));
-  return el('a', { class: 'yt', href: video.url, target: '_blank', rel: 'noopener noreferrer' }, thumb,
+  return el('a', { class: 'yt', href: url, target: '_blank', rel: 'noopener noreferrer' }, thumb,
     el('div', null, el('span', { class: 'muted' }, label), el('b', null, video.title || 'YouTube で見る'), video.channel ? el('div', { class: 'muted' }, video.channel) : null,
       el('span', { class: 'sr-only' }, '（外部サイトを開く）')));
 }
@@ -147,10 +149,12 @@ export function renderRecord(ctx) {
     const trip = ctx.personal.data.trips.find((t) => t.fixture_id === fixture.id);
     if (trip) detail.append(tripSection(trip, { fixturesById: mergeFixtures(masters.fixturesById, extra), clubsById: masters.clubsById, supportClubId }));
   }
-  // 左：選んでいる試合のシーズンの一覧（選んでいる行に印）。未ログインは空の枠
+  // 左：選んでいる試合のシーズンの一覧（選んでいる行に印）。シーズンの切り替えと絞り込み（?only=1）も出す。未ログインは空の枠
   const season = fixture.season_id ?? null;
-  const list = ctx.user && season ? renderRecordList(ctx, { seasonId: season, selectedId: id, withControls: false }) : el('div', { class: 'rec-list' });
-  detail.firstChild.setAttribute('href', recordsHref({ season: season === masters.data?.season?.id ? null : season }));
+  const { only } = parseRecordsQuery(ctx.route.query);
+  const seasons = masters.status !== 'offline' && !ctx.user?.offline ? ctx.data.seasons() : null;
+  const list = ctx.user && season ? renderRecordList(ctx, { seasonId: season, seasons, onlyStadium: only, selectedId: id }) : el('div', { class: 'rec-list' });
+  detail.firstChild.setAttribute('href', recordsHref({ season: season === masters.data?.season?.id ? null : season, only }));
   root.append(split({ list, detail }));
   return root;
 }

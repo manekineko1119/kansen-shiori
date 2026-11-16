@@ -23,8 +23,8 @@ function toRow(trip) {
   };
 }
 
-const fail = (e) => {
-  const r = toFormError(e);
+const fail = (e, action) => {
+  const r = toFormError(e, action);
   return r === 'expired' ? 'expired' : { ok: false, errors: r };
 };
 
@@ -48,10 +48,10 @@ export function createTripStore({ client }) {
     async remove(id) {
       try {
         const { error } = await client.from('trips').delete().eq('id', id);
-        if (error) return fail(error);
+        if (error) return fail(error, 'delete');
         return { ok: true };
       } catch (e) {
-        return fail(e);
+        return fail(e, 'delete');
       }
     },
   };

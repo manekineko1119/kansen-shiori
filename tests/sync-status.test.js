@@ -118,3 +118,10 @@ test('importCounts：終わった試合のうち、自動・手入力・未入�
   assert.deepEqual(importCounts(fx, now), { api: 1, manual: 1, missing: 1 });
   assert.deepEqual(importCounts([], now), { api: 0, manual: 0, missing: 0 });
 });
+
+test('syncPanel：今日の URL での登録（match）の試合ページ数だけ、残りの試合ページが減る（一覧は減らない）', () => {
+  assert.deepEqual(syncPanel([], T, 3).remaining, { list: 2, pages: 7 });
+  const runs = [{ ran_at: iso(T - 3600_000), running: false, ok: true, list_read: 1, pages_read: 2 }];
+  assert.deepEqual(syncPanel(runs, T, 3).remaining, { list: 1, pages: 5 });
+  assert.deepEqual(syncPanel(runs, T).remaining, { list: 1, pages: 8 });
+});

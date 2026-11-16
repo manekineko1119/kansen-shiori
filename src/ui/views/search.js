@@ -6,7 +6,7 @@ import { bindForm } from '../mount.js';
 import { nextAwayFixture, recordPromptFixture } from '../../core/fixtures.js';
 import { opponentOf } from '../../core/fixture-view.js';
 import {
-  searchDefaults, queryFromForm, historyLabel, fixtureLabel, upcomingFixtures, ticketInfo, opponentGroups, MODE_NAMES, LODGING_NAMES,
+  searchDefaults, queryFromForm, ticketQuery, historyLabel, fixtureLabel, upcomingFixtures, ticketInfo, opponentGroups, MODE_NAMES, LODGING_NAMES,
 } from '../../core/search-form.js';
 
 const ERR_KEYS = ['fixtureId', 'opponentId', 'date', 'kickoff', 'modes'];
@@ -129,9 +129,9 @@ export function renderSearch(ctx) {
       form.querySelector('[data-cond]').scrollIntoView({ block: 'start', behavior: 'smooth' });
     };
     const search = () => {
-      const r = queryFromForm({ ...defaults, fixtureId: next.id });
+      const r = ticketQuery(read(), next.id); // 交通手段・宿泊・出発地は下の欄の値（設計書 3.1）
       if (r.ok) go(r.qs);
-      else pick(); // 設定の交通手段が空など、そのまま検索できないときは条件に入れる
+      else { pick(); form.requestSubmit(); } // 交通手段が空など：条件に試合を入れ、理由を出す
     };
     root.append(renderTicket({ fixture: info, from: info.from, to: info.to, kickoff: info.kickoff, days: info.days, onSearch: search, onPick: pick }));
   } else {
@@ -141,12 +141,18 @@ export function renderSearch(ctx) {
   root.append(form);
 
   // ---- 検索履歴 ----
+  // 1件ずつ消せる（確認なし。設計書 3.1・4.5）。削除のボタンは再検索のリンクの外に置き、押し間違えを防ぐ
   const history = ctx.data.history.list();
   if (history.length > 0) {
     root.append(el('h2', null, '最近の検索'), el('div', { class: 'sec hist' },
-      history.map((qs) => el('a', { href: `#/result?${qs}`, onclick: () => ctx.data.history.push(qs) },
-        el('span', null, historyLabel(qs, { fixturesById: masters.fixturesById, clubsById: masters.clubsById, supportClubId })),
-        el('span', { class: 'muted' }, '再検索')))));
+      history.map((qs) => {
+        const label = historyLabel(qs, { fixturesById: masters.fixturesById, clubsById: masters.clubsById, supportClubId });
+        return el('div', { class: 'hist-row' },
+          el('a', { href: `#/result?${qs}`, onclick: () => ctx.data.history.push(qs) },
+            el('span', null, label),
+            el('span', { class: 'muted' }, '再検索')),
+          el('button', { class: 'hist-del', type: 'button', 'aria-label': `「${label}」の履歴を削除`, onclick: () => { ctx.data.history.remove(qs); ctx.redraw(); } }, '削除'));
+      })));
   }
   return root;
 }

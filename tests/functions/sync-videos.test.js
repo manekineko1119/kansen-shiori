@@ -254,3 +254,16 @@ test('since の形が違う・未来・1年より前：YouTube を読まず ok: 
     assert.equal(calls.insertRun.length, 1, since);
   }
 });
+
+test('since あり・取得元が2つ：再生リストのページの上限 MAX_BACKFILL_PAGES は1回の実行全体で数える（Codex の指摘、2026-11-13）', async () => {
+  const two = [
+    { channel: '@yamagachannel', kinds, channel_id: 'UCabc', uploads_playlist_id: 'UUabc' },
+    { channel: '@other', kinds, channel_id: 'UCdef', uploads_playlist_id: 'UUdef' },
+  ];
+  const { db } = makeDb(two);
+  const pages = Array.from({ length: MAX_BACKFILL_PAGES + 5 }, (_, i) => [plAt(`v${i}`, '2026-10-25T10:00:00Z')]);
+  const io = makePagedGetJson(pages);
+  const r = await run(db, io.getJson, { since: '2026-08-08' });
+  assert.equal(r.ok, true);
+  assert.equal(playlistCalls(io.urls).length, MAX_BACKFILL_PAGES);
+});

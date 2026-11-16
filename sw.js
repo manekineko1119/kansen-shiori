@@ -1,7 +1,7 @@
 // 観戦のしおりの Service Worker（設計書 8章）。画面のファイルは版ごとに丸ごと入れ替える
 // VERSION・ASSETS_SHA256・ASSETS は npm run sw-version が書き換える（手で直さない）
-const VERSION = '2026-11-16.8';
-const ASSETS_SHA256 = 'fc833c7d2881879287d1a79637210117b50247aef948a4bbdb3f74b33b67daf0';
+const VERSION = '2026-11-16.4';
+const ASSETS_SHA256 = '4c85a2d6bb8b399caa670b68c9ea5a14c7b41b5953d7f1f020225aa0dbfd8833';
 const ASSETS = [
   "icons/apple-touch-icon-180.png",
   "icons/icon-192.png",
@@ -38,6 +38,7 @@ const ASSETS = [
   "src/core/lodging.js",
   "src/core/map/japan-shape.js",
   "src/core/map/project.js",
+  "src/core/match-import.js",
   "src/core/photo.js",
   "src/core/pwa.js",
   "src/core/record-form.js",
@@ -46,6 +47,7 @@ const ASSETS = [
   "src/core/result-page.js",
   "src/core/result.js",
   "src/core/route.js",
+  "src/core/safe-url.js",
   "src/core/search-form.js",
   "src/core/search-query.js",
   "src/core/season-clubs.js",
@@ -57,6 +59,7 @@ const ASSETS = [
   "src/core/trip-view.js",
   "src/core/trips.js",
   "src/core/validate.js",
+  "src/core/video-meta.js",
   "src/data/admin-cache.js",
   "src/data/admin.js",
   "src/data/client.js",
@@ -80,6 +83,7 @@ const ASSETS = [
   "src/data/settings.js",
   "src/data/snapshot.js",
   "src/data/trips.js",
+  "src/data/video-meta.js",
   "src/data/visits.js",
   "src/main.js",
   "src/router.js",
@@ -114,6 +118,7 @@ const ASSETS = [
   "src/ui/view-state.js",
   "src/ui/views/admin/clubs.js",
   "src/ui/views/admin/common.js",
+  "src/ui/views/admin/fixture-url.js",
   "src/ui/views/admin/fixtures.js",
   "src/ui/views/admin/index.js",
   "src/ui/views/admin/photos.js",

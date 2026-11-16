@@ -1,5 +1,5 @@
 // 観戦記録の一覧（#/records。設計書 3.4.2、FR-56・58・57b）：集計・直近5試合・終わった試合すべて
-// シーズン（?s=）と「観戦した試合だけ」（?only=1）は URL が持つ（D32）。行をタップすると #/records/<試合ID>
+// シーズン（?s=）と「現地観戦した試合だけ」（?only=1）は URL が持つ（D32）。行をタップすると #/records/<試合ID>
 import { el, split } from '../components/parts.js';
 import { renderRecordList } from '../components/record-list.js';
 import { parseRecordsQuery, pickSeason } from '../../core/record-list.js';
@@ -20,6 +20,6 @@ export function renderRecords(ctx) {
     root.append(el('section', { class: 'sec' }, el('p', { class: 'muted' }, 'シーズンがまだ登録されていません')));
     return root;
   }
-  root.append(split({ list: renderRecordList(ctx, { seasonId, seasons, onlyWatched: query.only }), detail: null }));
+  root.append(split({ list: renderRecordList(ctx, { seasonId, seasons, onlyStadium: query.only }), detail: null }));
   return root;
 }

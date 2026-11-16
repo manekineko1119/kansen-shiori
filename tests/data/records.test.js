@@ -44,20 +44,51 @@ test('remove：id で削除する', async () => {
   assert.deepEqual([c.op, c.eq], ['delete', [['id', 'r1']]]);
 });
 
-test('saveFixtureInfo：fixtures は side を club_id にして manual を付ける。inside は upsert、highlight は manual の行だけ delete', async () => {
+const NOW_MS = Date.UTC(2026, 10, 12, 15, 15); // 日本時間 11/13 0:15
+
+test('saveFixtureInfo：fixtures は side を club_id にして manual と手で直した時刻を付ける。inside は upsert、highlight は manual の行だけ delete', async () => {
   const client = fakeClient({ fixtures: [{ id: 'f1' }], fixture_videos: [] });
-  const store = createRecordStore({ client });
+  const store = createRecordStore({ client, now: () => NOW_MS });
   assert.deepEqual(await store.saveFixtureInfo('f1', edit, ids), { ok: true });
   const [fx, ...vids] = client.calls.filter((c) => c.op !== 'select');
   assert.deepEqual([fx.table, fx.op, fx.eq], ['fixtures', 'update', [['id', 'f1']]]);
   assert.deepEqual(fx.values, {
-    status: 'finished', home_score: 1, away_score: 3,
+    status: 'finished', home_score: 1, away_score: 3, home_pk: null, away_pk: null,
     scorers: [{ club_id: 'nara', player: '田中', minute: '64', type: 'goal' }], result_source: 'manual',
+    result_updated_at: '2026-11-12T15:15:00.000Z',
   });
   const up = vids.find((c) => c.op === 'upsert');
   assert.deepEqual([up.table, up.onConflict, up.values], ['fixture_videos', 'fixture_id,kind', { fixture_id: 'f1', kind: 'inside', url: 'https://youtu.be/x', source: 'manual' }]);
   const del = vids.find((c) => c.op === 'delete');
   assert.deepEqual([del.table, del.eq], ['fixture_videos', [['fixture_id', 'f1'], ['kind', 'highlight'], ['source', 'manual']]]);
+});
+
+test('saveFixtureInfo：手で貼った動画は、タイトルとチャンネルを取って一緒に保存する', async () => {
+  const client = fakeClient({ fixtures: [{ id: 'f1' }], fixture_videos: [] });
+  const asked = [];
+  const fetchVideoMeta = async (url) => { asked.push(url); return { title: '【INSIDE】架空', channel: '@kaku-ch' }; };
+  const store = createRecordStore({ client, now: () => NOW_MS, fetchVideoMeta });
+  assert.deepEqual(await store.saveFixtureInfo('f1', edit, ids), { ok: true });
+  assert.deepEqual(asked, ['https://youtu.be/x']);
+  const up = client.calls.find((c) => c.op === 'upsert');
+  assert.deepEqual(up.values, { fixture_id: 'f1', kind: 'inside', url: 'https://youtu.be/x', source: 'manual', title: '【INSIDE】架空', channel: '@kaku-ch' });
+});
+
+test('saveFixtureInfo：タイトルを取れなくても、URL だけで保存する', async () => {
+  const client = fakeClient({ fixtures: [{ id: 'f1' }], fixture_videos: [] });
+  const store = createRecordStore({ client, now: () => NOW_MS, fetchVideoMeta: async () => { throw new TypeError('Failed to fetch'); } });
+  assert.deepEqual(await store.saveFixtureInfo('f1', edit, ids), { ok: true });
+  const up = client.calls.find((c) => c.op === 'upsert');
+  assert.deepEqual(up.values, { fixture_id: 'f1', kind: 'inside', url: 'https://youtu.be/x', source: 'manual', title: null, channel: null });
+});
+
+test('saveFixtureInfo：PK戦のスコアを送る', async () => {
+  const client = fakeClient({ fixtures: [{ id: 'f1' }], fixture_videos: [] });
+  const store = createRecordStore({ client, now: () => NOW_MS });
+  const pk = { ...edit, fixture: { ...edit.fixture, home_score: 1, away_score: 1, home_pk: 4, away_pk: 3 } };
+  assert.deepEqual(await store.saveFixtureInfo('f1', pk, ids), { ok: true });
+  const fx = client.calls.find((c) => c.table === 'fixtures' && c.op === 'update');
+  assert.deepEqual([fx.values.home_pk, fx.values.away_pk], [4, 3]);
 });
 
 test('saveFixtureInfo：away の得点者は away のクラブ。検証で止めたら送らない', async () => {
@@ -193,4 +224,22 @@ test('remove：記録を消したら写真も消す。写真の削除の失敗�
   const none = setup();
   await none.store.remove('r1', null);
   assert.equal(none.client.calls.some((c) => c.op === 'remove'), false);
+});
+
+test('saveFixtureInfo：今と同じ URL の動画は書き込まない（自動の動画を手入力に変えない）。違う URL だけ upsert', async () => {
+  const client = fakeClient({ fixtures: [{ id: 'f1' }], fixture_videos: [] });
+  const store = createRecordStore({ client, now: () => NOW_MS });
+  const same = { ...edit, videos: { highlight: 'https://www.youtube.com/watch?v=H', inside: 'https://youtu.be/new' } };
+  const currentVideos = [
+    { kind: 'highlight', url: 'https://www.youtube.com/watch?v=H', source: 'api' },
+    { kind: 'inside', url: 'https://www.youtube.com/watch?v=I', source: 'api' },
+  ];
+  assert.deepEqual(await store.saveFixtureInfo('f1', same, { ...ids, currentVideos }), { ok: true });
+  const vids = client.calls.filter((c) => c.table === 'fixture_videos');
+  assert.deepEqual(vids.map((c) => [c.op, c.values?.kind]), [['upsert', 'inside']]);
+});
+
+test('remove の通信の失敗は、削除の文を返す', async () => {
+  const { store } = setup({ throwOn: ['match_records'] });
+  assert.deepEqual(await store.remove('r1', null), { ok: false, errors: { _form: '削除できませんでした。通信できる場所でもう一度削除してください' } });
 });

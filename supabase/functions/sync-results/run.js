@@ -1,6 +1,6 @@
 // 試合結果の取り込みの本体（設計書 6.2、D14）。
 // 通信・DB・待ち時間・現在時刻は引数で受け取る（Deno・fetch・Date.now() を使わない）。
-import { ACCESS_LIMITS, planSync, scheduleListUrl, formatResultsMessage } from '../_shared/sync-plan.js';
+import { ACCESS_LIMITS, BACKFILL_LIMITS, planSync, scheduleListUrl, formatResultsMessage } from '../_shared/sync-plan.js';
 import { parseScheduleList, parseMatchPage, buildScorers, clubSlugFromUrl } from '../_shared/jleague-parse.js';
 import { jstDayStartIso, jstToday, isClubId } from '../_shared/edge-auth.js';
 
@@ -29,7 +29,7 @@ async function importScorers({ db, fetchText, sleep, counts, target, fixture }) 
   return failure ? { failure } : { applied };
 }
 
-async function sync({ db, fetchText, sleep, nowMs, clubId }, state, report) {
+async function sync({ db, fetchText, sleep, nowMs, clubId, backfill }, state, report) {
   const { counts } = state;
   if (!isClubId(clubId)) {
     report.error = 'club_id の形が正しくありません';
@@ -48,8 +48,8 @@ async function sync({ db, fetchText, sleep, nowMs, clubId }, state, report) {
   const reserved = await db.reserveRun({
     dayStartIso: jstDayStartIso(nowMs),
     listLimit: ACCESS_LIMITS.listPerDay,
-    pagesLimit: ACCESS_LIMITS.matchPagesPerDay,
-    pagesPerRun: ACCESS_LIMITS.matchPagesPerRun,
+    pagesLimit: ACCESS_LIMITS.matchPagesPerDay + (backfill ? BACKFILL_LIMITS.matchPagesPerRun : 0),
+    pagesPerRun: backfill ? BACKFILL_LIMITS.matchPagesPerRun : ACCESS_LIMITS.matchPagesPerRun,
   });
   if (!reserved) {
     // 予約が0行：上限か実行中か。分からない値は limit にする（check 制約に当たらないように）
@@ -66,7 +66,7 @@ async function sync({ db, fetchText, sleep, nowMs, clubId }, state, report) {
   }
   report.skipped = list.skipped ?? 0;
   const fixtures = await db.fixturesOf(season.id, clubId);
-  const plan = planSync({ items: list.items, fixtures, clubs: await db.clubs(), quota: { list: 1, matchPages: reserved.pagesAllowed } });
+  const plan = planSync({ items: list.items, fixtures, clubs: await db.clubs(), quota: { list: 1, matchPages: reserved.pagesAllowed }, perRun: backfill ? BACKFILL_LIMITS.matchPagesPerRun : ACCESS_LIMITS.matchPagesPerRun });
   Object.assign(report, { unmatched: plan.unmatched, duplicates: plan.duplicates, unknownStates: plan.unknownStates });
   const notApplied = new Set();
   for (const u of plan.updates) {
@@ -85,20 +85,29 @@ async function sync({ db, fetchText, sleep, nowMs, clubId }, state, report) {
   report.notApplied = [...notApplied];
 }
 
+// 一度だけの取り込みの回は、message の先頭にそう書く（管理画面の記録で見分けるため）
+function withBackfillNote(once, message) {
+  if (!once) return message;
+  const note = `一度だけの取り込み（試合ページは最大${BACKFILL_LIMITS.matchPagesPerRun}件）`;
+  return message ? `${note}\n${message}` : note;
+}
+
 // 戻り値：{ ok, message, list_read, pages_read, skipped_reason }。最後に必ず sync_runs を1行にする
 // （予約できていれば finishRun、できていなければ insertRun。上限・実行中で読まなかった回は skipped_reason を入れる）
-export async function runSyncResults({ db, fetchText, sleep, nowMs, clubId }) {
+// backfill：true のときだけ一度だけの取り込み（設計書 6.2）。true 以外の値は、ふだんの取り込み
+export async function runSyncResults({ db, fetchText, sleep, nowMs, clubId, backfill }) {
+  const once = backfill === true;
   const state = { runId: null, skippedReason: null, counts: { listRead: 0, pagesRead: 0 } };
   const report = { unmatched: [], duplicates: [], unknownStates: [], skipped: 0, scorerFailures: [], notApplied: [], error: null };
   try {
-    await sync({ db, fetchText, sleep, nowMs, clubId }, state, report);
+    await sync({ db, fetchText, sleep, nowMs, clubId, backfill: once }, state, report);
   } catch (e) {
     report.error = String(e?.message ?? e);
   }
   const skipped = report.error === null ? state.skippedReason : null;
   const result = {
     ok: report.error === null && skipped === null,
-    message: skipped ? SKIP_MESSAGES[skipped] : formatResultsMessage(report),
+    message: withBackfillNote(once, skipped ? SKIP_MESSAGES[skipped] : formatResultsMessage(report)),
     list_read: state.counts.listRead,
     pages_read: state.counts.pagesRead,
     skipped_reason: skipped,

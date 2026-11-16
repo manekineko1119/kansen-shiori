@@ -32,10 +32,10 @@
 .cal-cell.sel { background: var(--theme-tint); box-shadow: inset 0 0 0 2px var(--theme-primary); border-radius: 6px; }
 .ev { display: block; font-size: 10px; line-height: 1.35; border-radius: 4px; padding: 1px 3px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 700; }
 .ev.a { background: var(--theme-accent); color: var(--on-accent); }
-.ev.h { background: var(--theme-tint); color: var(--theme-primary); }
+.ev.h { background: var(--theme-tint); color: var(--theme-text); }
 .cal-cell.sel .ev.h { background: var(--paper); }
 .ev.trip { background: var(--theme-primary); color: var(--theme-on-primary); }
-.ev.rec { background: var(--paper); color: var(--theme-primary); box-shadow: inset 0 0 0 1.5px var(--theme-primary); }
+.ev.rec { background: var(--paper); color: var(--theme-text); box-shadow: inset 0 0 0 1.5px var(--theme-primary); }
 .ev.win { background: var(--win); color: var(--on-result); }
 .ev.lose { background: var(--lose); color: var(--on-result); }
 .ev.draw { background: var(--draw); color: var(--on-result); }
@@ -43,9 +43,9 @@
 /* 印（直近5試合・選んだ日の行・凡例） */
 .res { display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; padding: 0 4px; border-radius: 6px; font-size: 12px; font-style: normal; font-weight: 700; white-space: nowrap; flex: none; }
 .res.a { background: var(--theme-accent); color: var(--on-accent); }
-.res.h { background: var(--theme-tint); color: var(--theme-primary); }
+.res.h { background: var(--theme-tint); color: var(--theme-text); }
 .res.trip { background: var(--theme-primary); color: var(--theme-on-primary); }
-.res.rec { background: var(--paper); color: var(--theme-primary); box-shadow: inset 0 0 0 1.5px var(--theme-primary); }
+.res.rec { background: var(--paper); color: var(--theme-text); box-shadow: inset 0 0 0 1.5px var(--theme-primary); }
 .res.win { background: var(--win); color: var(--on-result); }
 .res.lose { background: var(--lose); color: var(--on-result); }
 .res.draw { background: var(--draw); color: var(--on-result); }

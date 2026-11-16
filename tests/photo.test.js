@@ -25,3 +25,11 @@ test('fitSize：細長い画像でも1px未満にならない', () => {
 test('photoPath：{user_id}/{試合ID}.jpg', () => {
   assert.equal(photoPath('u1', '2026-27_J3_12_gifu_matsumoto'), 'u1/2026-27_J3_12_gifu_matsumoto.jpg');
 });
+
+test('photoPath：英数字・_・- 以外を含む試合ID（カップ戦の「1回戦」）は、UTF-8 の16進にして x- を付ける（Storage は日本語の名前を受け付けない）', () => {
+  const p = photoPath('u1', '2026-27_LEVAIN_1回戦_matsumoto_shonan');
+  assert.equal(p, `u1/x-${Buffer.from('2026-27_LEVAIN_1回戦_matsumoto_shonan', 'utf8').toString('hex')}.jpg`);
+  assert.match(p, /^[A-Za-z0-9_\-/.]+$/);
+  // 試合IDが違えば名前も違う
+  assert.notEqual(photoPath('u1', '2026-27_LEVAIN_2回戦_matsumoto_niigata'), p);
+});

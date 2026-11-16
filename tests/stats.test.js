@@ -53,3 +53,10 @@ test('seasonStats: 引き分けを数える', () => {
   assert.equal(result.win, 0);
   assert.equal(result.lose, 0);
 });
+
+test('seasonStats: PK戦の勝ち・負けを数える', () => {
+  const pk = { id: 'f5', home_club_id: 'matsumoto', away_club_id: 'shonan', status: 'finished', home_score: 3, away_score: 3, home_pk: 3, away_pk: 4, match_date: '2026-11-01' };
+  const result = seasonStats([{ fixture_id: 'f5', watch_style: 'stadium', ...noCosts }], { f5: pk }, 'matsumoto');
+  assert.equal(result.lose, 1);
+  assert.equal(result.draw, 0);
+});

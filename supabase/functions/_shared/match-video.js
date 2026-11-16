@@ -66,11 +66,9 @@ export function matchVideo({ title, publishedAt, kind }, ctx) {
   let hit = [];
   if (kind === 'highlight') {
     const date = parseHighlightDate(title);
-    if (date) {
-      hit = cands.filter((f) => f.match_date === date);
-    } else {
-      hit = inWindow(cands, publishedAt, HIGHLIGHT_WINDOW_DAYS);
-    }
+    if (date) hit = cands.filter((f) => f.match_date === date);
+    // 日付が読めない、またはタイトルの日付の書き間違いで合う試合がない（2026-11-13 に見つけた）ときは、公開日から探す
+    if (hit.length === 0) hit = inWindow(cands, publishedAt, HIGHLIGHT_WINDOW_DAYS);
   } else if (kind === 'inside') {
     hit = inWindow(cands, publishedAt, INSIDE_WINDOW_DAYS);
     if (hit.length > 1) {

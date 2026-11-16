@@ -44,6 +44,19 @@ test('ハイライト：日付が読めないときは公開日から3日以内�
   assert.equal(matchVideo({ title: t, publishedAt: '2026-10-24T09:00:00Z', kind: 'highlight' }, ctx), null); // 試合より前
 });
 
+// タイトルの日付の書き間違い（2026-11-13。鹿児島戦のハイライトが試合日 10/11 なのに「2026.10.14」だった）
+test('ハイライト：タイトルの日付に合う試合がなければ、公開日から3日以内＋相手の名前で探し直す', () => {
+  const t = '２０２６／２７明治安田Ｊ３リーグ 第13節 2026.10.28 松本 vs 山口'; // 試合は 10-25
+  assert.equal(matchVideo({ title: t, publishedAt: '2026-10-26T09:00:00Z', kind: 'highlight' }, ctx), 'f13');
+  assert.equal(matchVideo({ title: t, publishedAt: '2026-10-29T09:00:00Z', kind: 'highlight' }, ctx), null); // 日本では10-29＝4日後
+});
+
+test('ハイライト：タイトルの日付に合う試合があれば、公開日では探さない', () => {
+  const two = [...fixtures, { id: 'f20', match_date: '2026-12-06', round: '20', home_club_id: 'yamaguchi', away_club_id: 'matsumoto', competition: 'J3' }];
+  // 公開日は f13 の3日以内だが、タイトルの日付の f20 に決める
+  assert.equal(matchVideo({ title: '明治安田 2026.12.06 山口 vs 松本', publishedAt: '2026-10-26T09:00:00Z', kind: 'highlight' }, { ...ctx, fixtures: two }), 'f20');
+});
+
 test('ハイライト：候補が0件・2件以上なら null', () => {
   const two = [...fixtures, { id: 'f14', match_date: '2026-10-26', round: '14', home_club_id: 'yamaguchi', away_club_id: 'matsumoto', competition: 'J3' }];
   const t = '明治安田Ｊ３ 松本 vs 山口';

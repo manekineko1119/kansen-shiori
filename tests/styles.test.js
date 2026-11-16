@@ -61,6 +61,16 @@ test('日程・観戦記録の一覧の日付の欄は幅を固定する（日�
   }
 });
 
+test('日程・観戦記録の一覧で選んだ行は、背景と左の帯をカードの余白（.sec の 16px）まで広げ、中身の位置は動かさない（帯が日付や結果の印に重ならず、列もずれないように）', () => {
+  for (const [name, selector] of [['fixtures.css', '.fixtures .item.sel'], ['records.css', '.rec-list .item.sel']]) {
+    const rule = read(name).match(new RegExp(`${selector.replace(/\./g, '\\.')}\\s*\\{([^}]*)\\}`))?.[1] ?? '';
+    assert.match(rule, /inset\s+4px/, `${name} の ${selector} に左の帯がない`);
+    assert.match(rule, /(?:^|;)\s*margin\s*:\s*0\s+-16px\s*(?:;|$)/, `${name} の ${selector} を左右に 16px 広げていない`);
+    assert.match(rule, /(?:^|;)\s*padding-left\s*:\s*16px/, `${name} の ${selector} の padding-left が 16px でない`);
+    assert.match(rule, /(?:^|;)\s*padding-right\s*:\s*16px/, `${name} の ${selector} の padding-right が 16px でない`);
+  }
+});
+
 test('CSS のファイルは 300 行以下', () => {
   for (const name of cssFiles) assert.ok(read(name).split(/\r?\n/).length <= 300, name);
 });
@@ -79,9 +89,39 @@ test('src/ 以下の JS と index.html に色の値がない（theme-color の m
 test(':root に切り替える色と結果の色がある', () => {
   const r = rootMatch[0];
   for (const [name, value] of [
-    ['--theme-primary', '#0E5A3A'], ['--theme-on-primary', '#FFFFFF'], ['--theme-accent', '#F2B01E'],
-    ['--theme-tint', '#D9E8DF'], ['--win', '#1565C0'], ['--lose', '#C62828'], ['--draw', '#616161'],
+    ['--theme-primary', '#00823E'], ['--theme-on-primary', '#FFFFFF'], ['--theme-accent', '#F2B01E'],
+    ['--theme-tint', '#D9ECE2'], ['--theme-shade', '#005612'],
+    ['--win', '#1565C0'], ['--lose', '#C62828'], ['--draw', '#616161'],
   ]) {
     assert.match(r, new RegExp(`${name}\\s*:\\s*${value}\\b`, 'i'), name);
+  }
+});
+
+test('文字の緑は --theme-text、押したときの色は --theme-shade から作る（設計書 3.6）', () => {
+  assert.match(rootMatch[0], /--theme-text\s*:\s*var\(--theme-shade\)/);
+  assert.match(rootMatch[0], /--theme-deep\s*:\s*var\(--theme-shade\)/);
+});
+
+test('CSS で主な色を文字の色に使わない（明るい背景で 4.5:1 を下回るため。設計書 3.6）', () => {
+  for (const name of cssFiles) {
+    assert.deepEqual(read(name).match(/(^|[^-\w])color\s*:\s*var\(--theme-primary\)/gm) ?? [], [], name);
+  }
+});
+
+test('ブラウザの帯の色は公式の緑、起動画面の背景はアイコンに合わせて前の緑のまま', () => {
+  const root = fileURLToPath(new URL('..', import.meta.url));
+  assert.match(readFileSync(join(root, 'index.html'), 'utf8'), /<meta name="theme-color" content="#00823E">/);
+  const m = JSON.parse(readFileSync(join(root, 'manifest.webmanifest'), 'utf8'));
+  assert.equal(m.theme_color, '#00823E');
+  assert.equal(m.background_color, '#0E5A3A');
+});
+
+test('グラデーションはきっぷだけ。斜めの模様は残す（設計書 3.1・3.6）', () => {
+  const ticket = read('search.css').match(/\.ticket\s*\{[^}]*\}/)[0];
+  assert.match(ticket, /linear-gradient\(to right in oklab,\s*var\(--theme-primary\),\s*var\(--theme-shade\)\)/);
+  assert.equal((ticket.match(/repeating-linear-gradient/g) ?? []).length, 2);
+  for (const name of cssFiles) {
+    const n = (read(name).match(/(^|[^-])linear-gradient\([^;]*--theme-shade/g) ?? []).length;
+    assert.equal(n, name === 'search.css' ? 1 : 0, name);
   }
 });

@@ -16,7 +16,7 @@
   text-decoration: none;
 }
 .mapbtn .ic { width: 22px; height: 22px; }
-.mapbtn:hover { background: var(--theme-tint); color: var(--theme-primary); }
+.mapbtn:hover { background: var(--theme-tint); color: var(--theme-text); }
 @media (prefers-reduced-motion: no-preference) {
   .mapbtn { transition: background-color 0.15s ease, color 0.15s ease; }
 }
@@ -56,7 +56,7 @@
 .jmap-pins circle { fill: var(--map-pin); stroke: var(--paper); stroke-width: 0.8; }
 .jmap-credit { margin-top: 4px; font-size: 11px; }
 .jmap-popup { display: grid; gap: 4px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--rule); }
-.jmap-pick { display: flex; align-items: center; min-height: 48px; padding: 0 12px; border: 1px solid var(--rule); border-radius: var(--r-s); background: var(--paper); color: var(--theme-primary); font-weight: 700; text-align: left; }
+.jmap-pick { display: flex; align-items: center; min-height: 48px; padding: 0 12px; border: 1px solid var(--rule); border-radius: var(--r-s); background: var(--paper); color: var(--theme-text); font-weight: 700; text-align: left; }
 button.jmap-pick:hover { background: var(--theme-tint); }
 .jmap-pref { margin: 0; font-weight: 700; }
 
@@ -69,6 +69,6 @@ button.jmap-pick:hover { background: var(--theme-tint); }
 .vr-match { font-size: 13px; }
 .vr-hand { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .vr-hand .btn { margin-top: 0; }
-.vr-un { color: var(--theme-primary); }
+.vr-un { color: var(--theme-text); }
 .visit-form .field + .field { margin-top: 12px; }
 .visit-form .btn { margin-top: 12px; }

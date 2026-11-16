@@ -1,11 +1,11 @@
 // 観戦記録・試合の情報の保存（設計書 4.1・4.2・9章）。user_id・visibility は送らない（DB の既定値）。失敗の理由は toFormError（D34）
 // 写真（4.2.1）：photos（createPhotoStore）を渡すと、記録 → 写真 → photo_path の順で保存できる
-import { validateMatchRecord, validateFixtureEdit, COST_KEYS } from '../core/record-form.js';
+import { validateMatchRecord, validateFixtureEdit, videoSaves, COST_KEYS } from '../core/record-form.js';
 import { toFormError, FORM_MESSAGES } from './errors.js';
 import { PHOTO_UPLOAD_FAILED } from './photos.js';
 
-const fail = (e) => {
-  const r = toFormError(e);
+const fail = (e, action) => {
+  const r = toFormError(e, action);
   return r === 'expired' ? 'expired' : { ok: false, errors: r };
 };
 
@@ -27,13 +27,25 @@ function recordRow(record, photoPath) {
 const PARTIAL_MESSAGE = '試合の情報は保存しました。動画だけ保存できませんでした。もう一度保存してください';
 const partialOrExpired = (e) => (fail(e) === 'expired' ? 'expired' : { ok: false, partial: true, errors: { _form: PARTIAL_MESSAGE } });
 
-export function createRecordStore({ client, photos = null }) {
+// now：手で直した時刻（result_updated_at）に使う現在時刻（テストでは固定の値を渡す）
+// fetchVideoMeta：手で貼った動画のタイトル・チャンネルを読む関数（url → { title, channel }）。渡さなければ読まない
+export function createRecordStore({ client, photos = null, now = () => Date.now(), fetchVideoMeta = null }) {
+  // 読めなくても保存は止めない（タイトルなしで保存し、画面は「YouTube で見る」と出す）
+  async function videoMeta(url) {
+    try {
+      const m = await fetchVideoMeta(url);
+      return { title: m?.title ?? null, channel: m?.channel ?? null };
+    } catch {
+      return { title: null, channel: null };
+    }
+  }
+
   // 手入力で保存する動画（種類ごと）。URL があれば upsert、空なら手入力の行だけ消す（自動の動画は消さない）
   async function saveVideo(fixtureId, kind, url) {
-    const q = url
-      ? client.from('fixture_videos').upsert({ fixture_id: fixtureId, kind, url, source: 'manual' }, { onConflict: 'fixture_id,kind' })
-      : client.from('fixture_videos').delete().eq('fixture_id', fixtureId).eq('kind', kind).eq('source', 'manual');
-    return q;
+    if (!url) return client.from('fixture_videos').delete().eq('fixture_id', fixtureId).eq('kind', kind).eq('source', 'manual');
+    const row = { fixture_id: fixtureId, kind, url, source: 'manual' };
+    if (fetchVideoMeta) Object.assign(row, await videoMeta(url));
+    return client.from('fixture_videos').upsert(row, { onConflict: 'fixture_id,kind' });
   }
 
   const store = {
@@ -82,15 +94,16 @@ export function createRecordStore({ client, photos = null }) {
     async remove(id, photoPath = null) {
       try {
         const { error } = await client.from('match_records').delete().eq('id', id);
-        if (error) return fail(error);
+        if (error) return fail(error, 'delete');
       } catch (e) {
-        return fail(e);
+        return fail(e, 'delete');
       }
       if (photoPath && photos) await photos.remove(photoPath);
       return { ok: true };
     },
     // 管理者だけ（RLS）。保存すると result_source は 'manual' になり、自動の取り込みで上書きされない
-    async saveFixtureInfo(fixtureId, edit, { homeClubId, awayClubId }) {
+    // currentVideos：今の動画（fixture_videos の行）。URL を変えなかった種類は書き込まない（videoSaves）
+    async saveFixtureInfo(fixtureId, edit, { homeClubId, awayClubId, currentVideos = [] }) {
       const v = validateFixtureEdit(edit, { homeClubId, awayClubId });
       if (!v.ok) return { ok: false, errors: v.errors };
       const f = edit.fixture;
@@ -98,8 +111,12 @@ export function createRecordStore({ client, photos = null }) {
         status: f.status,
         home_score: f.home_score,
         away_score: f.away_score,
+        home_pk: f.home_pk ?? null,
+        away_pk: f.away_pk ?? null,
         scorers: f.scorers.map((s) => ({ club_id: s.side === 'home' ? homeClubId : awayClubId, player: s.player, minute: s.minute, type: s.type })),
         result_source: 'manual',
+        // 手で直した時刻。画面の「更新日時」に出す（自動の取り込みの時刻のままにしない。2026-11-13）
+        result_updated_at: new Date(now()).toISOString(),
       };
       try {
         const { data, error } = await client.from('fixtures').update(values).eq('id', fixtureId).select();
@@ -111,8 +128,9 @@ export function createRecordStore({ client, photos = null }) {
       }
       // 試合の更新はもう入っている。動画だけ失敗したときは、途中まで保存したことが分かる形で返す（もう一度保存すれば同じ値で入り直す）
       try {
-        for (const kind of ['highlight', 'inside']) {
-          const res = await saveVideo(fixtureId, kind, edit.videos[kind]);
+        for (const { kind, action, url } of videoSaves(edit.videos, currentVideos)) {
+          if (action === 'keep') continue;
+          const res = await saveVideo(fixtureId, kind, url);
           if (res.error) return partialOrExpired(res.error);
         }
         return { ok: true };

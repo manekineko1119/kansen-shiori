@@ -1,5 +1,5 @@
 // 検索履歴（端末の localStorage。設計書 4.5）
-import { pushHistory } from '../core/search-query.js';
+import { pushHistory, removeHistory } from '../core/search-query.js';
 
 const KEY = 'kansen.history';
 
@@ -12,8 +12,7 @@ export function createHistory(local) {
       return []; // 壊れた値は捨てる
     }
   };
-  const push = (qs) => {
-    const next = pushHistory(list(), qs);
+  const save = (next) => {
     try {
       local.setItem(KEY, JSON.stringify(next));
     } catch (e) {
@@ -21,5 +20,7 @@ export function createHistory(local) {
     }
     return next;
   };
-  return { list, push };
+  const push = (qs) => save(pushHistory(list(), qs));
+  const remove = (qs) => save(removeHistory(list(), qs)); // 1件ずつ消す（確認なし）
+  return { list, push, remove };
 }
