@@ -3,13 +3,12 @@
 import { validateMatchRecord, validateFixtureEdit, videoSaves, COST_KEYS } from '../core/record-form.js';
 import { toFormError, FORM_MESSAGES } from './errors.js';
 import { PHOTO_UPLOAD_FAILED } from './photos.js';
+import { shrinkFailedMessage } from '../core/photo.js';
 
 const fail = (e, action) => {
   const r = toFormError(e, action);
   return r === 'expired' ? 'expired' : { ok: false, errors: r };
 };
-
-const SHRINK_FAILED = '写真を縮小できませんでした';
 
 // photo_path は photoPath を渡されたときだけ送る（ふつうの保存で送ると既存の写真を消してしまう）。null は写真を外す
 function recordRow(record, photoPath) {
@@ -65,8 +64,8 @@ export function createRecordStore({ client, photos = null, now = () => Date.now(
       let blob;
       try {
         blob = await makeBlob();
-      } catch {
-        return { ok: false, errors: { photo: SHRINK_FAILED } };
+      } catch (e) {
+        return { ok: false, errors: { photo: shrinkFailedMessage(e?.detail) } }; // 理由（detail）は photo-resize.js が付ける
       }
       const up = await photos.upload(record.fixture_id, blob);
       if (up === 'expired' || !up.ok) return up;

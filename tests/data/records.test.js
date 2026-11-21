@@ -180,6 +180,14 @@ test('saveWithPhoto：写真だけ失敗しても記録は保存したまま。p
   assert.equal(shrink.client.calls.some((c) => c.op === 'upload'), false);
 });
 
+test('saveWithPhoto・attachPhoto：縮小の失敗に理由（detail）があれば、文に括弧で付ける', async () => {
+  const detail = { step: 'decode', error: 'EncodingError', type: 'image/png', head: 'png', size: 2130869 };
+  const fail = async () => { throw Object.assign(new Error('decode'), { detail }); };
+  const want = '写真を縮小できませんでした（画像の読み取り・EncodingError・image/png・中身 png・2.0MB）';
+  assert.equal((await setup().store.saveWithPhoto(rec, fail)).photoError, want);
+  assert.deepEqual(await setup().store.attachPhoto(rec, fail), { ok: false, errors: { photo: want } });
+});
+
 test('saveWithPhoto：写真の期限切れは expired。photo_path の保存の失敗は写真の失敗として返す', async () => {
   const exp = setup({ failOn: { [BUCKET]: { message: 'jwt', status: 401 } } });
   assert.equal(await exp.store.saveWithPhoto(rec, async () => 'B'), 'expired');
